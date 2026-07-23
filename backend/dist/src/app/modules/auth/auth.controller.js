@@ -18,6 +18,7 @@ const otp_model_1 = __importDefault(require("./otp/otp.model"));
 const generateOTP_1 = require("../../utils/generateOTP");
 const auth_validation_1 = require("./auth.validation");
 const generateJWT_1 = require("../../utils/generateJWT");
+const firebase_service_1 = require("../../config/firebase.service");
 const auth_constants_1 = require("./auth.constants");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -129,7 +130,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Generate Refresh Token
         const refreshToken = (0, generateJWT_1.generateRefreshToken)(auth);
         //Generate Firebase Token 🔥
-        // const firebaseToken = await generateFirebaseToken(auth._id.toString());
+        const firebaseToken = yield (0, firebase_service_1.generateFirebaseToken)(auth._id.toString());
         auth.refreshToken = yield bcrypt_1.default.hash(refreshToken, 10);
         yield auth.save();
         return res.status(200).json({
@@ -140,7 +141,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             isNewUser,
             accessToken,
             refreshToken,
-            // firebaseToken, //added Firebase referesh token in response 🔥
+            firebaseToken, //added Firebase referesh token in response 🔥
             user: auth,
         });
     }
