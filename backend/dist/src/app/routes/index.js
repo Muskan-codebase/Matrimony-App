@@ -23,6 +23,7 @@ const accountSettings_routes_1 = require("../modules/account-settings/accountSet
 const partnerPreference_routes_1 = require("../modules/profile-details/partner-preference/partnerPreference.routes");
 const occupation_routes_1 = require("../modules/admin/occupation/occupation.routes");
 const successStory_routes_1 = require("../modules/success-story/successStory.routes");
+const chat_routes_1 = require("../modules/profile-details/chat/chat.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -116,6 +117,10 @@ const moduleRoutes = [
     {
         path: "/success-stories",
         route: successStory_routes_1.successStoryRouter
+    },
+    {
+        path: "/chat",
+        route: chat_routes_1.chatRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
