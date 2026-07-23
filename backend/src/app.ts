@@ -4,7 +4,7 @@ import router from './app/routes';
 import notFound from './app/middlewares/notFound';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import { setupSwagger } from './app/config/swagger';
-import "./app/config/firebase";
+// import "./app/config/firebase";
 import path from "path";
 
 const app: Application = express();
