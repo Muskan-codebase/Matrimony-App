@@ -7,7 +7,7 @@ import {
     resendOtpValidation, refreshTokenValidation
 } from "./auth.validation";
 import { generateAccessToken, generateRefreshToken } from "../../utils/generateJWT";
-// import { generateFirebaseToken } from "../../config/firebase.service";
+import { generateFirebaseToken } from "../../config/firebase.service";
 import { verifyAccessToken, verifyRefreshToken } from "../../utils/verifyJWT";
 import {
     MAX_RESEND_COUNT,
@@ -168,7 +168,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
         const refreshToken = generateRefreshToken(auth);
 
         //Generate Firebase Token 🔥
-        // const firebaseToken = await generateFirebaseToken(auth._id.toString());
+        const firebaseToken = await generateFirebaseToken(auth._id.toString());
 
         auth.refreshToken = await bcrypt.hash(refreshToken, 10);
         await auth.save();
@@ -181,7 +181,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
             isNewUser,
             accessToken,
             refreshToken,
-            // firebaseToken, //added Firebase referesh token in response 🔥
+            firebaseToken, //added Firebase referesh token in response 🔥
             user: auth,
         });
 
