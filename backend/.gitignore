@@ -1,4 +1,4 @@
 .vercel
 node_modules
-# src/app/config/firebase/serviceAccountKey.json
-# dist/src/app/config/firebase/serviceAccountKey.json
+src/app/config/firebase/serviceAccountKey.json
+dist/src/app/config/firebase/serviceAccountKey.json
