@@ -1,0 +1,129 @@
+import request from "supertest";
+import app from "../../src/app";
+import Auth from "../../src/app/modules/auth/auth.model";
+import Otp from "../../src/app/modules/auth/otp/otp.model";
+
+describe("POST /v1/api/auth/send-otp", () => {
+
+    describe("Validation", () => {
+
+        //validates if a given mobile number is missing
+        it("should return 400 when mobile is missing", async () => {
+
+            const response = await request(app)
+                .post("/v1/api/auth/send-otp")
+                .send({
+                    countryCode: "+91"
+                });
+
+            expect(response.status).toBe(400);
+
+            expect(response.body.success).toBe(false);
+
+
+        });
+
+        //validates if the given country code is missing
+        it("should return 400 when countryCode is missing", async () => {
+
+            const response = await request(app)
+                .post("/v1/api/auth/send-otp")
+                .send({
+                    mobile: "9876543210"
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.success).toBe(false);
+
+        });
+
+        //validates if a given mobile number is invalid
+        it("should return 400 when mobile is invalid", async () => {
+
+            const response = await request(app)
+                .post("/v1/api/auth/send-otp")
+                .send({
+                    countryCode: "+91",
+                    mobile: "123"
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.success).toBe(false);
+
+        });
+
+    });
+
+    describe("Success Cases", () => {
+
+        //Creates a new user & sends OTP
+        it("should create new user and send OTP", async () => {
+
+            const response = await request(app)
+                .post("/v1/api/auth/send-otp")
+                .send({
+                    countryCode: "+91",
+                    mobile: "9876543210"
+                });
+
+            expect(response.status).toBe(200);
+
+            expect(response.body.success).toBe(true);
+
+        });
+
+        //sends OTP to the existing verified user
+        it("should send OTP for existing verified user", async () => {
+
+            // Arrange
+            const existingUser = await Auth.create({
+                mobile: "9876543210",
+                countryCode: "+91",
+                isVerified: true,
+            });
+
+            // Act
+            const response = await request(app)
+                .post("/v1/api/auth/send-otp")
+                .send({
+                    countryCode: "+91",
+                    mobile: "9876543210",
+                });
+
+            // Assert Response
+            expect(response.status).toBe(200);
+
+            expect(response.body.success).toBe(true);
+
+            expect(response.body.isExistingUser).toBe(true);
+
+            expect(response.body.message).toBe(
+                "OTP sent. Enter it to log in."
+            );
+
+            // Verify only one Auth document exists
+            const authUsers = await Auth.find({
+                mobile: "9876543210",
+            });
+
+            expect(authUsers.length).toBe(1);
+
+            // Verify OTP is created
+            const otp = await Otp.findOne({
+                authId: existingUser._id,
+                isUsed: false,
+            });
+
+            expect(otp).not.toBeNull();
+
+            expect(otp?.authId.toString()).toBe(
+                existingUser._id.toString()
+            );
+
+            expect(otp?.expiresAt).toBeInstanceOf(Date);
+
+        });
+
+    });
+
+});
