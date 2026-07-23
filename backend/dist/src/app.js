@@ -9,7 +9,7 @@ const routes_1 = __importDefault(require("./app/routes"));
 const notFound_1 = __importDefault(require("./app/middlewares/notFound"));
 const globalErrorHandler_1 = __importDefault(require("./app/middlewares/globalErrorHandler"));
 const swagger_1 = require("./app/config/swagger");
-require("./app/config/firebase");
+// import "./app/config/firebase";
 const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
