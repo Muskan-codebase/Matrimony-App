@@ -21,6 +21,7 @@ import { accountSettingsRouter } from '../modules/account-settings/accountSettin
 import { partnerPreferenceRouter } from '../modules/profile-details/partner-preference/partnerPreference.routes';
 import { occupationRouter } from '../modules/admin/occupation/occupation.routes';
 import { successStoryRouter } from '../modules/success-story/successStory.routes';
+import { chatRouter } from '../modules/profile-details/chat/chat.routes';
 
 const router = Router();
 
@@ -116,6 +117,10 @@ const moduleRoutes = [
   {
     path: "/success-stories",
     route: successStoryRouter
+  },
+  {
+    path: "/chat",
+    route: chatRouter
   }
 ];
 
