@@ -32,37 +32,34 @@ const generateRoomId = (user1, user2) => {
  * 4. Both users belong to the interest
  * 5. Room doesn't already exist
  */
-const createChatRoom = (senderId, receiverId, interestId) => __awaiter(void 0, void 0, void 0, function* () {
-    // Find Interest Request
+const createChatRoom = (senderId, interestId) => __awaiter(void 0, void 0, void 0, function* () {
+    // Find Interest
     const interest = yield interest_model_1.Interest.findById(interestId);
     if (!interest) {
         throw new Error("Interest request not found.");
     }
-    // Interest Request Deleted
     if (interest.isDeleted) {
         throw new Error("Interest request has been deleted.");
     }
-    // Chat allowed only after acceptance
     if (interest.status !== interest_status_enum_1.InterestStatus.ACCEPTED) {
         throw new Error("Chat is allowed only after the interest request is accepted.");
     }
-    // Verify both users belong to this interest
-    const isValidParticipants = (interest.senderId.toString() === senderId &&
-        interest.receiverId.toString() === receiverId) ||
-        (interest.senderId.toString() === receiverId &&
-            interest.receiverId.toString() === senderId);
-    if (!isValidParticipants) {
-        throw new Error("Invalid chat participants.");
+    // Logged-in user must belong to this interest
+    const isParticipant = interest.senderId.toString() === senderId ||
+        interest.receiverId.toString() === senderId;
+    if (!isParticipant) {
+        throw new Error("Unauthorized.");
     }
-    // Generate Unique Room ID
+    // Derive receiver automatically
+    const receiverId = interest.senderId.toString() === senderId
+        ? interest.receiverId.toString()
+        : interest.senderId.toString();
     const roomId = generateRoomId(senderId, receiverId);
     const roomRef = db.collection("chats").doc(roomId);
     const roomSnapshot = yield roomRef.get();
-    // Return Existing Room
     if (roomSnapshot.exists) {
         return roomSnapshot.data();
     }
-    // Create Chat Room
     const roomData = {
         roomId,
         participants: [senderId, receiverId],
@@ -79,14 +76,28 @@ const createChatRoom = (senderId, receiverId, interestId) => __awaiter(void 0, v
     return roomData;
 });
 exports.createChatRoom = createChatRoom;
-const sendMessage = (roomId_1, senderId_1, receiverId_1, text_1, ...args_1) => __awaiter(void 0, [roomId_1, senderId_1, receiverId_1, text_1, ...args_1], void 0, function* (roomId, senderId, receiverId, text, type = message_type_enum_1.MessageType.TEXT) {
+const sendMessage = (roomId_1, senderId_1, text_1, ...args_1) => __awaiter(void 0, [roomId_1, senderId_1, text_1, ...args_1], void 0, function* (roomId, senderId, text, type = message_type_enum_1.MessageType.TEXT) {
     // Check whether room exists
     const roomRef = db.collection("chats").doc(roomId);
     const roomSnapshot = yield roomRef.get();
     if (!roomSnapshot.exists) {
         throw new Error("Chat room not found.");
     }
-    // Create new message
+    const roomData = roomSnapshot.data();
+    if (!roomData) {
+        throw new Error("Chat room data not found.");
+    }
+    const participants = roomData.participants;
+    // Verify sender belongs to this room
+    if (!participants.includes(senderId)) {
+        throw new Error("Unauthorized.");
+    }
+    // Find receiver
+    const receiverId = participants.find((participant) => participant !== senderId);
+    if (!receiverId) {
+        throw new Error("Receiver not found.");
+    }
+    // Create message
     const messageRef = roomRef.collection("messages").doc();
     const message = {
         messageId: messageRef.id,
@@ -98,7 +109,7 @@ const sendMessage = (roomId_1, senderId_1, receiverId_1, text_1, ...args_1) => _
         createdAt: firestore_1.FieldValue.serverTimestamp(),
     };
     yield messageRef.set(message);
-    // Update room metadata
+    // Update parent chat room
     yield roomRef.update({
         lastMessage: text,
         lastMessageSender: senderId,

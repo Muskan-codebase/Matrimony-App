@@ -16,8 +16,8 @@ const createChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const validatedData = chat_validation_1.createChatRoomValidation.parse(req.body);
         const senderId = req.user.id;
-        const { receiverId, interestId } = validatedData;
-        const chatRoom = yield (0, chat_service_1.createChatRoom)(senderId, receiverId, interestId);
+        const { interestId } = validatedData;
+        const chatRoom = yield (0, chat_service_1.createChatRoom)(senderId, interestId);
         return res.status(201).json({
             success: true,
             message: "Chat room created successfully.",
