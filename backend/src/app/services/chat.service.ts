@@ -25,57 +25,51 @@ const generateRoomId = (user1: string, user2: string): string => {
  */
 export const createChatRoom = async (
     senderId: string,
-    receiverId: string,
     interestId: string,
 ) => {
 
-    // Find Interest Request
+    // Find Interest
     const interest = await Interest.findById(interestId);
 
     if (!interest) {
         throw new Error("Interest request not found.");
     }
 
-    // Interest Request Deleted
     if (interest.isDeleted) {
         throw new Error("Interest request has been deleted.");
     }
 
-    // Chat allowed only after acceptance
     if (interest.status !== InterestStatus.ACCEPTED) {
         throw new Error(
             "Chat is allowed only after the interest request is accepted."
         );
     }
 
-    // Verify both users belong to this interest
-    const isValidParticipants =
-        (
-            interest.senderId.toString() === senderId &&
-            interest.receiverId.toString() === receiverId
-        ) ||
-        (
-            interest.senderId.toString() === receiverId &&
-            interest.receiverId.toString() === senderId
-        );
+    // Logged-in user must belong to this interest
+    const isParticipant =
+        interest.senderId.toString() === senderId ||
+        interest.receiverId.toString() === senderId;
 
-    if (!isValidParticipants) {
-        throw new Error("Invalid chat participants.");
+    if (!isParticipant) {
+        throw new Error("Unauthorized.");
     }
 
-    // Generate Unique Room ID
+    // Derive receiver automatically
+    const receiverId =
+        interest.senderId.toString() === senderId
+            ? interest.receiverId.toString()
+            : interest.senderId.toString();
+
     const roomId = generateRoomId(senderId, receiverId);
 
     const roomRef = db.collection("chats").doc(roomId);
 
     const roomSnapshot = await roomRef.get();
 
-    // Return Existing Room
     if (roomSnapshot.exists) {
         return roomSnapshot.data();
     }
 
-    // Create Chat Room
     const roomData = {
         roomId,
         participants: [senderId, receiverId],
@@ -100,7 +94,6 @@ export const createChatRoom = async (
 export const sendMessage = async (
     roomId: string,
     senderId: string,
-    receiverId: string,
     text: string,
     type: MessageType = MessageType.TEXT,
 ) => {
@@ -114,15 +107,35 @@ export const sendMessage = async (
         throw new Error("Chat room not found.");
     }
 
-    // Create new message
+    const roomData = roomSnapshot.data();
+
+    if (!roomData) {
+        throw new Error("Chat room data not found.");
+    }
+
+    const participants = roomData.participants as string[];
+
+    // Verify sender belongs to this room
+    if (!participants.includes(senderId)) {
+        throw new Error("Unauthorized.");
+    }
+
+    // Find receiver
+    const receiverId = participants.find(
+        (participant) => participant !== senderId
+    );
+
+    if (!receiverId) {
+        throw new Error("Receiver not found.");
+    }
+
+    // Create message
     const messageRef = roomRef.collection("messages").doc();
 
     const message = {
-
         messageId: messageRef.id,
 
         senderId,
-
         receiverId,
 
         text,
@@ -132,30 +145,21 @@ export const sendMessage = async (
         status: MessageStatus.SENT,
 
         createdAt: FieldValue.serverTimestamp(),
-
     };
 
     await messageRef.set(message);
 
-    // Update room metadata
+    // Update parent chat room
     await roomRef.update({
-
         lastMessage: text,
-
         lastMessageSender: senderId,
-
         lastMessageType: type,
-
         lastMessageAt: FieldValue.serverTimestamp(),
-
     });
 
     return {
-
         roomId,
-
         ...message,
-
     };
 };
 
