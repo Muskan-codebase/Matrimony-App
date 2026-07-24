@@ -2,6 +2,8 @@ import "../config/firebase"; // adjust the path if needed
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { MessageType } from "../enums/message-type.enum";
 import { MessageStatus } from "../enums/message-status.enum";
+import { Interest } from "../modules/profile-details/interest/interest.model";
+import { InterestStatus } from "../enums/interest-status.enum";
 
 const db = getFirestore();
 
@@ -14,7 +16,12 @@ const generateRoomId = (user1: string, user2: string): string => {
 };
 
 /**
- * Creates a chat room if it doesn't already exist.
+ * Creates a chat room if:
+ * 1. Interest request exists
+ * 2. Interest is accepted
+ * 3. Interest is not deleted
+ * 4. Both users belong to the interest
+ * 5. Room doesn't already exist
  */
 export const createChatRoom = async (
     senderId: string,
@@ -22,33 +29,64 @@ export const createChatRoom = async (
     interestId: string,
 ) => {
 
+    // Find Interest Request
+    const interest = await Interest.findById(interestId);
+
+    if (!interest) {
+        throw new Error("Interest request not found.");
+    }
+
+    // Interest Request Deleted
+    if (interest.isDeleted) {
+        throw new Error("Interest request has been deleted.");
+    }
+
+    // Chat allowed only after acceptance
+    if (interest.status !== InterestStatus.ACCEPTED) {
+        throw new Error(
+            "Chat is allowed only after the interest request is accepted."
+        );
+    }
+
+    // Verify both users belong to this interest
+    const isValidParticipants =
+        (
+            interest.senderId.toString() === senderId &&
+            interest.receiverId.toString() === receiverId
+        ) ||
+        (
+            interest.senderId.toString() === receiverId &&
+            interest.receiverId.toString() === senderId
+        );
+
+    if (!isValidParticipants) {
+        throw new Error("Invalid chat participants.");
+    }
+
+    // Generate Unique Room ID
     const roomId = generateRoomId(senderId, receiverId);
 
     const roomRef = db.collection("chats").doc(roomId);
 
     const roomSnapshot = await roomRef.get();
 
-    // Room already exists
+    // Return Existing Room
     if (roomSnapshot.exists) {
         return roomSnapshot.data();
     }
 
+    // Create Chat Room
     const roomData = {
         roomId,
         participants: [senderId, receiverId],
-
         interestId,
 
         createdBy: senderId,
-
         createdAt: FieldValue.serverTimestamp(),
 
         lastMessage: "",
-
         lastMessageSender: null,
-
         lastMessageType: null,
-
         lastMessageAt: null,
 
         isActive: true,
