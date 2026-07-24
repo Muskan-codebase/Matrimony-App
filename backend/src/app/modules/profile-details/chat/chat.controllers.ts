@@ -9,11 +9,10 @@ export const createChat = async (req: Request, res: Response) => {
 
         const senderId = req.user.id;
 
-        const { receiverId, interestId } = validatedData;
+        const { interestId } = validatedData;
 
         const chatRoom = await createChatRoom(
             senderId,
-            receiverId,
             interestId
         );
 
