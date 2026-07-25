@@ -22,12 +22,8 @@ const router = (0, express_1.Router)();
  *           schema:
  *             type: object
  *             required:
- *               - receiverId
  *               - interestId
  *             properties:
- *               receiverId:
- *                 type: string
- *                 example: "6a5487a89b2e535513fd7b12"
  *               interestId:
  *                 type: string
  *                 example: "6a54b7afe5b2731244e0c40a"

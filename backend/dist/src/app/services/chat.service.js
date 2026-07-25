@@ -16,24 +16,31 @@ const message_type_enum_1 = require("../enums/message-type.enum");
 const message_status_enum_1 = require("../enums/message-status.enum");
 const interest_model_1 = require("../modules/profile-details/interest/interest.model");
 const interest_status_enum_1 = require("../enums/interest-status.enum");
+const profile_model_1 = require("../modules/profile-details/profile.model");
 const db = (0, firestore_1.getFirestore)();
 /**
  * Generates a unique room ID for two users.
- * The order is always the same to prevent duplicate rooms.
+ * Uses Profile IDs to keep consistency across the Matrimony app.
  */
-const generateRoomId = (user1, user2) => {
-    return [user1, user2].sort().join("_");
+const generateRoomId = (profile1, profile2) => {
+    return [profile1, profile2].sort().join("_");
 };
 /**
  * Creates a chat room if:
- * 1. Interest request exists
+ * 1. Interest exists
  * 2. Interest is accepted
  * 3. Interest is not deleted
- * 4. Both users belong to the interest
- * 5. Room doesn't already exist
+ * 4. Logged-in user belongs to the interest
+ * 5. Chat room doesn't already exist
  */
-const createChatRoom = (senderId, interestId) => __awaiter(void 0, void 0, void 0, function* () {
-    // Find Interest
+const createChatRoom = (authUserId, interestId) => __awaiter(void 0, void 0, void 0, function* () {
+    // Find logged-in user's profile
+    const senderProfile = yield profile_model_1.Profile.findOne({ userId: authUserId });
+    if (!senderProfile) {
+        throw new Error("Profile not found.");
+    }
+    const senderProfileId = senderProfile._id.toString();
+    // Find interest
     const interest = yield interest_model_1.Interest.findById(interestId);
     if (!interest) {
         throw new Error("Interest request not found.");
@@ -45,16 +52,16 @@ const createChatRoom = (senderId, interestId) => __awaiter(void 0, void 0, void 
         throw new Error("Chat is allowed only after the interest request is accepted.");
     }
     // Logged-in user must belong to this interest
-    const isParticipant = interest.senderId.toString() === senderId ||
-        interest.receiverId.toString() === senderId;
+    const isParticipant = interest.senderId.toString() === senderProfileId ||
+        interest.receiverId.toString() === senderProfileId;
     if (!isParticipant) {
         throw new Error("Unauthorized.");
     }
-    // Derive receiver automatically
-    const receiverId = interest.senderId.toString() === senderId
+    // Determine receiver profile id
+    const receiverProfileId = interest.senderId.toString() === senderProfileId
         ? interest.receiverId.toString()
         : interest.senderId.toString();
-    const roomId = generateRoomId(senderId, receiverId);
+    const roomId = generateRoomId(senderProfileId, receiverProfileId);
     const roomRef = db.collection("chats").doc(roomId);
     const roomSnapshot = yield roomRef.get();
     if (roomSnapshot.exists) {
@@ -62,9 +69,12 @@ const createChatRoom = (senderId, interestId) => __awaiter(void 0, void 0, void 
     }
     const roomData = {
         roomId,
-        participants: [senderId, receiverId],
+        participants: [
+            senderProfileId,
+            receiverProfileId,
+        ],
         interestId,
-        createdBy: senderId,
+        createdBy: senderProfileId,
         createdAt: firestore_1.FieldValue.serverTimestamp(),
         lastMessage: "",
         lastMessageSender: null,
@@ -76,8 +86,17 @@ const createChatRoom = (senderId, interestId) => __awaiter(void 0, void 0, void 
     return roomData;
 });
 exports.createChatRoom = createChatRoom;
-const sendMessage = (roomId_1, senderId_1, text_1, ...args_1) => __awaiter(void 0, [roomId_1, senderId_1, text_1, ...args_1], void 0, function* (roomId, senderId, text, type = message_type_enum_1.MessageType.TEXT) {
-    // Check whether room exists
+/**
+ * Send Message
+ */
+const sendMessage = (roomId_1, authUserId_1, text_1, ...args_1) => __awaiter(void 0, [roomId_1, authUserId_1, text_1, ...args_1], void 0, function* (roomId, authUserId, text, type = message_type_enum_1.MessageType.TEXT) {
+    // Find sender profile
+    const senderProfile = yield profile_model_1.Profile.findOne({ userId: authUserId });
+    if (!senderProfile) {
+        throw new Error("Profile not found.");
+    }
+    const senderProfileId = senderProfile._id.toString();
+    // Check room
     const roomRef = db.collection("chats").doc(roomId);
     const roomSnapshot = yield roomRef.get();
     if (!roomSnapshot.exists) {
@@ -88,43 +107,52 @@ const sendMessage = (roomId_1, senderId_1, text_1, ...args_1) => __awaiter(void 
         throw new Error("Chat room data not found.");
     }
     const participants = roomData.participants;
-    // Verify sender belongs to this room
-    if (!participants.includes(senderId)) {
+    // Verify sender belongs to room
+    if (!participants.includes(senderProfileId)) {
         throw new Error("Unauthorized.");
     }
     // Find receiver
-    const receiverId = participants.find((participant) => participant !== senderId);
-    if (!receiverId) {
+    const receiverProfileId = participants.find(participant => participant !== senderProfileId);
+    if (!receiverProfileId) {
         throw new Error("Receiver not found.");
     }
     // Create message
     const messageRef = roomRef.collection("messages").doc();
     const message = {
         messageId: messageRef.id,
-        senderId,
-        receiverId,
+        senderId: senderProfileId,
+        receiverId: receiverProfileId,
         text,
         type,
         status: message_status_enum_1.MessageStatus.SENT,
         createdAt: firestore_1.FieldValue.serverTimestamp(),
     };
     yield messageRef.set(message);
-    // Update parent chat room
+    // Update parent room
     yield roomRef.update({
         lastMessage: text,
-        lastMessageSender: senderId,
+        lastMessageSender: senderProfileId,
         lastMessageType: type,
         lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
     });
     return Object.assign({ roomId }, message);
 });
 exports.sendMessage = sendMessage;
-const getChats = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+/**
+ * Get Chats
+ */
+const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () {
+    // Find profile
+    const profile = yield profile_model_1.Profile.findOne({ userId: authUserId });
+    if (!profile) {
+        throw new Error("Profile not found.");
+    }
+    const profileId = profile._id.toString();
     const snapshot = yield db
         .collection("chats")
-        .where("participants", "array-contains", userId)
+        .where("participants", "array-contains", profileId)
         .orderBy("lastMessageAt", "desc")
         .get();
-    return snapshot.docs.map((doc) => (Object.assign({ roomId: doc.id }, doc.data())));
+    return snapshot.docs.map(doc => (Object.assign({ roomId: doc.id }, doc.data())));
 });
 exports.getChats = getChats;
