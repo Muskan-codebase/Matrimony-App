@@ -4,31 +4,41 @@ import { MessageType } from "../enums/message-type.enum";
 import { MessageStatus } from "../enums/message-status.enum";
 import { Interest } from "../modules/profile-details/interest/interest.model";
 import { InterestStatus } from "../enums/interest-status.enum";
+import { Profile } from "../modules/profile-details/profile.model";
 
 const db = getFirestore();
 
 /**
  * Generates a unique room ID for two users.
- * The order is always the same to prevent duplicate rooms.
+ * Uses Profile IDs to keep consistency across the Matrimony app.
  */
-const generateRoomId = (user1: string, user2: string): string => {
-    return [user1, user2].sort().join("_");
+const generateRoomId = (profile1: string, profile2: string): string => {
+    return [profile1, profile2].sort().join("_");
 };
 
 /**
  * Creates a chat room if:
- * 1. Interest request exists
+ * 1. Interest exists
  * 2. Interest is accepted
  * 3. Interest is not deleted
- * 4. Both users belong to the interest
- * 5. Room doesn't already exist
+ * 4. Logged-in user belongs to the interest
+ * 5. Chat room doesn't already exist
  */
 export const createChatRoom = async (
-    senderId: string,
+    authUserId: string,
     interestId: string,
 ) => {
 
-    // Find Interest
+    // Find logged-in user's profile
+    const senderProfile = await Profile.findOne({ userId: authUserId });
+
+    if (!senderProfile) {
+        throw new Error("Profile not found.");
+    }
+
+    const senderProfileId = senderProfile._id.toString();
+
+    // Find interest
     const interest = await Interest.findById(interestId);
 
     if (!interest) {
@@ -47,20 +57,23 @@ export const createChatRoom = async (
 
     // Logged-in user must belong to this interest
     const isParticipant =
-        interest.senderId.toString() === senderId ||
-        interest.receiverId.toString() === senderId;
+        interest.senderId.toString() === senderProfileId ||
+        interest.receiverId.toString() === senderProfileId;
 
     if (!isParticipant) {
         throw new Error("Unauthorized.");
     }
 
-    // Derive receiver automatically
-    const receiverId =
-        interest.senderId.toString() === senderId
+    // Determine receiver profile id
+    const receiverProfileId =
+        interest.senderId.toString() === senderProfileId
             ? interest.receiverId.toString()
             : interest.senderId.toString();
 
-    const roomId = generateRoomId(senderId, receiverId);
+    const roomId = generateRoomId(
+        senderProfileId,
+        receiverProfileId
+    );
 
     const roomRef = db.collection("chats").doc(roomId);
 
@@ -72,10 +85,16 @@ export const createChatRoom = async (
 
     const roomData = {
         roomId,
-        participants: [senderId, receiverId],
+
+        participants: [
+            senderProfileId,
+            receiverProfileId,
+        ],
+
         interestId,
 
-        createdBy: senderId,
+        createdBy: senderProfileId,
+
         createdAt: FieldValue.serverTimestamp(),
 
         lastMessage: "",
@@ -91,14 +110,26 @@ export const createChatRoom = async (
     return roomData;
 };
 
+/**
+ * Send Message
+ */
 export const sendMessage = async (
     roomId: string,
-    senderId: string,
+    authUserId: string,
     text: string,
     type: MessageType = MessageType.TEXT,
 ) => {
 
-    // Check whether room exists
+    // Find sender profile
+    const senderProfile = await Profile.findOne({ userId: authUserId });
+
+    if (!senderProfile) {
+        throw new Error("Profile not found.");
+    }
+
+    const senderProfileId = senderProfile._id.toString();
+
+    // Check room
     const roomRef = db.collection("chats").doc(roomId);
 
     const roomSnapshot = await roomRef.get();
@@ -115,17 +146,17 @@ export const sendMessage = async (
 
     const participants = roomData.participants as string[];
 
-    // Verify sender belongs to this room
-    if (!participants.includes(senderId)) {
+    // Verify sender belongs to room
+    if (!participants.includes(senderProfileId)) {
         throw new Error("Unauthorized.");
     }
 
     // Find receiver
-    const receiverId = participants.find(
-        (participant) => participant !== senderId
+    const receiverProfileId = participants.find(
+        participant => participant !== senderProfileId
     );
 
-    if (!receiverId) {
+    if (!receiverProfileId) {
         throw new Error("Receiver not found.");
     }
 
@@ -133,10 +164,11 @@ export const sendMessage = async (
     const messageRef = roomRef.collection("messages").doc();
 
     const message = {
+
         messageId: messageRef.id,
 
-        senderId,
-        receiverId,
+        senderId: senderProfileId,
+        receiverId: receiverProfileId,
 
         text,
 
@@ -149,10 +181,10 @@ export const sendMessage = async (
 
     await messageRef.set(message);
 
-    // Update parent chat room
+    // Update parent room
     await roomRef.update({
         lastMessage: text,
-        lastMessageSender: senderId,
+        lastMessageSender: senderProfileId,
         lastMessageType: type,
         lastMessageAt: FieldValue.serverTimestamp(),
     });
@@ -163,14 +195,27 @@ export const sendMessage = async (
     };
 };
 
-export const getChats = async (userId: string) => {
+/**
+ * Get Chats
+ */
+export const getChats = async (authUserId: string) => {
+
+    // Find profile
+    const profile = await Profile.findOne({ userId: authUserId });
+
+    if (!profile) {
+        throw new Error("Profile not found.");
+    }
+
+    const profileId = profile._id.toString();
+
     const snapshot = await db
         .collection("chats")
-        .where("participants", "array-contains", userId)
+        .where("participants", "array-contains", profileId)
         .orderBy("lastMessageAt", "desc")
         .get();
 
-    return snapshot.docs.map((doc) => ({
+    return snapshot.docs.map(doc => ({
         roomId: doc.id,
         ...doc.data(),
     }));
