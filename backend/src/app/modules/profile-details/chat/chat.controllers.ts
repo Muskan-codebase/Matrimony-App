@@ -10,6 +10,7 @@ export const createChat = async (req: Request, res: Response) => {
         const senderId = req.user.id;
 
         const { interestId } = validatedData;
+        
 
         const chatRoom = await createChatRoom(
             senderId,
