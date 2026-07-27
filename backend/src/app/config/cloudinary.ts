@@ -73,6 +73,8 @@ const storage = new CloudinaryStorage({
         return "matrimony/onboarding";
       } else if (req.originalUrl.includes("/success-stories")) {
         return "matrimony/success-stories";
+      } else if (req.originalUrl.includes("/chat")) {
+        return "matrimony/chat";
       }
       return 'restaurant-uploads';
     },
