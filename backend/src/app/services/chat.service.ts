@@ -5,6 +5,7 @@ import { MessageStatus } from "../enums/message-status.enum";
 import { Interest } from "../modules/profile-details/interest/interest.model";
 import { InterestStatus } from "../enums/interest-status.enum";
 import { Profile } from "../modules/profile-details/profile.model";
+import { ChatAttachment } from "../modules/profile-details/chat/chat.interface"; // or wherever you created it
 
 const db = getFirestore();
 
@@ -49,12 +50,6 @@ export const createChatRoom = async (
         throw new Error("Interest request has been deleted.");
     }
 
-    if (interest.status !== InterestStatus.ACCEPTED) {
-        throw new Error(
-            "Chat is allowed only after the interest request is accepted."
-        );
-    }
-
     // Logged-in user must belong to this interest
     const isParticipant =
         interest.senderId.toString() === senderProfileId ||
@@ -97,6 +92,12 @@ export const createChatRoom = async (
 
         createdAt: FieldValue.serverTimestamp(),
 
+        // Track how many messages each user has sent
+        messageCounts: {
+            [senderProfileId]: 0,
+            [receiverProfileId]: 0,
+        },
+
         lastMessage: "",
         lastMessageSender: null,
         lastMessageType: null,
@@ -113,11 +114,14 @@ export const createChatRoom = async (
 /**
  * Send Message
  */
+const MESSAGE_LIMIT = 4;
+
 export const sendMessage = async (
     roomId: string,
     authUserId: string,
     text: string,
     type: MessageType = MessageType.TEXT,
+    attachment?: ChatAttachment,
 ) => {
 
     // Find sender profile
@@ -160,7 +164,54 @@ export const sendMessage = async (
         throw new Error("Receiver not found.");
     }
 
-    // Create message
+    // Fetch interest
+    const interest = await Interest.findById(roomData.interestId);
+
+    if (!interest) {
+        throw new Error("Interest request not found.");
+    }
+
+    if (interest.isDeleted) {
+        throw new Error("Interest request has been deleted.");
+    }
+
+    /**
+     * Validate message
+     */
+    if (type === MessageType.TEXT) {
+
+        if (!text?.trim()) {
+            throw new Error("Message text is required.");
+        }
+
+    } else {
+
+        if (!attachment) {
+            throw new Error("Attachment is required for this message type.");
+        }
+
+    }
+
+    /**
+     * Restrict messages while interest is pending
+     */
+    if (interest.status === InterestStatus.PENDING) {
+
+        const messageCounts = roomData.messageCounts || {};
+
+        const senderMessageCount =
+            messageCounts[senderProfileId] || 0;
+
+        if (senderMessageCount >= MESSAGE_LIMIT) {
+            throw new Error(
+                "You have reached the maximum of 4 messages. Wait until the interest request is accepted."
+            );
+        }
+    }
+
+    /**
+     * Create message
+     */
     const messageRef = roomRef.collection("messages").doc();
 
     const message = {
@@ -168,11 +219,14 @@ export const sendMessage = async (
         messageId: messageRef.id,
 
         senderId: senderProfileId,
+
         receiverId: receiverProfileId,
 
         text,
 
         type,
+
+        attachment: attachment ?? null,
 
         status: MessageStatus.SENT,
 
@@ -181,16 +235,78 @@ export const sendMessage = async (
 
     await messageRef.set(message);
 
-    // Update parent room
+    /**
+     * Increment sender's message count
+     * Only while interest is pending
+     */
+    let updatedMessageCounts = roomData.messageCounts || {};
+
+    if (interest.status === InterestStatus.PENDING) {
+
+        updatedMessageCounts = {
+
+            ...updatedMessageCounts,
+
+            [senderProfileId]:
+                (updatedMessageCounts[senderProfileId] || 0) + 1,
+        };
+    }
+
+    /**
+     * Chat list preview
+     */
+    let lastMessage = text;
+
+    switch (type) {
+
+        case MessageType.IMAGE:
+            lastMessage = text?.trim()
+                ? `📷 ${text}`
+                : "📷 Photo";
+            break;
+
+        case MessageType.VIDEO:
+            lastMessage = text?.trim()
+                ? `🎥 ${text}`
+                : "🎥 Video";
+            break;
+
+        case MessageType.AUDIO:
+            lastMessage = text?.trim()
+                ? `🎵 ${text}`
+                : "🎵 Audio";
+            break;
+
+        case MessageType.DOCUMENT:
+            lastMessage = text?.trim()
+                ? `📄 ${text}`
+                : `📄 ${attachment?.fileName ?? "Document"}`;
+            break;
+
+        default:
+            lastMessage = text;
+    }
+
+    /**
+     * Update parent room
+     */
     await roomRef.update({
-        lastMessage: text,
+
+        messageCounts: updatedMessageCounts,
+
+        lastMessage,
+
         lastMessageSender: senderProfileId,
+
         lastMessageType: type,
+
         lastMessageAt: FieldValue.serverTimestamp(),
     });
 
     return {
+
         roomId,
+
         ...message,
     };
 };
@@ -198,10 +314,39 @@ export const sendMessage = async (
 /**
  * Get Chats
  */
+// export const getChats = async (authUserId: string) => {
+
+//     // Find profile
+//     const profile = await Profile.findOne({ userId: authUserId });
+
+//     if (!profile) {
+//         throw new Error("Profile not found.");
+//     }
+
+//     const profileId = profile._id.toString();
+
+//     const snapshot = await db
+//         .collection("chats")
+//         .where("participants", "array-contains", profileId)
+//         .orderBy("lastMessageAt", "desc")
+//         .get();
+
+//     return snapshot.docs.map(doc => ({
+//         roomId: doc.id,
+//         ...doc.data(),
+//     }));
+// };
+
+/**
+ * Get all chats of logged-in user
+ */
 export const getChats = async (authUserId: string) => {
 
-    // Find profile
-    const profile = await Profile.findOne({ userId: authUserId });
+    // Find logged-in user's profile
+    const profile = await Profile.findOne({
+        userId: authUserId,
+        isDeleted: false,
+    });
 
     if (!profile) {
         throw new Error("Profile not found.");
@@ -209,14 +354,136 @@ export const getChats = async (authUserId: string) => {
 
     const profileId = profile._id.toString();
 
+    // Fetch all chat rooms
     const snapshot = await db
         .collection("chats")
         .where("participants", "array-contains", profileId)
         .orderBy("lastMessageAt", "desc")
         .get();
 
-    return snapshot.docs.map(doc => ({
-        roomId: doc.id,
+    const chats = await Promise.all(
+
+        snapshot.docs.map(async (doc) => {
+
+            const room = doc.data();
+
+            const participants = room.participants as string[];
+
+            // Get the other participant
+            const otherProfileId = participants.find(
+                id => id !== profileId
+            );
+
+            if (!otherProfileId) {
+                return null;
+            }
+
+            // Fetch profile details
+            const otherProfile = await Profile.findOne({
+                _id: otherProfileId,
+                isDeleted: false,
+            }).lean();
+
+            if (!otherProfile) {
+                return null;
+            }
+
+            return {
+
+                roomId: doc.id,
+
+                participant: {
+
+                    profileId: otherProfile._id,
+
+                    firstName:
+                        otherProfile.basicDetails?.firstName || "",
+
+                    lastName:
+                        otherProfile.basicDetails?.lastName || "",
+
+                    fullName: `${otherProfile.basicDetails?.firstName || ""} ${otherProfile.basicDetails?.lastName || ""}`.trim(),
+
+                    profilePhoto:
+                        otherProfile.photos?.length
+                            ? otherProfile.photos[0]
+                            : null,
+                },
+
+                lastMessage: room.lastMessage,
+
+                lastMessageType: room.lastMessageType,
+
+                lastMessageSender: room.lastMessageSender,
+
+                lastMessageAt: room.lastMessageAt,
+
+                isActive: room.isActive,
+
+                interestId: room.interestId,
+            };
+
+        })
+
+    );
+
+    return chats.filter(Boolean);
+
+};
+
+/**
+ * Get all my messages of a chat room
+ */
+export const getMessages = async (
+    roomId: string,
+    authUserId: string,
+) => {
+
+    // Find logged-in user's profile
+    const profile = await Profile.findOne({
+        userId: authUserId,
+        isDeleted: false,
+    });
+
+    if (!profile) {
+        throw new Error("Profile not found.");
+    }
+
+    const profileId = profile._id.toString();
+
+    // Check room
+    const roomRef = db.collection("chats").doc(roomId);
+
+    const roomSnapshot = await roomRef.get();
+
+    if (!roomSnapshot.exists) {
+        throw new Error("Chat room not found.");
+    }
+
+    const roomData = roomSnapshot.data();
+
+    if (!roomData) {
+        throw new Error("Chat room data not found.");
+    }
+
+    // Verify participant
+    const participants = roomData.participants as string[];
+
+    if (!participants.includes(profileId)) {
+        throw new Error("Unauthorized.");
+    }
+
+    // Fetch all messages
+    const messagesSnapshot = await roomRef
+        .collection("messages")
+        .orderBy("createdAt", "asc")
+        .get();
+
+    return messagesSnapshot.docs.map((doc) => ({
+
+        messageId: doc.id,
+
         ...doc.data(),
+
     }));
 };
