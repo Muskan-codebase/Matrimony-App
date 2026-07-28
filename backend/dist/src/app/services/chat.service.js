@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMessages = exports.getChats = exports.sendMessage = exports.createChatRoom = void 0;
 require("../config/firebase"); // adjust the path if needed
@@ -17,6 +20,7 @@ const message_status_enum_1 = require("../enums/message-status.enum");
 const interest_model_1 = require("../modules/profile-details/interest/interest.model");
 const interest_status_enum_1 = require("../enums/interest-status.enum");
 const profile_model_1 = require("../modules/profile-details/profile.model");
+const auth_model_1 = __importDefault(require("../modules/auth/auth.model"));
 const db = (0, firestore_1.getFirestore)();
 /**
  * Generates a unique room ID for two users.
@@ -271,6 +275,9 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
         if (!otherProfile) {
             return null;
         }
+        const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
+            .select("mobile countryCode")
+            .lean();
         return {
             roomId: doc.id,
             participant: {
@@ -281,6 +288,8 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
                 profilePhoto: ((_e = otherProfile.photos) === null || _e === void 0 ? void 0 : _e.length)
                     ? otherProfile.photos[0]
                     : null,
+                mobile: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.mobile) || null,
+                countryCode: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.countryCode) || null,
             },
             lastMessage: room.lastMessage,
             lastMessageType: room.lastMessageType,
@@ -297,6 +306,7 @@ exports.getChats = getChats;
  * Get all my messages of a chat room
  */
 const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     // Find logged-in user's profile
     const profile = yield profile_model_1.Profile.findOne({
         userId: authUserId,
@@ -321,11 +331,40 @@ const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, fu
     if (!participants.includes(profileId)) {
         throw new Error("Unauthorized.");
     }
+    const otherProfileId = participants.find(id => id !== profileId);
+    if (!otherProfileId) {
+        throw new Error("Other participant not found.");
+    }
+    const otherProfile = yield profile_model_1.Profile.findOne({
+        _id: otherProfileId,
+        isDeleted: false,
+    }).lean();
+    if (!otherProfile) {
+        throw new Error("Other profile not found.");
+    }
+    const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
+        .select("mobile countryCode")
+        .lean();
     // Fetch all messages
     const messagesSnapshot = yield roomRef
         .collection("messages")
         .orderBy("createdAt", "asc")
         .get();
-    return messagesSnapshot.docs.map((doc) => (Object.assign({ messageId: doc.id }, doc.data())));
+    // return messagesSnapshot.docs.map((doc) => ({
+    //     messageId: doc.id,
+    //     ...doc.data(),
+    // }));
+    return {
+        participant: {
+            profileId: otherProfile._id,
+            fullName: `${((_a = otherProfile.basicDetails) === null || _a === void 0 ? void 0 : _a.firstName) || ""} ${((_b = otherProfile.basicDetails) === null || _b === void 0 ? void 0 : _b.lastName) || ""}`.trim(),
+            profilePhoto: ((_c = otherProfile.photos) === null || _c === void 0 ? void 0 : _c.length)
+                ? otherProfile.photos[0]
+                : null,
+            mobile: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.mobile) || null,
+            countryCode: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.countryCode) || null,
+        },
+        messages: messagesSnapshot.docs.map((doc) => (Object.assign({ messageId: doc.id }, doc.data()))),
+    };
 });
 exports.getMessages = getMessages;
