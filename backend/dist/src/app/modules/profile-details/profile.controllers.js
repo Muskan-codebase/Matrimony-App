@@ -285,7 +285,32 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             }
         }
         // 5. Fetch
-        const profiles = yield profile_model_1.Profile.find(filter);
+        const profiles = yield profile_model_1.Profile.find(filter).populate({
+            path: "subscription.packageId",
+            select: "title displayOrder"
+        });
+        profiles.sort((a, b) => {
+            var _a, _b;
+            // Active subscription check
+            const aSubscribed = ((_a = a.subscription) === null || _a === void 0 ? void 0 : _a.isActive) &&
+                new Date(a.subscription.expiryDate) > new Date();
+            const bSubscribed = ((_b = b.subscription) === null || _b === void 0 ? void 0 : _b.isActive) &&
+                new Date(b.subscription.expiryDate) > new Date();
+            // Subscribed profiles first
+            if (aSubscribed && !bSubscribed) {
+                return -1;
+            }
+            if (!aSubscribed && bSubscribed) {
+                return 1;
+            }
+            // Both subscribed:
+            // sort by package priority
+            if (aSubscribed && bSubscribed) {
+                return (a.subscription.packageId.displayOrder -
+                    b.subscription.packageId.displayOrder);
+            }
+            return 0;
+        });
         return res.status(200).json({
             success: true,
             total: profiles.length,

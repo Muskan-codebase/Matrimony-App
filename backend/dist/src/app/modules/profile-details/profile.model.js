@@ -446,6 +446,25 @@ const profileSchema = new mongoose_1.Schema({
     //     min: 0,
     //     max: 100,
     // },
+    // ===================================
+    // Subscription Details
+    // ===================================
+    subscription: {
+        isActive: {
+            type: Boolean,
+            default: false,
+        },
+        packageId: {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: "Package",
+        },
+        startDate: {
+            type: Date,
+        },
+        expiryDate: {
+            type: Date,
+        },
+    },
     isDeleted: {
         type: Boolean,
         default: false
