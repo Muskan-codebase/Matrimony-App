@@ -278,6 +278,22 @@ export interface IProfile {
     // =========================
 
     photos: string[];
+
+    // =========================
+    // Subscription Details
+    // =========================
+
+    subscription: {
+
+        isActive: boolean;
+
+        packageId?: Types.ObjectId;
+
+        startDate?: Date;
+
+        expiryDate?: Date;
+
+    };
     isDeleted?: Boolean
 
     // =========================
