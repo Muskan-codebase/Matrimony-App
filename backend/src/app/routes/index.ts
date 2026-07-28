@@ -22,6 +22,7 @@ import { partnerPreferenceRouter } from '../modules/profile-details/partner-pref
 import { occupationRouter } from '../modules/admin/occupation/occupation.routes';
 import { successStoryRouter } from '../modules/success-story/successStory.routes';
 import { chatRouter } from '../modules/profile-details/chat/chat.routes';
+import { paymentRouter } from '../modules/payment/payment.routes';
 
 const router = Router();
 
@@ -121,6 +122,10 @@ const moduleRoutes = [
   {
     path: "/chat",
     route: chatRouter
+  },
+  {
+    path: "/payment",
+    route: paymentRouter
   }
 ];
 
