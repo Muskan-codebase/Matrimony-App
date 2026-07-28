@@ -353,6 +353,27 @@ const router = (0, express_1.Router)();
  *                 type: array
  *                 items:
  *                   type: string
+ *               subscription:
+ *                 type: object
+ *                 description: Subscription details. This field is managed automatically by the backend after successful package payment verification.
+ *                 properties:
+ *                   isActive:
+ *                     type: boolean
+ *                     example: false
+ *                   packageId:
+ *                     type: string
+ *                     nullable: true
+ *                     example: "665f3a9c8d9b123456789abc"
+ *                   startDate:
+ *                     type: string
+ *                     format: date-time
+ *                     nullable: true
+ *                     example: "2026-07-28T10:30:00.000Z"
+ *                   expiryDate:
+ *                     type: string
+ *                     format: date-time
+ *                     nullable: true
+ *                     example: "2026-08-27T10:30:00.000Z"
  *     responses:
  *       201:
  *         description: Profile created successfully.
@@ -1058,7 +1079,27 @@ router.get("/:id", authMiddleware_1.authenticate, profile_controllers_1.getProfi
  *                 example:
  *                   - https://example.com/photo1.jpg
  *                   - https://example.com/photo2.jpg
- *
+ *               subscription:
+ *                 type: object
+ *                 description: Subscription details. This field is managed automatically by the backend after successful package payment verification.
+ *                 properties:
+ *                   isActive:
+ *                     type: boolean
+ *                     example: false
+ *                   packageId:
+ *                     type: string
+ *                     nullable: true
+ *                     example: "665f3a9c8d9b123456789abc"
+ *                   startDate:
+ *                     type: string
+ *                     format: date-time
+ *                     nullable: true
+ *                     example: "2026-07-28T10:30:00.000Z"
+ *                   expiryDate:
+ *                     type: string
+ *                     format: date-time
+ *                     nullable: true
+ *                     example: "2026-08-27T10:30:00.000Z"
  *     responses:
  *       200:
  *         description: Profile updated successfully.
