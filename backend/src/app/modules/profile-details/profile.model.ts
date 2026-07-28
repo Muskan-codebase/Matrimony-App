@@ -634,6 +634,32 @@ const profileSchema = new Schema<IProfile>(
 
         // },
 
+        // ===================================
+        // Subscription Details
+        // ===================================
+
+        subscription: {
+
+            isActive: {
+                type: Boolean,
+                default: false,
+            },
+
+            packageId: {
+                type: Schema.Types.ObjectId,
+                ref: "Package",
+            },
+
+            startDate: {
+                type: Date,
+            },
+
+            expiryDate: {
+                type: Date,
+            },
+
+        },
+
         isDeleted: {
             type: Boolean,
             default: false
