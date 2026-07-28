@@ -382,7 +382,42 @@ export const getProfiles = async (req: Request, res: Response) => {
         }
 
         // 5. Fetch
-        const profiles = await Profile.find(filter);
+        const profiles = await Profile.find(filter).populate({
+            path: "subscription.packageId",
+            select: "title displayOrder"
+        });
+
+        profiles.sort((a: any, b: any) => {
+            // Active subscription check
+            const aSubscribed =
+                a.subscription?.isActive &&
+                new Date(a.subscription.expiryDate) > new Date();
+
+            const bSubscribed =
+                b.subscription?.isActive &&
+                new Date(b.subscription.expiryDate) > new Date();
+
+            // Subscribed profiles first
+            if (aSubscribed && !bSubscribed) {
+                return -1;
+            }
+
+            if (!aSubscribed && bSubscribed) {
+                return 1;
+            }
+
+            // Both subscribed:
+            // sort by package priority
+            if (aSubscribed && bSubscribed) {
+
+                return (
+                    a.subscription.packageId.displayOrder -
+                    b.subscription.packageId.displayOrder
+                );
+            }
+
+            return 0;
+        });
 
         return res.status(200).json({
             success: true,
