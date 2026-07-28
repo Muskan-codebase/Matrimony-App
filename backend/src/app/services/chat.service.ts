@@ -6,6 +6,7 @@ import { Interest } from "../modules/profile-details/interest/interest.model";
 import { InterestStatus } from "../enums/interest-status.enum";
 import { Profile } from "../modules/profile-details/profile.model";
 import { ChatAttachment } from "../modules/profile-details/chat/chat.interface"; // or wherever you created it
+import Auth from "../modules/auth/auth.model";
 
 const db = getFirestore();
 
@@ -388,6 +389,12 @@ export const getChats = async (authUserId: string) => {
                 return null;
             }
 
+            const otherAuth = await Auth.findById(
+                otherProfile.userId
+            )
+                .select("mobile countryCode")
+                .lean();
+
             return {
 
                 roomId: doc.id,
@@ -408,6 +415,10 @@ export const getChats = async (authUserId: string) => {
                         otherProfile.photos?.length
                             ? otherProfile.photos[0]
                             : null,
+
+                    mobile: otherAuth?.mobile || null,
+
+                    countryCode: otherAuth?.countryCode || null,
                 },
 
                 lastMessage: room.lastMessage,
@@ -473,17 +484,63 @@ export const getMessages = async (
         throw new Error("Unauthorized.");
     }
 
+    const otherProfileId = participants.find(
+        id => id !== profileId
+    );
+
+    if (!otherProfileId) {
+        throw new Error("Other participant not found.");
+    }
+
+    const otherProfile = await Profile.findOne({
+        _id: otherProfileId,
+        isDeleted: false,
+    }).lean();
+
+    if (!otherProfile) {
+        throw new Error("Other profile not found.");
+    }
+
+    const otherAuth = await Auth.findById(
+        otherProfile.userId
+    )
+        .select("mobile countryCode")
+        .lean();
+
     // Fetch all messages
     const messagesSnapshot = await roomRef
         .collection("messages")
         .orderBy("createdAt", "asc")
         .get();
 
-    return messagesSnapshot.docs.map((doc) => ({
+    // return messagesSnapshot.docs.map((doc) => ({
 
-        messageId: doc.id,
+    //     messageId: doc.id,
 
-        ...doc.data(),
+    //     ...doc.data(),
 
-    }));
+    // }));
+
+    return {
+        participant: {
+            profileId: otherProfile._id,
+
+            fullName:
+                `${otherProfile.basicDetails?.firstName || ""} ${otherProfile.basicDetails?.lastName || ""}`.trim(),
+
+            profilePhoto:
+                otherProfile.photos?.length
+                    ? otherProfile.photos[0]
+                    : null,
+
+            mobile: otherAuth?.mobile || null,
+
+            countryCode: otherAuth?.countryCode || null,
+        },
+
+        messages: messagesSnapshot.docs.map((doc) => ({
+            messageId: doc.id,
+            ...doc.data(),
+        })),
+    };
 };
