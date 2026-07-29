@@ -419,6 +419,16 @@ export const getChats = async (authUserId: string) => {
                     mobile: otherAuth?.mobile || null,
 
                     countryCode: otherAuth?.countryCode || null,
+
+                    subscription: otherProfile.subscription?.isActive
+                        ? {
+                            isActive: true,
+                            packageId: otherProfile.subscription.packageId,
+                            expiryDate: otherProfile.subscription.expiryDate
+                        }
+                        : {
+                            isActive: false
+                        }
                 },
 
                 lastMessage: room.lastMessage,
@@ -532,6 +542,16 @@ export const getMessages = async (
                 otherProfile.photos?.length
                     ? otherProfile.photos[0]
                     : null,
+
+            subscription: otherProfile.subscription?.isActive
+                ? {
+                    isActive: true,
+                    packageId: otherProfile.subscription.packageId,
+                    expiryDate: otherProfile.subscription.expiryDate
+                }
+                : {
+                    isActive: false
+                },
 
             mobile: otherAuth?.mobile || null,
 
