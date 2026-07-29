@@ -299,7 +299,6 @@ const router = (0, express_1.Router)();
  *                     type: array
  *                     items:
  *                       type: string
- *
  *               aboutMe:
  *                 type: object
  *                 properties:
@@ -313,12 +312,6 @@ const router = (0, express_1.Router)();
  *                     example: "Kind, Caring, Honest, Friendly, Ambitious"
  *                   profileCreatedBy:
  *                     type: string
- *                     enum:
- *                       - Self
- *                       - Parents
- *                       - Sibling
- *                       - Relative/Friend
- *                       - Guardian
  *                     example: "Relative/Friend"
  *                   languagesISpeak:
  *                     type: array
@@ -330,21 +323,9 @@ const router = (0, express_1.Router)();
  *                       - Marathi
  *                   disability:
  *                     type: string
- *                     enum:
- *                       - None
- *                       - Physical Disability
- *                       - Hearing Impairment
- *                       - Visual Impairment
- *                       - Speech Impairment
- *                       - Other
  *                     example: "None"
  *                   thalassemia:
  *                     type: string
- *                     enum:
- *                       - No
- *                       - Minor
- *                       - Major
- *                       - Carrier
  *                     example: "No"
  *                   hivStatus:
  *                     type: boolean
@@ -1023,7 +1004,7 @@ router.get("/:id", authMiddleware_1.authenticate, profile_controllers_1.getProfi
  *                     items:
  *                       type: string
  *
-  *               aboutMe:
+ *               aboutMe:
  *                 type: object
  *                 properties:
  *                   about:
@@ -1036,12 +1017,6 @@ router.get("/:id", authMiddleware_1.authenticate, profile_controllers_1.getProfi
  *                     example: "Kind, Caring, Honest, Friendly, Ambitious"
  *                   profileCreatedBy:
  *                     type: string
- *                     enum:
- *                       - Self
- *                       - Parents
- *                       - Sibling
- *                       - Relative/Friend
- *                       - Guardian
  *                     example: "Relative/Friend"
  *                   languagesISpeak:
  *                     type: array
@@ -1053,21 +1028,9 @@ router.get("/:id", authMiddleware_1.authenticate, profile_controllers_1.getProfi
  *                       - Marathi
  *                   disability:
  *                     type: string
- *                     enum:
- *                       - None
- *                       - Physical Disability
- *                       - Hearing Impairment
- *                       - Visual Impairment
- *                       - Speech Impairment
- *                       - Other
  *                     example: "None"
  *                   thalassemia:
  *                     type: string
- *                     enum:
- *                       - No
- *                       - Minor
- *                       - Major
- *                       - Carrier
  *                     example: "No"
  *                   hivStatus:
  *                     type: boolean

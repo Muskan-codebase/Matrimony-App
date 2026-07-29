@@ -228,30 +228,12 @@ const aboutMeSchema = zod_1.z.object({
         .trim()
         .max(100)
         .optional(),
-    profileCreatedBy: optionalEnum([
-        "Self",
-        "Parents",
-        "Sibling",
-        "Relative/Friend",
-        "Guardian",
-    ]),
+    profileCreatedBy: zod_1.z.string().trim().optional(),
     languagesISpeak: zod_1.z
         .array(zod_1.z.string())
         .optional(),
-    disability: optionalEnum([
-        "None",
-        "Physical Disability",
-        "Hearing Impairment",
-        "Visual Impairment",
-        "Speech Impairment",
-        "Other",
-    ]),
-    thalassemia: optionalEnum([
-        "No",
-        "Minor",
-        "Major",
-        "Carrier",
-    ]),
+    disability: zod_1.z.string().trim().optional(),
+    thalassemia: zod_1.z.string().trim().optional(),
     hivStatus: zod_1.z.boolean().optional(),
 });
 exports.createProfileSchema = zod_1.z.object({

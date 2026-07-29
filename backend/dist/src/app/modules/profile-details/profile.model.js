@@ -214,13 +214,7 @@ const profileSchema = new mongoose_1.Schema({
         },
         profileCreatedBy: {
             type: String,
-            enum: [
-                "Self",
-                "Parents",
-                "Sibling",
-                "Relative/Friend",
-                "Guardian",
-            ],
+            trim: true,
         },
         languagesISpeak: {
             type: [String],
@@ -232,12 +226,7 @@ const profileSchema = new mongoose_1.Schema({
         },
         thalassemia: {
             type: String,
-            enum: [
-                "No",
-                "Minor",
-                "Major",
-                "Carrier",
-            ],
+            trim: true,
         },
         hivStatus: {
             type: Boolean,
