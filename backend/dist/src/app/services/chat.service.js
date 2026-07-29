@@ -259,7 +259,7 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
         .orderBy("lastMessageAt", "desc")
         .get();
     const chats = yield Promise.all(snapshot.docs.map((doc) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d, _e, _f;
         const room = doc.data();
         const participants = room.participants;
         // Get the other participant
@@ -290,6 +290,15 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
                     : null,
                 mobile: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.mobile) || null,
                 countryCode: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.countryCode) || null,
+                subscription: ((_f = otherProfile.subscription) === null || _f === void 0 ? void 0 : _f.isActive)
+                    ? {
+                        isActive: true,
+                        packageId: otherProfile.subscription.packageId,
+                        expiryDate: otherProfile.subscription.expiryDate
+                    }
+                    : {
+                        isActive: false
+                    }
             },
             lastMessage: room.lastMessage,
             lastMessageType: room.lastMessageType,
@@ -306,7 +315,7 @@ exports.getChats = getChats;
  * Get all my messages of a chat room
  */
 const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     // Find logged-in user's profile
     const profile = yield profile_model_1.Profile.findOne({
         userId: authUserId,
@@ -361,6 +370,15 @@ const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, fu
             profilePhoto: ((_c = otherProfile.photos) === null || _c === void 0 ? void 0 : _c.length)
                 ? otherProfile.photos[0]
                 : null,
+            subscription: ((_d = otherProfile.subscription) === null || _d === void 0 ? void 0 : _d.isActive)
+                ? {
+                    isActive: true,
+                    packageId: otherProfile.subscription.packageId,
+                    expiryDate: otherProfile.subscription.expiryDate
+                }
+                : {
+                    isActive: false
+                },
             mobile: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.mobile) || null,
             countryCode: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.countryCode) || null,
         },
