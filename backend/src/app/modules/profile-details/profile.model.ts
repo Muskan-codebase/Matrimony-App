@@ -309,13 +309,7 @@ const profileSchema = new Schema<IProfile>(
 
             profileCreatedBy: {
                 type: String,
-                enum: [
-                    "Self",
-                    "Parents",
-                    "Sibling",
-                    "Relative/Friend",
-                    "Guardian",
-                ],
+                trim: true,
             },
 
             languagesISpeak: {
@@ -330,12 +324,7 @@ const profileSchema = new Schema<IProfile>(
 
             thalassemia: {
                 type: String,
-                enum: [
-                    "No",
-                    "Minor",
-                    "Major",
-                    "Carrier",
-                ],
+                trim: true,
             },
 
             hivStatus: {
