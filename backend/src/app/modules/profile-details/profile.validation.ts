@@ -357,33 +357,15 @@ const aboutMeSchema = z.object({
         .max(100)
         .optional(),
 
-    profileCreatedBy: optionalEnum([
-        "Self",
-        "Parents",
-        "Sibling",
-        "Relative/Friend",
-        "Guardian",
-    ]),
+    profileCreatedBy: z.string().trim().optional(),
 
     languagesISpeak: z
         .array(z.string())
         .optional(),
 
-    disability: optionalEnum([
-        "None",
-        "Physical Disability",
-        "Hearing Impairment",
-        "Visual Impairment",
-        "Speech Impairment",
-        "Other",
-    ]),
+    disability: z.string().trim().optional(),
 
-    thalassemia: optionalEnum([
-        "No",
-        "Minor",
-        "Major",
-        "Carrier",
-    ]),
+    thalassemia: z.string().trim().optional(),
 
     hivStatus: z.boolean().optional(),
 
