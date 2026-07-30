@@ -68,7 +68,7 @@ router.post("/", authMiddleware_1.authenticate, shortlist_controller_1.addToShor
 router.get("/", authMiddleware_1.authenticate, shortlist_controller_1.getMyShortlistedProfiles);
 /**
  * @swagger
- * /v1/api/shortlists/who-shortlisted-me:
+ * /v1/api/shortlist/who-shortlisted-me:
  *   get:
  *     summary: Get users who shortlisted my profile
  *     tags: [Profile - Short Listed]
