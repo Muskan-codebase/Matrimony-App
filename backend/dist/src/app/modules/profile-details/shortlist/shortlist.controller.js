@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeFromShortlist = exports.getShortlistById = exports.getMyShortlistedProfiles = exports.addToShortlist = void 0;
+exports.removeFromShortlist = exports.getShortlistById = exports.getUsersWhoShortlistedMe = exports.getMyShortlistedProfiles = exports.addToShortlist = void 0;
 const shortlist_model_1 = require("./shortlist.model");
 const profile_model_1 = require("../profile.model");
 const shortlist_validation_1 = require("./shortlist.validation");
@@ -111,6 +111,38 @@ const getMyShortlistedProfiles = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.getMyShortlistedProfiles = getMyShortlistedProfiles;
+const getUsersWhoShortlistedMe = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Find logged-in user's profile
+        const loggedInProfile = yield profile_model_1.Profile.findOne({
+            userId: req.user.id,
+        });
+        if (!loggedInProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Your profile was not found.",
+            });
+        }
+        // Find everyone who shortlisted this profile
+        const shortlistedBy = yield shortlist_model_1.Shortlist.find({
+            shortlistedUserId: loggedInProfile._id,
+        }).populate({
+            path: "userId",
+            model: "Profile",
+        });
+        return res.status(200).json({
+            success: true,
+            data: shortlistedBy,
+        });
+    }
+    catch (_a) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+});
+exports.getUsersWhoShortlistedMe = getUsersWhoShortlistedMe;
 const getShortlistById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = shortlist_validation_1.shortlistIdSchema.parse(req.params);
