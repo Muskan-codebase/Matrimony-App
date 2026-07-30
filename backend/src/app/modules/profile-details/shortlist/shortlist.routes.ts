@@ -2,6 +2,7 @@ import express from "express";
 import {
     addToShortlist,
     getMyShortlistedProfiles,
+    getUsersWhoShortlistedMe,
     getShortlistById,
     removeFromShortlist,
 } from "./shortlist.controller";
@@ -67,6 +68,66 @@ router.post("/", authenticate, addToShortlist);
  *         description: Internal server error.
  */
 router.get("/", authenticate, getMyShortlistedProfiles);
+/**
+ * @swagger
+ * /v1/api/shortlists/who-shortlisted-me:
+ *   get:
+ *     summary: Get users who shortlisted my profile
+ *     tags: [Profile - Short Listed]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Users who shortlisted the logged-in user's profile fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: "689f2b7c3d4a8d0012345678"
+ *                       userId:
+ *                         $ref: '#/components/schemas/Profile'
+ *                       shortlistedUserId:
+ *                         type: string
+ *                         example: "689f2b7c3d4a8d0098765432"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2026-07-30T08:20:00.000Z"
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2026-07-30T08:20:00.000Z"
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Logged-in user's profile not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/who-shortlisted-me", authenticate, getUsersWhoShortlistedMe);
 /**
  * @swagger
  * /v1/api/shortlist/{id}:
