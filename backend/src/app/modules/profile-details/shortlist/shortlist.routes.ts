@@ -110,22 +110,10 @@ router.get("/", authenticate, getMyShortlistedProfiles);
  *                         example: "2026-07-30T08:20:00.000Z"
  *       401:
  *         description: Unauthorized
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  *       404:
  *         description: Logged-in user's profile not found.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Internal Server Error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
  */
 router.get("/who-shortlisted-me", authenticate, getUsersWhoShortlistedMe);
 /**
