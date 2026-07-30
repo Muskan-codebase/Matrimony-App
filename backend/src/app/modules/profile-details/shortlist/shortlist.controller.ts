@@ -69,7 +69,7 @@ export const addToShortlist = async (req: Request, res: Response) => {
             message: "Profile shortlisted successfully.",
             data: populatedShortlist,
         });
-        
+
     } catch (error: any) {
         if (error.name === "ZodError") {
             return res.status(400).json({
@@ -111,6 +111,43 @@ export const getMyShortlistedProfiles = async (
         return res.status(200).json({
             success: true,
             data: shortlistedProfiles,
+        });
+    } catch {
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};
+
+export const getUsersWhoShortlistedMe = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        // Find logged-in user's profile
+        const loggedInProfile = await Profile.findOne({
+            userId: req.user.id,
+        });
+
+        if (!loggedInProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Your profile was not found.",
+            });
+        }
+
+        // Find everyone who shortlisted this profile
+        const shortlistedBy = await Shortlist.find({
+            shortlistedUserId: loggedInProfile._id,
+        }).populate({
+            path: "userId",
+            model: "Profile",
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: shortlistedBy,
         });
     } catch {
         return res.status(500).json({
