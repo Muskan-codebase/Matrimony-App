@@ -25,6 +25,9 @@ const occupation_routes_1 = require("../modules/admin/occupation/occupation.rout
 const successStory_routes_1 = require("../modules/success-story/successStory.routes");
 const chat_routes_1 = require("../modules/profile-details/chat/chat.routes");
 const payment_routes_1 = require("../modules/payment/payment.routes");
+const faq_routes_1 = require("../modules/admin/faq/faq.routes");
+const heroBanner_routes_1 = require("../modules/admin/hero-banner/heroBanner.routes");
+const aboutUs_routes_1 = require("../modules/admin/about-us/aboutUs.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -126,6 +129,18 @@ const moduleRoutes = [
     {
         path: "/payment",
         route: payment_routes_1.paymentRouter
+    },
+    {
+        path: "/faqs",
+        route: faq_routes_1.faqRouter
+    },
+    {
+        path: "/hero-banner",
+        route: heroBanner_routes_1.heroBannerRouter
+    },
+    {
+        path: "/about-us",
+        route: aboutUs_routes_1.aboutUsRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

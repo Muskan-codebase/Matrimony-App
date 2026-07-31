@@ -18,6 +18,7 @@ const shortlist_model_1 = require("./shortlist/shortlist.model");
 const annualIncome_model_1 = require("../admin/annual-income/annualIncome.model");
 const partnerPreference_model_1 = require("./partner-preference/partnerPreference.model");
 const profile_validation_1 = require("./profile.validation");
+const counter_service_1 = require("../../utils/counter/counter.service");
 const createProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = profile_validation_1.createProfileSchema.parse({
@@ -33,7 +34,9 @@ const createProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 message: "Profile already exists.",
             });
         }
-        const profile = yield profile_model_1.Profile.create(Object.assign({ userId: req.user.id }, validatedData.body));
+        // Generate profile ID
+        const matrimonyId = yield (0, counter_service_1.generateMatrimonyId)();
+        const profile = yield profile_model_1.Profile.create(Object.assign({ userId: req.user.id, matrimonyId }, validatedData.body));
         return res.status(201).json({
             success: true,
             message: "Profile created successfully.",

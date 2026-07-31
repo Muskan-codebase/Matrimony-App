@@ -75,6 +75,10 @@ const storage = new CloudinaryStorage({
         return "matrimony/success-stories";
       } else if (req.originalUrl.includes("/chat")) {
         return "matrimony/chat";
+      } else if (req.originalUrl.includes("/hero-banners")) {
+        return "matrimony/hero-banners";
+      } else if (req.originalUrl.includes("/about-us")) {
+        return "matrimony/about-us";
       }
       return 'restaurant-uploads';
     },

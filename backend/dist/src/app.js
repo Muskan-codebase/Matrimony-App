@@ -11,6 +11,7 @@ const globalErrorHandler_1 = __importDefault(require("./app/middlewares/globalEr
 const swagger_1 = require("./app/config/swagger");
 require("./app/config/firebase");
 const path_1 = __importDefault(require("path"));
+const compression_1 = __importDefault(require("compression"));
 const app = (0, express_1.default)();
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 // CORS configuration for specific domains
@@ -55,6 +56,7 @@ app.options('*', (0, cors_1.default)(corsOptions));
 // Body parsers
 app.use(express_1.default.json({ limit: '50mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
+app.use((0, compression_1.default)());
 // Swagger (dev only)
 if (process.env.NODE_ENV !== 'production') {
     (0, swagger_1.setupSwagger)(app);

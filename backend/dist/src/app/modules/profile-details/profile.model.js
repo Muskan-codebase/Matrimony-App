@@ -9,6 +9,13 @@ const profileSchema = new mongoose_1.Schema({
         required: true,
         unique: true,
     },
+    matrimonyId: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true,
+        immutable: true,
+    },
     // ===================================
     // Basic Details
     // ===================================
