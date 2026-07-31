@@ -11,6 +11,14 @@ const profileSchema = new Schema<IProfile>(
             unique: true,
         },
 
+        matrimonyId: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+            immutable: true,
+        },
+
         // ===================================
         // Basic Details
         // ===================================
