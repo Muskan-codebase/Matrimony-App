@@ -8,6 +8,7 @@ import { Shortlist } from "./shortlist/shortlist.model";
 import { AnnualIncome } from "../admin/annual-income/annualIncome.model";
 import { PartnerPreference } from "./partner-preference/partnerPreference.model";
 import { createProfileSchema, updateProfileSchema } from "./profile.validation";
+import { generateMatrimonyId } from "../../utils/counter/counter.service";
 
 export const createProfile = async (req: Request, res: Response) => {
 
@@ -29,8 +30,12 @@ export const createProfile = async (req: Request, res: Response) => {
             });
         }
 
+        // Generate profile ID
+        const matrimonyId = await generateMatrimonyId();
+
         const profile = await Profile.create({
             userId: req.user.id,
+            matrimonyId,
             ...validatedData.body,
         });
 
