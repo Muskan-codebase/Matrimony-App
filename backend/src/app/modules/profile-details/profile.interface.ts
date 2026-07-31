@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 export interface IProfile {
 
     userId: Types.ObjectId;
+    matrimonyId: string;
 
     // =========================
     // Basic Details
