@@ -23,6 +23,9 @@ import { occupationRouter } from '../modules/admin/occupation/occupation.routes'
 import { successStoryRouter } from '../modules/success-story/successStory.routes';
 import { chatRouter } from '../modules/profile-details/chat/chat.routes';
 import { paymentRouter } from '../modules/payment/payment.routes';
+import { faqRouter } from '../modules/admin/faq/faq.routes';
+import { heroBannerRouter } from '../modules/admin/hero-banner/heroBanner.routes';
+import { aboutUsRouter } from '../modules/admin/about-us/aboutUs.routes';
 
 const router = Router();
 
@@ -126,6 +129,18 @@ const moduleRoutes = [
   {
     path: "/payment",
     route: paymentRouter
+  },
+  {
+    path: "/faqs",
+    route: faqRouter
+  },
+  {
+    path: "/hero-banner",
+    route: heroBannerRouter
+  },
+  {
+    path: "/about-us",
+    route: aboutUsRouter
   }
 ];
 
