@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ZodError } from "zod";
-import * as notificationService from "./notification.service.js";
-import { registerTokenSchema } from "./notification.validation.js";
+import * as notificationService from "./notification.service";
+import { registerTokenSchema } from "./notification.validation";
 
 export const registerToken = async (req: Request, res: Response) => {
     try {
