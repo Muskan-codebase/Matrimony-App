@@ -15,11 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNotification = void 0;
 const firebase_1 = __importDefault(require("../config/firebase"));
 const messaging_1 = require("firebase-admin/messaging");
-const auth_model_js_1 = __importDefault(require("../modules/auth/auth.model.js"));
+const auth_model_1 = __importDefault(require("../modules/auth/auth.model"));
 const messaging = (0, messaging_1.getMessaging)(firebase_1.default);
 const sendNotification = (_a) => __awaiter(void 0, [_a], void 0, function* ({ receiverId, title, body, data = {}, }) {
     var _b;
-    const user = yield auth_model_js_1.default.findById(receiverId).select("fcmTokens");
+    const user = yield auth_model_1.default.findById(receiverId).select("fcmTokens");
     const tokens = (_b = user === null || user === void 0 ? void 0 : user.fcmTokens) !== null && _b !== void 0 ? _b : [];
     if (tokens.length === 0) {
         return;
