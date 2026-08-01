@@ -5,6 +5,7 @@ import {
     createShortlistSchema,
     shortlistIdSchema,
 } from "./shortlist.validation";
+import { sendNotification } from "../../../services/sendNotification.service";
 
 export const addToShortlist = async (req: Request, res: Response) => {
     try {
@@ -57,6 +58,16 @@ export const addToShortlist = async (req: Request, res: Response) => {
             userId: loggedInProfile._id,
             shortlistedUserId,
         })
+
+        await sendNotification({
+            receiverId: profile.userId.toString(),
+            title: "You've been shortlisted",
+            body: `${loggedInProfile.basicDetails.firstName} shortlisted your profile.`,
+            data: {
+                type: "shortlist",
+                shortlistId: shortlist.id.toString(),
+            },
+        });
 
         const populatedShortlist = await Shortlist.findById(shortlist._id)
             .populate({
