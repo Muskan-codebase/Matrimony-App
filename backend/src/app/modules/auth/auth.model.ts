@@ -54,6 +54,11 @@ const authSchema = new Schema<IUserAuth>(
             type: String,
         },
 
+        fcmTokens: {
+            type: [String],
+            default: [],
+        },
+
         role: {
             type: String,
             enum: Object.values(UserRole),
