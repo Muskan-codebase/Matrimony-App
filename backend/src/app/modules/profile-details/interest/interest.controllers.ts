@@ -6,6 +6,7 @@ import ProfileVisit from "../profile-visits/profileVisits.model";
 import {
     createInterestSchema,
 } from "./interest.validation";
+import { sendNotification } from "../../../services/sendNotification.service";
 
 export const sendInterest = async (
     req: Request,
@@ -58,6 +59,15 @@ export const sendInterest = async (
             receiverId: validatedData.body.receiverId,
         });
 
+        const receiverProfile = await Profile.findById(validatedData.body.receiverId);
+
+        if (!receiverProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Receiver profile not found.",
+            });
+        }
+
         // Remove profile from shortlist if it exists
         await Shortlist.findOneAndDelete({
             userId: senderProfile._id,
@@ -73,6 +83,17 @@ export const sendInterest = async (
         const populatedInterest = await Interest.findById(interest._id)
             .populate("senderId")
             .populate("receiverId");
+
+        // Send notification
+        await sendNotification({
+            receiverId: receiverProfile.userId.toString(),
+            title: "New Interest Request",
+            body: `${senderProfile.basicDetails.firstName} sent you an interest request.`,
+            data: {
+                type: "interest",
+                interestId: interest.id.toString(),
+            },
+        });
 
         return res.status(201).json({
             success: true,
