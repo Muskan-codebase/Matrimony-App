@@ -38,8 +38,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notificationRouter = void 0;
 const express_1 = __importDefault(require("express"));
-const authMiddleware_js_1 = require("../../../middlewares/authMiddleware.js");
-const notificationController = __importStar(require("./notification.controller.js"));
+const authMiddleware_1 = require("../../../middlewares/authMiddleware");
+const notificationController = __importStar(require("./notification.controller"));
 const router = express_1.default.Router();
 /**
  * @swagger
@@ -94,5 +94,5 @@ const router = express_1.default.Router();
  *       500:
  *         description: Internal Server Error.
  */
-router.post("/register-token", authMiddleware_js_1.authenticate, notificationController.registerToken);
+router.post("/register-token", authMiddleware_1.authenticate, notificationController.registerToken);
 exports.notificationRouter = router;
