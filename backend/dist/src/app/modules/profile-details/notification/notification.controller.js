@@ -44,12 +44,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerToken = void 0;
 const zod_1 = require("zod");
-const notificationService = __importStar(require("./notification.service.js"));
-const notification_validation_js_1 = require("./notification.validation.js");
+const notificationService = __importStar(require("./notification.service"));
+const notification_validation_1 = require("./notification.validation");
 const registerToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Validate request body
-        const { token } = notification_validation_js_1.registerTokenSchema.parse(req.body);
+        const { token } = notification_validation_1.registerTokenSchema.parse(req.body);
         yield notificationService.registerToken(req.user._id, token);
         return res.status(200).json({
             success: true,
