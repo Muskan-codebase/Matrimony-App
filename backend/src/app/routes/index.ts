@@ -26,6 +26,7 @@ import { paymentRouter } from '../modules/payment/payment.routes';
 import { faqRouter } from '../modules/admin/faq/faq.routes';
 import { heroBannerRouter } from '../modules/admin/hero-banner/heroBanner.routes';
 import { aboutUsRouter } from '../modules/admin/about-us/aboutUs.routes';
+import { notificationRouter } from '../modules/profile-details/notification/notification.routes';
 
 const router = Router();
 
@@ -141,6 +142,10 @@ const moduleRoutes = [
   {
     path: "/about-us",
     route: aboutUsRouter
+  },
+  {
+    path: "/notification",
+    route: notificationRouter
   }
 ];
 
