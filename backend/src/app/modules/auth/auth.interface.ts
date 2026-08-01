@@ -31,6 +31,8 @@ export interface IUserAuth extends Document {
 
     refreshToken?: string;
 
+    fcmTokens?: string[];
+
     role: UserRole;
 
     isDeleted: boolean;
