@@ -1,6 +1,6 @@
 import app from "../config/firebase";
 import { getMessaging } from "firebase-admin/messaging";
-import Auth from "../modules/auth/auth.model.js";
+import Auth from "../modules/auth/auth.model";
 
 const messaging = getMessaging(app);
 
@@ -26,13 +26,13 @@ export const sendNotification = async ({
     }
 
     const messages = tokens.map((token) => ({
-    token,
-    notification: {
-        title,
-        body,
-    },
-    data,
-}));
+        token,
+        notification: {
+            title,
+            body,
+        },
+        data,
+    }));
 
-await messaging.sendEach(messages);
+    await messaging.sendEach(messages);
 };
