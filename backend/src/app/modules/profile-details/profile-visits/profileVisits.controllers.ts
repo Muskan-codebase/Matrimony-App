@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import ProfileVisit from "./profileVisits.model";
 import { Profile } from "../profile.model";
 import { createProfileVisitSchema } from "./profileVisits.validation";
+import { sendNotification } from "../../../services/sendNotification.service";
 
 export const createProfileVisit = async (req: Request, res: Response) => {
 
@@ -69,6 +70,26 @@ export const createProfileVisit = async (req: Request, res: Response) => {
         await ProfileVisit.create({
             viewerProfileId: loggedInProfile._id,
             visitedProfileId: validatedData.visitedProfileId,
+        });
+
+        const receiverProfile = await Profile.findById(validatedData.visitedProfileId);
+
+        if (!receiverProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Receiver profile not found.",
+            });
+        }
+
+        // Send notification
+        await sendNotification({
+            receiverId: receiverProfile.userId.toString(),
+            title: "New Profile Visit",
+            body: `${loggedInProfile.basicDetails.firstName} viewed your profile.`,
+            data: {
+                type: "profile_visit",
+                visitorProfileId: loggedInProfile._id.toString(),
+            },
         });
 
         return res.status(201).json({
