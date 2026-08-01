@@ -32,66 +32,14 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importStar(require("mongoose"));
-const auth_interface_1 = require("./auth.interface");
-const authSchema = new mongoose_1.Schema({
-    mobile: {
-        type: String,
-        // required: true,
-        unique: true,
-        trim: true,
-        index: true,
-    },
-    email: {
-        type: String,
-        trim: true,
-        lowercase: true,
-        unique: true,
-        sparse: true,
-        index: true,
-    },
-    password: {
-        type: String,
-    },
-    countryCode: {
-        type: String,
-        default: "+91",
-    },
-    provider: {
-        type: String,
-        enum: Object.values(auth_interface_1.AuthProvider),
-        default: auth_interface_1.AuthProvider.OTP,
-    },
-    isVerified: {
-        type: Boolean,
-        default: false,
-    },
-    loginCount: {
-        type: Number,
-        default: 0,
-    },
-    lastLogin: {
-        type: Date,
-    },
-    refreshToken: {
-        type: String,
-    },
-    fcmTokens: {
-        type: [String],
-        default: [],
-    },
-    role: {
-        type: String,
-        enum: Object.values(auth_interface_1.UserRole),
-        default: auth_interface_1.UserRole.USER,
-    },
-    isDeleted: {
-        type: Boolean,
-        default: false,
-    }
-}, {
-    timestamps: true,
-    versionKey: false,
-});
-exports.default = mongoose_1.default.model("Auth", authSchema);
+exports.notificationRouter = void 0;
+const express_1 = __importDefault(require("express"));
+const authMiddleware_js_1 = require("../../../middlewares/authMiddleware.js");
+const notificationController = __importStar(require("./notification.controller.js"));
+const router = express_1.default.Router();
+router.post("/register-token", authMiddleware_js_1.authenticate, notificationController.registerToken);
+exports.notificationRouter = router;

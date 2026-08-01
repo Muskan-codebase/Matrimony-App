@@ -16,6 +16,7 @@ exports.deleteProfileVisit = exports.getProfileVisitors = exports.getMyVisitedPr
 const profileVisits_model_1 = __importDefault(require("./profileVisits.model"));
 const profile_model_1 = require("../profile.model");
 const profileVisits_validation_1 = require("./profileVisits.validation");
+const sendNotification_service_1 = require("../../../services/sendNotification.service");
 const createProfileVisit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = profileVisits_validation_1.createProfileVisitSchema.parse(req.body);
@@ -65,6 +66,23 @@ const createProfileVisit = (req, res) => __awaiter(void 0, void 0, void 0, funct
         yield profileVisits_model_1.default.create({
             viewerProfileId: loggedInProfile._id,
             visitedProfileId: validatedData.visitedProfileId,
+        });
+        const receiverProfile = yield profile_model_1.Profile.findById(validatedData.visitedProfileId);
+        if (!receiverProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Receiver profile not found.",
+            });
+        }
+        // Send notification
+        yield (0, sendNotification_service_1.sendNotification)({
+            receiverId: receiverProfile.userId.toString(),
+            title: "New Profile Visit",
+            body: `${loggedInProfile.basicDetails.firstName} viewed your profile.`,
+            data: {
+                type: "profile_visit",
+                visitorProfileId: loggedInProfile._id.toString(),
+            },
         });
         return res.status(201).json({
             success: true,

@@ -13,6 +13,7 @@ exports.removeFromShortlist = exports.getShortlistById = exports.getUsersWhoShor
 const shortlist_model_1 = require("./shortlist.model");
 const profile_model_1 = require("../profile.model");
 const shortlist_validation_1 = require("./shortlist.validation");
+const sendNotification_service_1 = require("../../../services/sendNotification.service");
 const addToShortlist = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { shortlistedUserId } = shortlist_validation_1.createShortlistSchema.parse(req.body);
@@ -55,6 +56,15 @@ const addToShortlist = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const shortlist = yield shortlist_model_1.Shortlist.create({
             userId: loggedInProfile._id,
             shortlistedUserId,
+        });
+        yield (0, sendNotification_service_1.sendNotification)({
+            receiverId: profile.userId.toString(),
+            title: "You've been shortlisted",
+            body: `${loggedInProfile.basicDetails.firstName} shortlisted your profile.`,
+            data: {
+                type: "shortlist",
+                shortlistId: shortlist.id.toString(),
+            },
         });
         const populatedShortlist = yield shortlist_model_1.Shortlist.findById(shortlist._id)
             .populate({

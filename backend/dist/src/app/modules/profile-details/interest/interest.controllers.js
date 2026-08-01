@@ -18,6 +18,7 @@ const profile_model_1 = require("../profile.model");
 const shortlist_model_1 = require("../shortlist/shortlist.model");
 const profileVisits_model_1 = __importDefault(require("../profile-visits/profileVisits.model"));
 const interest_validation_1 = require("./interest.validation");
+const sendNotification_service_1 = require("../../../services/sendNotification.service");
 const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = interest_validation_1.createInterestSchema.parse({
@@ -58,6 +59,13 @@ const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             senderId: senderProfile._id,
             receiverId: validatedData.body.receiverId,
         });
+        const receiverProfile = yield profile_model_1.Profile.findById(validatedData.body.receiverId);
+        if (!receiverProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Receiver profile not found.",
+            });
+        }
         // Remove profile from shortlist if it exists
         yield shortlist_model_1.Shortlist.findOneAndDelete({
             userId: senderProfile._id,
@@ -71,6 +79,16 @@ const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const populatedInterest = yield interest_model_1.Interest.findById(interest._id)
             .populate("senderId")
             .populate("receiverId");
+        // Send notification
+        yield (0, sendNotification_service_1.sendNotification)({
+            receiverId: receiverProfile.userId.toString(),
+            title: "New Interest Request",
+            body: `${senderProfile.basicDetails.firstName} sent you an interest request.`,
+            data: {
+                type: "interest",
+                interestId: interest.id.toString(),
+            },
+        });
         return res.status(201).json({
             success: true,
             message: "Interest sent successfully.",
