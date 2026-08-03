@@ -1,7 +1,11 @@
 import Auth from "../../auth/auth.model";
 
 export const registerToken = async (userId: any, token: any) => {
-    await Auth.findByIdAndUpdate(
+
+    console.log("User ID:", userId);
+    console.log("Token:", token);
+
+    const updatedUser = await Auth.findByIdAndUpdate(
         userId,
         {
             $addToSet: {
@@ -12,4 +16,6 @@ export const registerToken = async (userId: any, token: any) => {
             new: true,
         }
     );
+
+    console.log("Updated User:", updatedUser);
 };
