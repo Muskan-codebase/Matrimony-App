@@ -21,7 +21,10 @@ export const sendNotification = async ({
 
     const tokens = user?.fcmTokens ?? [];
 
+    console.log("FCM Tokens:", tokens);
+
     if (tokens.length === 0) {
+        console.log("No FCM tokens found for user:", receiverId);
         return;
     }
 
