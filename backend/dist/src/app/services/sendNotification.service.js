@@ -32,6 +32,9 @@ const sendNotification = (_a) => __awaiter(void 0, [_a], void 0, function* ({ re
         },
         data,
     }));
-    yield messaging.sendEach(messages);
+    const response = yield messaging.sendEach(messages);
+    console.log(response);
+    console.log("Sending notification...");
+    console.log({ receiverId, title, body, data });
 });
 exports.sendNotification = sendNotification;
