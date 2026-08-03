@@ -196,19 +196,19 @@ export const sendMessage = async (
     /**
      * Restrict messages while interest is pending
      */
-    if (interest.status === InterestStatus.PENDING) {
+    // if (interest.status === InterestStatus.PENDING) {
 
-        const messageCounts = roomData.messageCounts || {};
+    //     const messageCounts = roomData.messageCounts || {};
 
-        const senderMessageCount =
-            messageCounts[senderProfileId] || 0;
+    //     const senderMessageCount =
+    //         messageCounts[senderProfileId] || 0;
 
-        if (senderMessageCount >= MESSAGE_LIMIT) {
-            throw new Error(
-                "You have reached the maximum of 4 messages. Wait until the interest request is accepted."
-            );
-        }
-    }
+    //     if (senderMessageCount >= MESSAGE_LIMIT) {
+    //         throw new Error(
+    //             "You have reached the maximum of 4 messages. Wait until the interest request is accepted."
+    //         );
+    //     }
+    // }
 
     /**
      * Create message
