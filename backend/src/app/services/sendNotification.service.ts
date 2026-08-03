@@ -34,5 +34,9 @@ export const sendNotification = async ({
         data,
     }));
 
-    await messaging.sendEach(messages);
+    const response = await messaging.sendEach(messages);
+
+    console.log(response);
+    console.log("Sending notification...");
+    console.log({ receiverId, title, body, data });
 };
