@@ -200,6 +200,22 @@ const acceptInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 message: "Interest not found.",
             });
         }
+        const senderProfile = yield profile_model_1.Profile.findById(interest.senderId);
+        if (!senderProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Sender profile not found.",
+            });
+        }
+        yield (0, sendNotification_service_1.sendNotification)({
+            receiverId: senderProfile.userId.toString(),
+            title: "Interest Accepted",
+            body: `${loggedInProfile.basicDetails.firstName} accepted your interest request.`,
+            data: {
+                type: "interest_accepted",
+                interestId: interest.id,
+            },
+        });
         return res.status(200).json({
             success: true,
             message: "Interest accepted successfully.",
