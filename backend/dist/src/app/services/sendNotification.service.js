@@ -21,7 +21,9 @@ const sendNotification = (_a) => __awaiter(void 0, [_a], void 0, function* ({ re
     var _b;
     const user = yield auth_model_1.default.findById(receiverId).select("fcmTokens");
     const tokens = (_b = user === null || user === void 0 ? void 0 : user.fcmTokens) !== null && _b !== void 0 ? _b : [];
+    console.log("FCM Tokens:", tokens);
     if (tokens.length === 0) {
+        console.log("No FCM tokens found for user:", receiverId);
         return;
     }
     const messages = tokens.map((token) => ({

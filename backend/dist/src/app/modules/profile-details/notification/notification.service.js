@@ -15,12 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerToken = void 0;
 const auth_model_1 = __importDefault(require("../../auth/auth.model"));
 const registerToken = (userId, token) => __awaiter(void 0, void 0, void 0, function* () {
-    yield auth_model_1.default.findByIdAndUpdate(userId, {
+    console.log("User ID:", userId);
+    console.log("Token:", token);
+    const updatedUser = yield auth_model_1.default.findByIdAndUpdate(userId, {
         $addToSet: {
             fcmTokens: token,
         },
     }, {
         new: true,
     });
+    console.log("Updated User:", updatedUser);
 });
 exports.registerToken = registerToken;

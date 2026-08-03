@@ -50,7 +50,7 @@ const registerToken = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         // Validate request body
         const { token } = notification_validation_1.registerTokenSchema.parse(req.body);
-        yield notificationService.registerToken(req.user._id, token);
+        yield notificationService.registerToken(req.user.id, token);
         return res.status(200).json({
             success: true,
             message: "FCM token registered successfully.",
