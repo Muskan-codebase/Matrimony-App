@@ -9,7 +9,7 @@ export const registerToken = async (req: Request, res: Response) => {
         const { token } = registerTokenSchema.parse(req.body);
 
         await notificationService.registerToken(
-            req.user._id,
+            req.user.id,
             token
         );
 
