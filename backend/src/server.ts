@@ -2,6 +2,13 @@ import mongoose from 'mongoose';
 import app from './app';
 import config from './app/config';
 import { seedAdmin } from './app/seeders/adminStaffSeeder';
+// import { generateZegoToken } from "./app/services/zego.service";
+
+// const token = generateZegoToken("test_user_123");
+
+
+
+// console.log(token);
 
 // For Vercel deployment, we need to handle database connection differently
 let isConnected = false;

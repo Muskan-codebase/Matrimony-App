@@ -16,6 +16,9 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const app_1 = __importDefault(require("./app"));
 const config_1 = __importDefault(require("./app/config"));
 const adminStaffSeeder_1 = require("./app/seeders/adminStaffSeeder");
+// import { generateZegoToken } from "./app/services/zego.service";
+// const token = generateZegoToken("test_user_123");
+// console.log(token);
 // For Vercel deployment, we need to handle database connection differently
 let isConnected = false;
 function connectDB() {
