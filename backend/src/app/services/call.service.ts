@@ -5,80 +5,52 @@ const db = getFirestore();
 
 export const updateCall = async (payload: any) => {
 
+    console.log("========== updateCall ==========");
+    console.log(payload);
+
     const callRef = db.collection("calls").doc(payload.callId);
 
     const snapshot = await callRef.get();
 
     if (!snapshot.exists) {
-
         await callRef.set({
-
             callId: payload.callId,
-            callerId: payload.callerId,
+            senderId: payload.senderId,
             receiverId: payload.receiverId,
             callType: payload.callType,
             status: payload.status,
-            startedAt: FieldValue.serverTimestamp(),
-            answeredAt: null,
-            endedAt: null,
-            duration: 0,
-            endedBy: null,
+            createdAt: FieldValue.serverTimestamp(),
         });
 
         return;
     }
 
-    const updateData: any = {
+    await callRef.update({
         status: payload.status,
-    };
+    });
 
-    if (payload.status === "answered") {
+    // Update chat preview
+    const roomId = [payload.senderId, payload.receiverId]
+        .sort()
+        .join("_");
 
-        updateData.answeredAt =
-            FieldValue.serverTimestamp();
-    }
+    let lastMessage = "";
 
-    if (
-        payload.status === "ended" ||
-        payload.status === "rejected" ||
-        payload.status === "missed"
-    ) {
-
-        updateData.endedAt =
-            FieldValue.serverTimestamp();
-
-        updateData.duration =
-            payload.duration ?? 0;
-
-        updateData.endedBy =
-            payload.endedBy ?? null;
-    }
-
-    await callRef.update(updateData);
-
-    // Update chat preview when call finishes
-    if (
-        payload.status === "ended" ||
-        payload.status === "rejected" ||
-        payload.status === "missed"
-    ) {
-        const roomId = [payload.callerId, payload.receiverId]
-            .sort()
-            .join("_");
-
-        console.log("Updating room:", roomId);
-
-        let lastMessage = `${payload.callType} call`;
-
-        if (payload.status === "missed") {
+    switch (payload.status) {
+        case "missed":
             lastMessage = `Missed ${payload.callType} call`;
-        } else if (payload.status === "rejected") {
-            lastMessage = `Rejected ${payload.callType} call`;
-        }
+            break;
 
-        await db.collection("chats").doc(roomId).update({
-            lastMessage,
-            lastMessageAt: FieldValue.serverTimestamp(),
-        });
+        case "rejected":
+            lastMessage = `Rejected ${payload.callType} call`;
+            break;
+
+        default:
+            lastMessage = `${payload.callType} call`;
     }
+
+    await db.collection("chats").doc(roomId).update({
+        lastMessage,
+        lastMessageAt: FieldValue.serverTimestamp(),
+    });
 };
