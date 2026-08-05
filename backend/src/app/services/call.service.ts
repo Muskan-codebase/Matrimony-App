@@ -34,6 +34,18 @@ export const updateCall = async (payload: any) => {
         .sort()
         .join("_");
 
+    console.log("Room ID:", roomId);
+
+    const chatRef = db.collection("chats").doc(roomId);
+    const chatDoc = await chatRef.get();
+
+    console.log("Chat exists:", chatDoc.exists);
+
+    if (!chatDoc.exists) {
+        console.log("Chat document not found!");
+        return;
+    }
+
     let lastMessage = "";
 
     switch (payload.status) {
@@ -51,6 +63,9 @@ export const updateCall = async (payload: any) => {
 
     await db.collection("chats").doc(roomId).update({
         lastMessage,
+        lastMessageType: "voice",
         lastMessageAt: FieldValue.serverTimestamp(),
     });
+
+    console.log("Chat updated successfully");
 };
