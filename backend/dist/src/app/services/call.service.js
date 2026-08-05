@@ -61,5 +61,7 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
     });
     console.log("Chat updated successfully");
+    const updatedDoc = yield chatRef.get();
+    console.log(updatedDoc.data());
 });
 exports.updateCall = updateCall;
