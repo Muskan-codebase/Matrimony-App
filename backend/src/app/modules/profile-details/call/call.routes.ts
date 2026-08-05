@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../../middlewares/authMiddleware";
-import { updateCallController } from "./call.controller";
+import { updateCallController, getCallsController } from "./call.controller";
 
 const router = Router();
 /**
@@ -84,5 +84,68 @@ const router = Router();
  *         description: Internal server error.
  */
 router.post("/update", authenticate, updateCallController);
+/**
+ * @swagger
+ * /v1/api/call/history:
+ *   get:
+ *     tags:
+ *       - Voice Call
+ *     summary: Get Call History
+ *     description: Fetches all voice/video call history of the authenticated user from Firestore.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Call history fetched successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Calls fetched successfully.
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       callId:
+ *                         type: string
+ *                         example: e81344ab-025b-480c-aff7-ab86635eeaf8
+ *                       senderId:
+ *                         type: string
+ *                         example: 6a6d7efcf29afe029cc242ab
+ *                       receiverId:
+ *                         type: string
+ *                         example: 6a71b1db46114899021022cc
+ *                       callType:
+ *                         type: string
+ *                         enum: [voice, video]
+ *                         example: voice
+ *                       status:
+ *                         type: string
+ *                         enum: [ringing, answered, ended, rejected, missed]
+ *                         example: ended
+ *                       duration:
+ *                         type: number
+ *                         example: 135
+ *                       endedBy:
+ *                         type: string
+ *                         nullable: true
+ *                         example: 6a6d7efcf29afe029cc242ab
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: 2026-08-05T10:30:00.000Z
+ *       401:
+ *         description: Unauthorized. Invalid or missing authentication token.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get("/history", authenticate, getCallsController);
 
 export const callRouter = router;
