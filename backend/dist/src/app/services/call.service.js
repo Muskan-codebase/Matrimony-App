@@ -57,10 +57,15 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         const roomId = [payload.callerId, payload.receiverId]
             .sort()
             .join("_");
+        let lastMessage = `${payload.callType} call`;
+        if (payload.status === "missed") {
+            lastMessage = `Missed ${payload.callType} call`;
+        }
+        else if (payload.status === "rejected") {
+            lastMessage = `Rejected ${payload.callType} call`;
+        }
         yield db.collection("chats").doc(roomId).update({
-            lastMessageType: "call",
-            lastCallType: payload.callType, // voice | video
-            lastCallStatus: payload.status, // ended | rejected | missed
+            lastMessage,
             lastMessageTime: firestore_1.FieldValue.serverTimestamp(),
         });
     }

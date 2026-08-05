@@ -29,6 +29,7 @@ const faq_routes_1 = require("../modules/admin/faq/faq.routes");
 const heroBanner_routes_1 = require("../modules/admin/hero-banner/heroBanner.routes");
 const aboutUs_routes_1 = require("../modules/admin/about-us/aboutUs.routes");
 const notification_routes_1 = require("../modules/profile-details/notification/notification.routes");
+const call_routes_1 = require("../modules/profile-details/call/call.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -146,6 +147,10 @@ const moduleRoutes = [
     {
         path: "/notification",
         route: notification_routes_1.notificationRouter
+    },
+    {
+        path: "/call",
+        route: call_routes_1.callRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
