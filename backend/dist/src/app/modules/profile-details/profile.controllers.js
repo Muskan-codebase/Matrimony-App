@@ -124,7 +124,7 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         };
         // 3. Explicit query filters (multi-select supported on every list-type field)
         const query = normalizeQueryKeys(req.query);
-        const { gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
+        const { tab, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
         let hasExplicitFilters = false;
         const applyMulti = (field, value) => {
             const arr = toArray(value);
@@ -179,6 +179,18 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         if (minHeight || maxHeight) {
             filter["basicDetails.height"] = Object.assign(Object.assign(Object.assign({}, (filter["basicDetails.height"] || {})), (minHeight ? { $gte: Number(minHeight) } : {})), (maxHeight ? { $lte: Number(maxHeight) } : {}));
+            hasExplicitFilters = true;
+        }
+        // Feed tabs
+        if (tab === "verified") {
+            filter.isVerified = true;
+            hasExplicitFilters = true;
+        }
+        if (tab === "justJoined") {
+            const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            filter.createdAt = {
+                $gte: last24Hours,
+            };
             hasExplicitFilters = true;
         }
         // 4. No explicit filters at all → fall back to saved partner preferences

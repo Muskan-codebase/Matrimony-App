@@ -14,61 +14,42 @@ require("../config/firebase");
 const firestore_1 = require("firebase-admin/firestore");
 const db = (0, firestore_1.getFirestore)();
 const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    console.log("========== updateCall ==========");
+    console.log(payload);
     const callRef = db.collection("calls").doc(payload.callId);
     const snapshot = yield callRef.get();
     if (!snapshot.exists) {
         yield callRef.set({
             callId: payload.callId,
-            callerId: payload.callerId,
+            senderId: payload.senderId,
             receiverId: payload.receiverId,
             callType: payload.callType,
             status: payload.status,
-            startedAt: firestore_1.FieldValue.serverTimestamp(),
-            answeredAt: null,
-            endedAt: null,
-            duration: 0,
-            endedBy: null,
+            createdAt: firestore_1.FieldValue.serverTimestamp(),
         });
         return;
     }
-    const updateData = {
+    yield callRef.update({
         status: payload.status,
-    };
-    if (payload.status === "answered") {
-        updateData.answeredAt =
-            firestore_1.FieldValue.serverTimestamp();
-    }
-    if (payload.status === "ended" ||
-        payload.status === "rejected" ||
-        payload.status === "missed") {
-        updateData.endedAt =
-            firestore_1.FieldValue.serverTimestamp();
-        updateData.duration =
-            (_a = payload.duration) !== null && _a !== void 0 ? _a : 0;
-        updateData.endedBy =
-            (_b = payload.endedBy) !== null && _b !== void 0 ? _b : null;
-    }
-    yield callRef.update(updateData);
-    // Update chat preview when call finishes
-    if (payload.status === "ended" ||
-        payload.status === "rejected" ||
-        payload.status === "missed") {
-        const roomId = [payload.callerId, payload.receiverId]
-            .sort()
-            .join("_");
-        console.log("Updating room:", roomId);
-        let lastMessage = `${payload.callType} call`;
-        if (payload.status === "missed") {
+    });
+    // Update chat preview
+    const roomId = [payload.senderId, payload.receiverId]
+        .sort()
+        .join("_");
+    let lastMessage = "";
+    switch (payload.status) {
+        case "missed":
             lastMessage = `Missed ${payload.callType} call`;
-        }
-        else if (payload.status === "rejected") {
+            break;
+        case "rejected":
             lastMessage = `Rejected ${payload.callType} call`;
-        }
-        yield db.collection("chats").doc(roomId).update({
-            lastMessage,
-            lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
-        });
+            break;
+        default:
+            lastMessage = `${payload.callType} call`;
     }
+    yield db.collection("chats").doc(roomId).update({
+        lastMessage,
+        lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
+    });
 });
 exports.updateCall = updateCall;
