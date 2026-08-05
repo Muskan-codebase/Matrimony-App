@@ -36,6 +36,14 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const roomId = [payload.senderId, payload.receiverId]
         .sort()
         .join("_");
+    console.log("Room ID:", roomId);
+    const chatRef = db.collection("chats").doc(roomId);
+    const chatDoc = yield chatRef.get();
+    console.log("Chat exists:", chatDoc.exists);
+    if (!chatDoc.exists) {
+        console.log("Chat document not found!");
+        return;
+    }
     let lastMessage = "";
     switch (payload.status) {
         case "missed":
@@ -49,7 +57,9 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     }
     yield db.collection("chats").doc(roomId).update({
         lastMessage,
+        lastMessageType: "voice",
         lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
     });
+    console.log("Chat updated successfully");
 });
 exports.updateCall = updateCall;
