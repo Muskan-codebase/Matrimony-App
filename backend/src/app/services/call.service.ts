@@ -66,6 +66,8 @@ export const updateCall = async (payload: any) => {
             .sort()
             .join("_");
 
+        console.log("Updating room:", roomId);
+
         let lastMessage = `${payload.callType} call`;
 
         if (payload.status === "missed") {
@@ -76,7 +78,7 @@ export const updateCall = async (payload: any) => {
 
         await db.collection("chats").doc(roomId).update({
             lastMessage,
-            lastMessageTime: FieldValue.serverTimestamp(),
+            lastMessageAt: FieldValue.serverTimestamp(),
         });
     }
 };
