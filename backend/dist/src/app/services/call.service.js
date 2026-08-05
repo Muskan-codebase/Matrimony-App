@@ -57,6 +57,7 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         const roomId = [payload.callerId, payload.receiverId]
             .sort()
             .join("_");
+        console.log("Updating room:", roomId);
         let lastMessage = `${payload.callType} call`;
         if (payload.status === "missed") {
             lastMessage = `Missed ${payload.callType} call`;
@@ -66,7 +67,7 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         }
         yield db.collection("chats").doc(roomId).update({
             lastMessage,
-            lastMessageTime: firestore_1.FieldValue.serverTimestamp(),
+            lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
         });
     }
 });
