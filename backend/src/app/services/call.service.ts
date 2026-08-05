@@ -68,4 +68,7 @@ export const updateCall = async (payload: any) => {
     });
 
     console.log("Chat updated successfully");
+
+    const updatedDoc = await chatRef.get();
+    console.log(updatedDoc.data());
 };
