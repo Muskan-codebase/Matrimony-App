@@ -1,5 +1,6 @@
 import "../config/firebase";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { Profile } from "../modules/profile-details/profile.model";
 
 const db = getFirestore();
 
@@ -71,4 +72,103 @@ export const updateCall = async (payload: any) => {
 
     const updatedDoc = await chatRef.get();
     console.log(updatedDoc.data());
+
+    // Create call message
+    const messageRef = chatRef.collection("messages").doc();
+
+    const message = {
+        messageId: messageRef.id,
+        senderId: payload.senderId,
+        receiverId: payload.receiverId,
+        text: lastMessage,
+        type: "VOICE_CALL", // or whatever enum/string your app uses
+        attachment: null,
+        status: "SENT", // or MessageStatus.SENT
+        callId: payload.callId,
+        callType: payload.callType,
+        callStatus: payload.status,
+        duration: payload.duration ?? 0,
+        createdAt: FieldValue.serverTimestamp(),
+    };
+
+    await messageRef.set(message);
+
+    // Update chat preview
+    await chatRef.update({
+        lastMessage,
+        lastMessageType: "VOICE_CALL", // use the same type consistently
+        lastMessageSender: payload.senderId,
+        lastMessageAt: FieldValue.serverTimestamp(),
+    });
+};
+
+export const getCalls = async (profileId: string) => {
+
+    console.log("Logged-in profileId:", profileId);
+
+    const [sentCalls, receivedCalls] = await Promise.all([
+        db.collection("calls")
+            .where("senderId", "==", profileId)
+            .get(),
+
+        db.collection("calls")
+            .where("receiverId", "==", profileId)
+            .get(),
+    ]);
+
+    const callsMap = new Map();
+
+    sentCalls.docs.forEach((doc) => {
+        callsMap.set(doc.id, {
+            id: doc.id,
+            ...doc.data(),
+        });
+    });
+
+    receivedCalls.docs.forEach((doc) => {
+        callsMap.set(doc.id, {
+            id: doc.id,
+            ...doc.data(),
+        });
+    });
+
+    console.log("Received calls:", receivedCalls.size);
+
+    sentCalls.forEach(doc => console.log("Sent:", doc.data()));
+    receivedCalls.forEach(doc => console.log("Received:", doc.data()));
+
+    const calls = Array.from(callsMap.values()).sort((a: any, b: any) => {
+        const aTime = a.createdAt?.toMillis?.() ?? 0;
+        const bTime = b.createdAt?.toMillis?.() ?? 0;
+        return bTime - aTime;
+    });
+
+    const enrichedCalls = await Promise.all(
+        calls.map(async (call: any) => {
+
+            const otherProfileId =
+                call.senderId === profileId
+                    ? call.receiverId
+                    : call.senderId;
+
+            const profile = await Profile.findById(otherProfileId)
+                .select("basicDetails.firstName basicDetails.lastName photos subscription");
+
+            return {
+                ...call,
+                participant: profile
+                    ? {
+                        profileId: profile._id,
+                        firstName: profile.basicDetails?.firstName,
+                        lastName: profile.basicDetails?.lastName,
+                        fullName: `${profile.basicDetails?.firstName ?? ""} ${profile.basicDetails?.lastName ?? ""}`.trim(),
+                        profilePhoto: profile.photos?.[0] ?? null,
+                        subscription: profile.subscription,
+                    }
+                    : null,
+            };
+        })
+    );
+
+    return enrichedCalls;
 };
