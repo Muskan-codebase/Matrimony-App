@@ -146,6 +146,7 @@ export const getProfiles = async (req: Request, res: Response) => {
         const query = normalizeQueryKeys(req.query as Record<string, any>);
 
         const {
+            tab,
             gender,
             minAge,
             maxAge,
@@ -246,6 +247,24 @@ export const getProfiles = async (req: Request, res: Response) => {
                 ...(minHeight ? { $gte: Number(minHeight) } : {}),
                 ...(maxHeight ? { $lte: Number(maxHeight) } : {}),
             };
+            hasExplicitFilters = true;
+        }
+
+        // Feed tabs
+        if (tab === "verified") {
+            filter.isVerified = true;
+            hasExplicitFilters = true;
+        }
+
+        if (tab === "justJoined") {
+            const last24Hours = new Date(
+                Date.now() - 24 * 60 * 60 * 1000
+            );
+
+            filter.createdAt = {
+                $gte: last24Hours,
+            };
+
             hasExplicitFilters = true;
         }
 
