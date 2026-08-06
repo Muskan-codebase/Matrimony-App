@@ -437,6 +437,16 @@ router.get("/me", authMiddleware_1.authenticate, profile_controllers_1.getMyProf
  *       be provided alone (e.g. only `minIncome` for "X and above").
  *     parameters:
  *       - in: query
+ *         name: matchPreference
+ *         schema:
+ *           type: string
+ *         description: >
+ *           Multi-select. Supports `verified` and `justJoined`.
+ *           Accepts comma-separated values (`matchPreference=verified,justJoined`)
+ *           or repeated parameters (`matchPreference=verified&matchPreference=justJoined`).
+ *           `justJoined` returns profiles created within the last 24 hours. If no such
+ *           profiles exist, the API falls back to the newest matching profiles.
+ *       - in: query
  *         name: gender
  *         schema:
  *           type: string
