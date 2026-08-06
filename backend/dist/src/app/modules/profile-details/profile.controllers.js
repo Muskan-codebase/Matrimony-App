@@ -124,7 +124,9 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         };
         // 3. Explicit query filters (multi-select supported on every list-type field)
         const query = normalizeQueryKeys(req.query);
-        const { tab, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
+        const { matchPreference, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
+        // Match preference for multiple filters
+        const matchPreferences = toArray(matchPreference);
         let hasExplicitFilters = false;
         const applyMulti = (field, value) => {
             const arr = toArray(value);
@@ -182,11 +184,11 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             hasExplicitFilters = true;
         }
         // Feed tabs
-        if (tab === "verified") {
+        if (matchPreferences.includes("verified")) {
             filter.isVerified = true;
             hasExplicitFilters = true;
         }
-        if (tab === "justJoined") {
+        if (matchPreferences.includes("justJoined")) {
             const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
             filter.createdAt = {
                 $gte: last24Hours,
@@ -305,7 +307,7 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             select: "title displayOrder"
         });
         // Just Joined fallback
-        if (tab === "justJoined" && profiles.length === 0) {
+        if (matchPreferences.includes("justJoined") && profiles.length === 0) {
             delete filter.createdAt;
             profiles = yield profile_model_1.Profile.find(filter)
                 .populate({
