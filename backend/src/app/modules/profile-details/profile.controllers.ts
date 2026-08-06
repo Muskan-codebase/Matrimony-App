@@ -146,7 +146,7 @@ export const getProfiles = async (req: Request, res: Response) => {
         const query = normalizeQueryKeys(req.query as Record<string, any>);
 
         const {
-            tab,
+            matchPreference,
             gender,
             minAge,
             maxAge,
@@ -251,12 +251,12 @@ export const getProfiles = async (req: Request, res: Response) => {
         }
 
         // Feed tabs
-        if (tab === "verified") {
+        if (matchPreference === "verified") {
             filter.isVerified = true;
             hasExplicitFilters = true;
         }
 
-        if (tab === "justJoined") {
+        if (matchPreference === "justJoined") {
             const last24Hours = new Date(
                 Date.now() - 24 * 60 * 60 * 1000
             );
@@ -412,7 +412,7 @@ export const getProfiles = async (req: Request, res: Response) => {
         });
 
         // Just Joined fallback
-        if (tab === "justJoined" && profiles.length === 0) {
+        if (matchPreference === "justJoined" && profiles.length === 0) {
             delete filter.createdAt;
 
             profiles = await Profile.find(filter)
