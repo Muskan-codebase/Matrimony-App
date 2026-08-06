@@ -406,10 +406,22 @@ export const getProfiles = async (req: Request, res: Response) => {
         }
 
         // 5. Fetch
-        const profiles = await Profile.find(filter).populate({
+        let profiles = await Profile.find(filter).populate({
             path: "subscription.packageId",
             select: "title displayOrder"
         });
+
+        // Just Joined fallback
+        if (tab === "justJoined" && profiles.length === 0) {
+            delete filter.createdAt;
+
+            profiles = await Profile.find(filter)
+                .populate({
+                    path: "subscription.packageId",
+                    select: "title displayOrder"
+                })
+                .sort({ createdAt: -1 });
+        }
 
         profiles.sort((a: any, b: any) => {
             // Active subscription check
