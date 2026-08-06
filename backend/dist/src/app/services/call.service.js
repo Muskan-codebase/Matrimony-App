@@ -15,13 +15,25 @@ const firestore_1 = require("firebase-admin/firestore");
 const profile_model_1 = require("../modules/profile-details/profile.model");
 const db = (0, firestore_1.getFirestore)();
 const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
-        console.log("========== updateCall ==========");
-        console.log(payload);
+        console.log("\n================ UPDATE CALL START ================");
+        console.log("Timestamp:", new Date().toISOString());
+        console.log("Payload:");
+        console.log(JSON.stringify(payload, null, 2));
         const callRef = db.collection("calls").doc(payload.callId);
+        console.log("Call Document Path:", callRef.path);
+        // Fetch existing call
+        console.log("Fetching call document...");
         const snapshot = yield callRef.get();
+        console.log("Call document exists:", snapshot.exists);
+        if (snapshot.exists) {
+            console.log("Existing Call Data:");
+            console.log(snapshot.data());
+        }
+        // First update for this call
         if (!snapshot.exists) {
+            console.log("Call document not found. Creating new call document...");
             yield callRef.set({
                 callId: payload.callId,
                 senderId: payload.senderId,
@@ -30,23 +42,38 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
                 status: payload.status,
                 createdAt: firestore_1.FieldValue.serverTimestamp(),
             });
+            console.log("Call document created successfully.");
+            console.log("================ UPDATE CALL END ================\n");
             return;
         }
+        // Update call status
+        console.log("Updating call status...");
+        console.log("Old Status:", (_a = snapshot.data()) === null || _a === void 0 ? void 0 : _a.status);
+        console.log("New Status:", payload.status);
         yield callRef.update({
             status: payload.status,
         });
-        // Update chat preview
+        console.log("Call status updated successfully.");
+        // Generate Room ID
         const roomId = [payload.senderId, payload.receiverId]
             .sort()
             .join("_");
-        console.log("Room ID:", roomId);
+        console.log("Sender ID:", payload.senderId);
+        console.log("Receiver ID:", payload.receiverId);
+        console.log("Generated Room ID:", roomId);
+        // Fetch chat
         const chatRef = db.collection("chats").doc(roomId);
+        console.log("Chat Document Path:", chatRef.path);
         const chatDoc = yield chatRef.get();
         console.log("Chat exists:", chatDoc.exists);
         if (!chatDoc.exists) {
-            console.log("Chat document not found!");
+            console.log("Chat document not found.");
+            console.log("================ UPDATE CALL END ================\n");
             return;
         }
+        console.log("Current Chat Data:");
+        console.log(chatDoc.data());
+        // Generate last message
         let lastMessage = "";
         switch (payload.status) {
             case "missed":
@@ -58,16 +85,21 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             default:
                 lastMessage = `${payload.callType} call`;
         }
-        yield db.collection("chats").doc(roomId).update({
+        console.log("Generated Last Message:", lastMessage);
+        // Update chat preview
+        console.log("Updating chat preview...");
+        yield chatRef.update({
             lastMessage,
             lastMessageType: "voice",
             lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
         });
-        console.log("Chat updated successfully");
-        const updatedDoc = yield chatRef.get();
-        console.log(updatedDoc.data());
-        // Create chat message
+        console.log("Chat preview updated successfully.");
+        const updatedChatPreview = yield chatRef.get();
+        console.log("Updated Chat Preview:");
+        console.log(updatedChatPreview.data());
+        // Create call message
         const messageRef = chatRef.collection("messages").doc();
+        console.log("Message Document Path:", messageRef.path);
         const message = {
             messageId: messageRef.id,
             senderId: payload.senderId,
@@ -79,25 +111,34 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             callId: payload.callId,
             callType: payload.callType,
             callStatus: payload.status,
-            duration: (_a = payload.duration) !== null && _a !== void 0 ? _a : 0,
+            duration: (_b = payload.duration) !== null && _b !== void 0 ? _b : 0,
             createdAt: firestore_1.FieldValue.serverTimestamp(),
         };
-        console.log("Creating call message:", messageRef.path);
+        console.log("Message Object:");
+        console.log(JSON.stringify(message, null, 2));
+        console.log("Creating call message...");
         yield messageRef.set(message);
         console.log("Call message created successfully.");
-        // Update chat preview
+        // Update chat preview again
+        console.log("Updating final chat preview...");
         yield chatRef.update({
             lastMessage,
             lastMessageType: "VOICE_CALL",
             lastMessageSender: payload.senderId,
             lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
         });
-        console.log("Chat preview updated successfully.");
-        const updatedChat = yield chatRef.get();
-        console.log("Updated chat:", updatedChat.data());
+        console.log("Final chat preview updated successfully.");
+        const finalChat = yield chatRef.get();
+        console.log("Final Chat Data:");
+        console.log(finalChat.data());
+        console.log("================ UPDATE CALL END ================\n");
     }
     catch (error) {
-        console.error("Error updating call:", error);
+        console.log("\n================ UPDATE CALL ERROR ================");
+        console.error(error);
+        console.log("Payload causing error:");
+        console.log(JSON.stringify(payload, null, 2));
+        console.log("================ END ERROR ========================\n");
         throw error;
     }
 });
