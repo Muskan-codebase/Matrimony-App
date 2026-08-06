@@ -190,7 +190,14 @@ const fileFilter = (
     'application/vnd.ms-powerpoint',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'text/plain',
+    'application/octet-stream',
   ];
+
+  console.log("========== FILE FILTER ==========");
+  console.log("Original Name:", file.originalname);
+  console.log("Mime Type:", file.mimetype);
+  console.log("Field Name:", file.fieldname);
+  console.log("================================");
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
