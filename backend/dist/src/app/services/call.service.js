@@ -15,53 +15,39 @@ const firestore_1 = require("firebase-admin/firestore");
 const profile_model_1 = require("../modules/profile-details/profile.model");
 const db = (0, firestore_1.getFirestore)();
 const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a;
     try {
         console.log("\n================ UPDATE CALL START ================");
         console.log("Timestamp:", new Date().toISOString());
         console.log("Payload:");
         console.log(JSON.stringify(payload, null, 2));
+        // ---------------------------------------------------------------------
+        // Create Call Document
+        // ---------------------------------------------------------------------
         const callRef = db.collection("calls").doc(payload.callId);
         console.log("Call Document Path:", callRef.path);
-        // Fetch existing call
-        console.log("Fetching call document...");
-        const snapshot = yield callRef.get();
-        console.log("Call document exists:", snapshot.exists);
-        if (snapshot.exists) {
-            console.log("Existing Call Data:");
-            console.log(snapshot.data());
-        }
-        // First update for this call
-        if (!snapshot.exists) {
-            console.log("Call document not found. Creating new call document...");
-            yield callRef.set({
-                callId: payload.callId,
-                senderId: payload.senderId,
-                receiverId: payload.receiverId,
-                callType: payload.callType,
-                status: payload.status,
-                createdAt: firestore_1.FieldValue.serverTimestamp(),
-            });
-            console.log("Call document created successfully.");
-            console.log("================ UPDATE CALL END ================\n");
-            return;
-        }
-        // Update call status
-        console.log("Updating call status...");
-        console.log("Old Status:", (_a = snapshot.data()) === null || _a === void 0 ? void 0 : _a.status);
-        console.log("New Status:", payload.status);
-        yield callRef.update({
+        console.log("Creating call document...");
+        yield callRef.set({
+            callId: payload.callId,
+            senderId: payload.senderId,
+            receiverId: payload.receiverId,
+            callType: payload.callType,
             status: payload.status,
+            createdAt: firestore_1.FieldValue.serverTimestamp(),
         });
-        console.log("Call status updated successfully.");
+        console.log("Call document created successfully.");
+        // ---------------------------------------------------------------------
         // Generate Room ID
+        // ---------------------------------------------------------------------
         const roomId = [payload.senderId, payload.receiverId]
             .sort()
             .join("_");
         console.log("Sender ID:", payload.senderId);
         console.log("Receiver ID:", payload.receiverId);
         console.log("Generated Room ID:", roomId);
-        // Fetch chat
+        // ---------------------------------------------------------------------
+        // Fetch Chat
+        // ---------------------------------------------------------------------
         const chatRef = db.collection("chats").doc(roomId);
         console.log("Chat Document Path:", chatRef.path);
         const chatDoc = yield chatRef.get();
@@ -73,7 +59,9 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         }
         console.log("Current Chat Data:");
         console.log(chatDoc.data());
-        // Generate last message
+        // ---------------------------------------------------------------------
+        // Prepare Last Message
+        // ---------------------------------------------------------------------
         let lastMessage = "";
         switch (payload.status) {
             case "missed":
@@ -86,18 +74,23 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
                 lastMessage = `${payload.callType} call`;
         }
         console.log("Generated Last Message:", lastMessage);
-        // Update chat preview
+        // ---------------------------------------------------------------------
+        // Update Chat Preview
+        // ---------------------------------------------------------------------
         console.log("Updating chat preview...");
         yield chatRef.update({
             lastMessage,
-            lastMessageType: "voice",
+            lastMessageType: "VOICE_CALL",
+            lastMessageSender: payload.senderId,
             lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
         });
         console.log("Chat preview updated successfully.");
-        const updatedChatPreview = yield chatRef.get();
+        const updatedChat = yield chatRef.get();
         console.log("Updated Chat Preview:");
-        console.log(updatedChatPreview.data());
-        // Create call message
+        console.log(updatedChat.data());
+        // ---------------------------------------------------------------------
+        // Create Message
+        // ---------------------------------------------------------------------
         const messageRef = chatRef.collection("messages").doc();
         console.log("Message Document Path:", messageRef.path);
         const message = {
@@ -111,7 +104,7 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
             callId: payload.callId,
             callType: payload.callType,
             callStatus: payload.status,
-            duration: (_b = payload.duration) !== null && _b !== void 0 ? _b : 0,
+            duration: (_a = payload.duration) !== null && _a !== void 0 ? _a : 0,
             createdAt: firestore_1.FieldValue.serverTimestamp(),
         };
         console.log("Message Object:");
@@ -119,15 +112,9 @@ const updateCall = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("Creating call message...");
         yield messageRef.set(message);
         console.log("Call message created successfully.");
-        // Update chat preview again
-        console.log("Updating final chat preview...");
-        yield chatRef.update({
-            lastMessage,
-            lastMessageType: "VOICE_CALL",
-            lastMessageSender: payload.senderId,
-            lastMessageAt: firestore_1.FieldValue.serverTimestamp(),
-        });
-        console.log("Final chat preview updated successfully.");
+        // ---------------------------------------------------------------------
+        // Final Verification
+        // ---------------------------------------------------------------------
         const finalChat = yield chatRef.get();
         console.log("Final Chat Data:");
         console.log(finalChat.data());
