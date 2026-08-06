@@ -6,100 +6,116 @@ const db = getFirestore();
 
 export const updateCall = async (payload: any) => {
 
-    console.log("========== updateCall ==========");
-    console.log(payload);
+    try {
 
-    const callRef = db.collection("calls").doc(payload.callId);
+        console.log("========== updateCall ==========");
+        console.log(payload);
 
-    const snapshot = await callRef.get();
+        const callRef = db.collection("calls").doc(payload.callId);
 
-    if (!snapshot.exists) {
-        await callRef.set({
-            callId: payload.callId,
-            senderId: payload.senderId,
-            receiverId: payload.receiverId,
-            callType: payload.callType,
+        const snapshot = await callRef.get();
+
+        if (!snapshot.exists) {
+            await callRef.set({
+                callId: payload.callId,
+                senderId: payload.senderId,
+                receiverId: payload.receiverId,
+                callType: payload.callType,
+                status: payload.status,
+                createdAt: FieldValue.serverTimestamp(),
+            });
+
+            return;
+        }
+
+        await callRef.update({
             status: payload.status,
-            createdAt: FieldValue.serverTimestamp(),
         });
 
-        return;
+        // Update chat preview
+        const roomId = [payload.senderId, payload.receiverId]
+            .sort()
+            .join("_");
+
+        console.log("Room ID:", roomId);
+
+        const chatRef = db.collection("chats").doc(roomId);
+        const chatDoc = await chatRef.get();
+
+        console.log("Chat exists:", chatDoc.exists);
+
+        if (!chatDoc.exists) {
+            console.log("Chat document not found!");
+            return;
+        }
+
+        let lastMessage = "";
+
+        switch (payload.status) {
+            case "missed":
+                lastMessage = `Missed ${payload.callType} call`;
+                break;
+
+            case "rejected":
+                lastMessage = `Rejected ${payload.callType} call`;
+                break;
+
+            default:
+                lastMessage = `${payload.callType} call`;
+        }
+
+        await db.collection("chats").doc(roomId).update({
+            lastMessage,
+            lastMessageType: "voice",
+            lastMessageAt: FieldValue.serverTimestamp(),
+        });
+
+        console.log("Chat updated successfully");
+
+        const updatedDoc = await chatRef.get();
+        console.log(updatedDoc.data());
+
+        // Create chat message
+        const messageRef = chatRef.collection("messages").doc();
+
+        const message = {
+            messageId: messageRef.id,
+            senderId: payload.senderId,
+            receiverId: payload.receiverId,
+            text: lastMessage,
+            type: "VOICE_CALL",
+            attachment: null,
+            status: "SENT",
+            callId: payload.callId,
+            callType: payload.callType,
+            callStatus: payload.status,
+            duration: payload.duration ?? 0,
+            createdAt: FieldValue.serverTimestamp(),
+        };
+
+        console.log("Creating call message:", messageRef.path);
+
+        await messageRef.set(message);
+
+        console.log("Call message created successfully.");
+
+        // Update chat preview
+        await chatRef.update({
+            lastMessage,
+            lastMessageType: "VOICE_CALL",
+            lastMessageSender: payload.senderId,
+            lastMessageAt: FieldValue.serverTimestamp(),
+        });
+
+        console.log("Chat preview updated successfully.");
+
+        const updatedChat = await chatRef.get();
+        console.log("Updated chat:", updatedChat.data());
+
+    } catch (error) {
+        console.error("Error updating call:", error);
+        throw error;
     }
-
-    await callRef.update({
-        status: payload.status,
-    });
-
-    // Update chat preview
-    const roomId = [payload.senderId, payload.receiverId]
-        .sort()
-        .join("_");
-
-    console.log("Room ID:", roomId);
-
-    const chatRef = db.collection("chats").doc(roomId);
-    const chatDoc = await chatRef.get();
-
-    console.log("Chat exists:", chatDoc.exists);
-
-    if (!chatDoc.exists) {
-        console.log("Chat document not found!");
-        return;
-    }
-
-    let lastMessage = "";
-
-    switch (payload.status) {
-        case "missed":
-            lastMessage = `Missed ${payload.callType} call`;
-            break;
-
-        case "rejected":
-            lastMessage = `Rejected ${payload.callType} call`;
-            break;
-
-        default:
-            lastMessage = `${payload.callType} call`;
-    }
-
-    await db.collection("chats").doc(roomId).update({
-        lastMessage,
-        lastMessageType: "voice",
-        lastMessageAt: FieldValue.serverTimestamp(),
-    });
-
-    console.log("Chat updated successfully");
-
-    const updatedDoc = await chatRef.get();
-    console.log(updatedDoc.data());
-
-    // Create call message
-    const messageRef = chatRef.collection("messages").doc();
-
-    const message = {
-        messageId: messageRef.id,
-        senderId: payload.senderId,
-        receiverId: payload.receiverId,
-        text: lastMessage,
-        type: "VOICE_CALL", // or whatever enum/string your app uses
-        attachment: null,
-        status: "SENT", // or MessageStatus.SENT
-        callId: payload.callId,
-        callType: payload.callType,
-        callStatus: payload.status,
-        duration: payload.duration ?? 0,
-        createdAt: FieldValue.serverTimestamp(),
-    };
-
-    await messageRef.set(message);
-
-    // Update chat preview
-    await chatRef.update({
-        lastMessage,
-        lastMessageType: "VOICE_CALL", // use the same type consistently
-        lastMessageSender: payload.senderId,
-        lastMessageAt: FieldValue.serverTimestamp(),
-    });
 };
 
 export const getCalls = async (profileId: string) => {
