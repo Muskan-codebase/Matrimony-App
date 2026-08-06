@@ -11,51 +11,30 @@ export const updateCall = async (payload: any) => {
         console.log("Payload:");
         console.log(JSON.stringify(payload, null, 2));
 
+        // ---------------------------------------------------------------------
+        // Create Call Document
+        // ---------------------------------------------------------------------
+
         const callRef = db.collection("calls").doc(payload.callId);
 
         console.log("Call Document Path:", callRef.path);
+        console.log("Creating call document...");
 
-        // Fetch existing call
-        console.log("Fetching call document...");
-        const snapshot = await callRef.get();
-
-        console.log("Call document exists:", snapshot.exists);
-
-        if (snapshot.exists) {
-            console.log("Existing Call Data:");
-            console.log(snapshot.data());
-        }
-
-        // First update for this call
-        if (!snapshot.exists) {
-            console.log("Call document not found. Creating new call document...");
-
-            await callRef.set({
-                callId: payload.callId,
-                senderId: payload.senderId,
-                receiverId: payload.receiverId,
-                callType: payload.callType,
-                status: payload.status,
-                createdAt: FieldValue.serverTimestamp(),
-            });
-
-            console.log("Call document created successfully.");
-            console.log("================ UPDATE CALL END ================\n");
-            return;
-        }
-
-        // Update call status
-        console.log("Updating call status...");
-        console.log("Old Status:", snapshot.data()?.status);
-        console.log("New Status:", payload.status);
-
-        await callRef.update({
+        await callRef.set({
+            callId: payload.callId,
+            senderId: payload.senderId,
+            receiverId: payload.receiverId,
+            callType: payload.callType,
             status: payload.status,
+            createdAt: FieldValue.serverTimestamp(),
         });
 
-        console.log("Call status updated successfully.");
+        console.log("Call document created successfully.");
 
+        // ---------------------------------------------------------------------
         // Generate Room ID
+        // ---------------------------------------------------------------------
+
         const roomId = [payload.senderId, payload.receiverId]
             .sort()
             .join("_");
@@ -64,7 +43,10 @@ export const updateCall = async (payload: any) => {
         console.log("Receiver ID:", payload.receiverId);
         console.log("Generated Room ID:", roomId);
 
-        // Fetch chat
+        // ---------------------------------------------------------------------
+        // Fetch Chat
+        // ---------------------------------------------------------------------
+
         const chatRef = db.collection("chats").doc(roomId);
 
         console.log("Chat Document Path:", chatRef.path);
@@ -82,7 +64,10 @@ export const updateCall = async (payload: any) => {
         console.log("Current Chat Data:");
         console.log(chatDoc.data());
 
-        // Generate last message
+        // ---------------------------------------------------------------------
+        // Prepare Last Message
+        // ---------------------------------------------------------------------
+
         let lastMessage = "";
 
         switch (payload.status) {
@@ -100,23 +85,30 @@ export const updateCall = async (payload: any) => {
 
         console.log("Generated Last Message:", lastMessage);
 
-        // Update chat preview
+        // ---------------------------------------------------------------------
+        // Update Chat Preview
+        // ---------------------------------------------------------------------
+
         console.log("Updating chat preview...");
 
         await chatRef.update({
             lastMessage,
-            lastMessageType: "voice",
+            lastMessageType: "VOICE_CALL",
+            lastMessageSender: payload.senderId,
             lastMessageAt: FieldValue.serverTimestamp(),
         });
 
         console.log("Chat preview updated successfully.");
 
-        const updatedChatPreview = await chatRef.get();
+        const updatedChat = await chatRef.get();
 
         console.log("Updated Chat Preview:");
-        console.log(updatedChatPreview.data());
+        console.log(updatedChat.data());
 
-        // Create call message
+        // ---------------------------------------------------------------------
+        // Create Message
+        // ---------------------------------------------------------------------
+
         const messageRef = chatRef.collection("messages").doc();
 
         console.log("Message Document Path:", messageRef.path);
@@ -145,17 +137,9 @@ export const updateCall = async (payload: any) => {
 
         console.log("Call message created successfully.");
 
-        // Update chat preview again
-        console.log("Updating final chat preview...");
-
-        await chatRef.update({
-            lastMessage,
-            lastMessageType: "VOICE_CALL",
-            lastMessageSender: payload.senderId,
-            lastMessageAt: FieldValue.serverTimestamp(),
-        });
-
-        console.log("Final chat preview updated successfully.");
+        // ---------------------------------------------------------------------
+        // Final Verification
+        // ---------------------------------------------------------------------
 
         const finalChat = await chatRef.get();
 
