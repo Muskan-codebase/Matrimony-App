@@ -179,6 +179,9 @@ export const getProfiles = async (req: Request, res: Response) => {
             rashi,
         } = query;
 
+        // Match preference for multiple filters
+        const matchPreferences = toArray(matchPreference);
+
         let hasExplicitFilters = false;
 
         const applyMulti = (field: string, value: any) => {
@@ -251,12 +254,12 @@ export const getProfiles = async (req: Request, res: Response) => {
         }
 
         // Feed tabs
-        if (matchPreference === "verified") {
+        if (matchPreferences.includes("verified")) {
             filter.isVerified = true;
             hasExplicitFilters = true;
         }
 
-        if (matchPreference === "justJoined") {
+        if (matchPreferences.includes("justJoined")) {
             const last24Hours = new Date(
                 Date.now() - 24 * 60 * 60 * 1000
             );
@@ -412,7 +415,7 @@ export const getProfiles = async (req: Request, res: Response) => {
         });
 
         // Just Joined fallback
-        if (matchPreference === "justJoined" && profiles.length === 0) {
+        if (matchPreferences.includes("justJoined") && profiles.length === 0) {
             delete filter.createdAt;
 
             profiles = await Profile.find(filter)
