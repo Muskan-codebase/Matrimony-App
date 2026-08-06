@@ -300,10 +300,20 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             }
         }
         // 5. Fetch
-        const profiles = yield profile_model_1.Profile.find(filter).populate({
+        let profiles = yield profile_model_1.Profile.find(filter).populate({
             path: "subscription.packageId",
             select: "title displayOrder"
         });
+        // Just Joined fallback
+        if (tab === "justJoined" && profiles.length === 0) {
+            delete filter.createdAt;
+            profiles = yield profile_model_1.Profile.find(filter)
+                .populate({
+                path: "subscription.packageId",
+                select: "title displayOrder"
+            })
+                .sort({ createdAt: -1 });
+        }
         profiles.sort((a, b) => {
             var _a, _b;
             // Active subscription check
