@@ -258,16 +258,9 @@ const familySchema = z.object({
         "Elite",
     ]),
 
-    familyType: optionalEnum([
-        "Joint Family",
-        "Nuclear Family",
-    ]),
+    familyType: z.string().trim().optional(),
 
-    familyValue: optionalEnum([
-        "Traditional",
-        "Moderate",
-        "Liberal",
-    ]),
+    familyValue: z.string().trim().optional(),
 
     livingWithParents: z.boolean().optional(),
 
