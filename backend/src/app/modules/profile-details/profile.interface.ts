@@ -295,6 +295,7 @@ export interface IProfile {
         expiryDate?: Date;
 
     };
+    isVerified?: Boolean
     isDeleted?: Boolean
 
     // =========================
