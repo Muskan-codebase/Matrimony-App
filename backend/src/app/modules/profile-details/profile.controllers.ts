@@ -255,8 +255,22 @@ export const getProfiles = async (req: Request, res: Response) => {
 
         // Feed tabs
         if (matchPreferences.includes("verified")) {
+            // Only verified profiles
             filter.isVerified = true;
             hasExplicitFilters = true;
+        }
+
+        if (matchPreferences.includes("nearby")) {
+            const userCity = loggedInProfile.locationDetails?.city;
+            const userState = loggedInProfile.locationDetails?.state;
+
+            if (userCity && userState) {
+                // Nearby means same city AND same state
+                filter["locationDetails.city"] = userCity;
+                filter["locationDetails.state"] = userState;
+
+                hasExplicitFilters = true;
+            }
         }
 
         if (matchPreferences.includes("justJoined")) {
