@@ -409,20 +409,13 @@ export const getProfiles = async (req: Request, res: Response) => {
         }
 
         // 5. Fetch
-        let profiles = await Profile.find(filter).populate({
-            path: "subscription.packageId",
-            select: "title displayOrder"
-        });
+        let profiles = await Profile.find(filter)
 
         // Just Joined fallback
         if (matchPreferences.includes("justJoined") && profiles.length === 0) {
             delete filter.createdAt;
 
             profiles = await Profile.find(filter)
-                .populate({
-                    path: "subscription.packageId",
-                    select: "title displayOrder"
-                })
                 .sort({ createdAt: -1 });
         }
 
