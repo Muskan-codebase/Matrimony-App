@@ -657,6 +657,11 @@ const profileSchema = new Schema<IProfile>(
 
         },
 
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
+
         isDeleted: {
             type: Boolean,
             default: false
