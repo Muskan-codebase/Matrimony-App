@@ -449,11 +449,24 @@ router.get("/me", authenticate, getMyProfile);
  *         schema:
  *           type: string
  *         description: >
- *           Multi-select. Supports `verified` and `justJoined`.
- *           Accepts comma-separated values (`matchPreference=verified,justJoined`)
- *           or repeated parameters (`matchPreference=verified&matchPreference=justJoined`).
+ *           Multi-select feed preference filter. Supports `verified`, `nearby`, and `justJoined`.
+ *
+ *           `verified` returns only profiles where `isVerified` is `true`.
+ *
+ *           `nearby` returns profiles whose `birthPlace.city` and `birthPlace.state`
+ *           match the logged-in user's city and state.
+ *
  *           `justJoined` returns profiles created within the last 24 hours. If no such
  *           profiles exist, the API falls back to the newest matching profiles.
+ *
+ *           Accepts comma-separated values
+ *           (`matchPreference=verified,nearby,justJoined`)
+ *           or repeated parameters
+ *           (`matchPreference=verified&matchPreference=nearby`).
+ *
+ *           Multiple values are combined together. For example,
+ *           `matchPreference=verified,nearby` returns only verified profiles
+ *           from the logged-in user's city and state.
  *       - in: query
  *         name: gender
  *         schema:
