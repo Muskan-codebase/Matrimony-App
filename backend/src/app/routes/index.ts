@@ -28,6 +28,8 @@ import { heroBannerRouter } from '../modules/admin/hero-banner/heroBanner.routes
 import { aboutUsRouter } from '../modules/admin/about-us/aboutUs.routes';
 import { notificationRouter } from '../modules/profile-details/notification/notification.routes';
 import { callRouter } from '../modules/profile-details/call/call.routes';
+// import { profileVisitsRouter } from '../modules/profile-details/profile-visits/profileVisits.routes';
+import { profileVerificationRouter } from '../modules/profile-details/profile-verification/profileVerification.routes';
 
 const router = Router();
 
@@ -151,6 +153,10 @@ const moduleRoutes = [
   {
     path: "/call",
     route: callRouter
+  },
+  {
+    path: "/profile-verification",
+    route: profileVerificationRouter
   }
 ];
 
