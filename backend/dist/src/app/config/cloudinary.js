@@ -109,6 +109,9 @@ const storage = new multer_storage_cloudinary_1.CloudinaryStorage({
             else if (req.originalUrl.includes("/about-us")) {
                 return "matrimony/about-us";
             }
+            else if (req.originalUrl.includes("/profile-verification")) {
+                return "matrimony/profile-verification";
+            }
             return 'restaurant-uploads';
         },
         allowed_formats: [

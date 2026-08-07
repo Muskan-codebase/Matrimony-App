@@ -30,6 +30,8 @@ const heroBanner_routes_1 = require("../modules/admin/hero-banner/heroBanner.rou
 const aboutUs_routes_1 = require("../modules/admin/about-us/aboutUs.routes");
 const notification_routes_1 = require("../modules/profile-details/notification/notification.routes");
 const call_routes_1 = require("../modules/profile-details/call/call.routes");
+// import { profileVisitsRouter } from '../modules/profile-details/profile-visits/profileVisits.routes';
+const profileVerification_routes_1 = require("../modules/profile-details/profile-verification/profileVerification.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -151,6 +153,10 @@ const moduleRoutes = [
     {
         path: "/call",
         route: call_routes_1.callRouter
+    },
+    {
+        path: "/profile-verification",
+        route: profileVerification_routes_1.profileVerificationRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
