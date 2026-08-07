@@ -445,26 +445,11 @@ const profileSchema = new Schema<IProfile>(
             },
 
             familyType: {
-
                 type: String,
-
-                enum: [
-                    "Joint Family",
-                    "Nuclear Family",
-                ],
-
             },
 
             familyValue: {
-
                 type: String,
-
-                enum: [
-                    "Traditional",
-                    "Moderate",
-                    "Liberal",
-                ],
-
             },
 
             livingWithParents: {
