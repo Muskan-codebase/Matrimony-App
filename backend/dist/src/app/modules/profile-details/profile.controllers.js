@@ -86,7 +86,7 @@ const getMatchingIncomeLabels = (min, max) => __awaiter(void 0, void 0, void 0, 
     return annualIncome_model_1.AnnualIncome.find({ $and: conditions }).distinct("annualIncome");
 });
 const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19;
     try {
         // 1. Logged-in user's profile
         const loggedInProfile = yield profile_model_1.Profile.findOne({
@@ -124,7 +124,7 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         };
         // 3. Explicit query filters (multi-select supported on every list-type field)
         const query = normalizeQueryKeys(req.query);
-        const { matchPreference, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
+        const { matchPreference, nearby, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
         // Match preference for multiple filters
         const matchPreferences = toArray(matchPreference);
         let hasExplicitFilters = false;
@@ -163,6 +163,18 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         applyMulti("lifestyleDetails.eatingHabit", eatingHabit);
         applyMulti("horoscopeDetails.starDetails.nakshatra", nakshatra);
         applyMulti("horoscopeDetails.starDetails.rashi", rashi);
+        if (nearby) {
+            const nearbyLocation = String(nearby).trim();
+            filter.$or = [
+                {
+                    "locationDetails.city": nearbyLocation,
+                },
+                {
+                    "locationDetails.state": nearbyLocation,
+                },
+            ];
+            hasExplicitFilters = true;
+        }
         if (hasDosh !== undefined) {
             filter["religionDetails.hasDosh"] = hasDosh === "true";
             hasExplicitFilters = true;
@@ -189,16 +201,6 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             filter.isVerified = true;
             hasExplicitFilters = true;
         }
-        if (matchPreferences.includes("nearby")) {
-            const userCity = (_a = loggedInProfile.locationDetails) === null || _a === void 0 ? void 0 : _a.city;
-            const userState = (_b = loggedInProfile.locationDetails) === null || _b === void 0 ? void 0 : _b.state;
-            if (userCity && userState) {
-                // Nearby means same city AND same state
-                filter["locationDetails.city"] = userCity;
-                filter["locationDetails.state"] = userState;
-                hasExplicitFilters = true;
-            }
-        }
         if (matchPreferences.includes("justJoined")) {
             const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
             filter.createdAt = {
@@ -214,8 +216,8 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 isDeleted: false,
             });
             if (partnerPreference) {
-                if (((_d = (_c = partnerPreference.basicDetails) === null || _c === void 0 ? void 0 : _c.age) === null || _d === void 0 ? void 0 : _d.minAge) !== undefined ||
-                    ((_f = (_e = partnerPreference.basicDetails) === null || _e === void 0 ? void 0 : _e.age) === null || _f === void 0 ? void 0 : _f.maxAge) !== undefined) {
+                if (((_b = (_a = partnerPreference.basicDetails) === null || _a === void 0 ? void 0 : _a.age) === null || _b === void 0 ? void 0 : _b.minAge) !== undefined ||
+                    ((_d = (_c = partnerPreference.basicDetails) === null || _c === void 0 ? void 0 : _c.age) === null || _d === void 0 ? void 0 : _d.maxAge) !== undefined) {
                     filter["basicDetails.age"] = {};
                     if (partnerPreference.basicDetails.age.minAge !== undefined) {
                         filter["basicDetails.age"].$gte = partnerPreference.basicDetails.age.minAge;
@@ -224,36 +226,36 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                         filter["basicDetails.age"].$lte = partnerPreference.basicDetails.age.maxAge;
                     }
                 }
-                if (((_h = (_g = partnerPreference.basicDetails) === null || _g === void 0 ? void 0 : _g.height) === null || _h === void 0 ? void 0 : _h.minHeight) ||
-                    ((_k = (_j = partnerPreference.basicDetails) === null || _j === void 0 ? void 0 : _j.height) === null || _k === void 0 ? void 0 : _k.maxHeight)) {
+                if (((_f = (_e = partnerPreference.basicDetails) === null || _e === void 0 ? void 0 : _e.height) === null || _f === void 0 ? void 0 : _f.minHeight) ||
+                    ((_h = (_g = partnerPreference.basicDetails) === null || _g === void 0 ? void 0 : _g.height) === null || _h === void 0 ? void 0 : _h.maxHeight)) {
                     filter["basicDetails.height"] = Object.assign(Object.assign({}, (partnerPreference.basicDetails.height.minHeight
                         ? { $gte: partnerPreference.basicDetails.height.minHeight }
                         : {})), (partnerPreference.basicDetails.height.maxHeight
                         ? { $lte: partnerPreference.basicDetails.height.maxHeight }
                         : {}));
                 }
-                if (((_l = partnerPreference.basicDetails.partnerCountry) === null || _l === void 0 ? void 0 : _l.length) > 0) {
+                if (((_j = partnerPreference.basicDetails.partnerCountry) === null || _j === void 0 ? void 0 : _j.length) > 0) {
                     filter["locationDetails.country"] = { $in: partnerPreference.basicDetails.partnerCountry };
                 }
-                if (((_m = partnerPreference.basicDetails.partnerState) === null || _m === void 0 ? void 0 : _m.length) > 0) {
+                if (((_k = partnerPreference.basicDetails.partnerState) === null || _k === void 0 ? void 0 : _k.length) > 0) {
                     filter["locationDetails.state"] = { $in: partnerPreference.basicDetails.partnerState };
                 }
-                if (((_o = partnerPreference.basicDetails.partnerCity) === null || _o === void 0 ? void 0 : _o.length) > 0) {
+                if (((_l = partnerPreference.basicDetails.partnerCity) === null || _l === void 0 ? void 0 : _l.length) > 0) {
                     filter["locationDetails.city"] = { $in: partnerPreference.basicDetails.partnerCity };
                 }
-                if (((_q = (_p = partnerPreference.basicDetails.maritalStatus) === null || _p === void 0 ? void 0 : _p.preferences) === null || _q === void 0 ? void 0 : _q.length) > 0) {
+                if (((_o = (_m = partnerPreference.basicDetails.maritalStatus) === null || _m === void 0 ? void 0 : _m.preferences) === null || _o === void 0 ? void 0 : _o.length) > 0) {
                     filter["basicDetails.maritalStatus"] = {
                         $in: partnerPreference.basicDetails.maritalStatus.preferences,
                     };
                 }
-                if (!((_r = partnerPreference.educationDetails) === null || _r === void 0 ? void 0 : _r.doesntMatter) &&
-                    ((_t = (_s = partnerPreference.educationDetails) === null || _s === void 0 ? void 0 : _s.highestDegrees) === null || _t === void 0 ? void 0 : _t.length) > 0) {
+                if (!((_p = partnerPreference.educationDetails) === null || _p === void 0 ? void 0 : _p.doesntMatter) &&
+                    ((_r = (_q = partnerPreference.educationDetails) === null || _q === void 0 ? void 0 : _q.highestDegrees) === null || _r === void 0 ? void 0 : _r.length) > 0) {
                     filter["educationDetails.highestQualification"] = {
                         $in: partnerPreference.educationDetails.highestDegrees,
                     };
                 }
-                if (!((_v = (_u = partnerPreference.educationDetails) === null || _u === void 0 ? void 0 : _u.occupation) === null || _v === void 0 ? void 0 : _v.doesntMatter) &&
-                    ((_y = (_x = (_w = partnerPreference.educationDetails) === null || _w === void 0 ? void 0 : _w.occupation) === null || _x === void 0 ? void 0 : _x.preferences) === null || _y === void 0 ? void 0 : _y.length) > 0) {
+                if (!((_t = (_s = partnerPreference.educationDetails) === null || _s === void 0 ? void 0 : _s.occupation) === null || _t === void 0 ? void 0 : _t.doesntMatter) &&
+                    ((_w = (_v = (_u = partnerPreference.educationDetails) === null || _u === void 0 ? void 0 : _u.occupation) === null || _v === void 0 ? void 0 : _v.preferences) === null || _w === void 0 ? void 0 : _w.length) > 0) {
                     filter["educationDetails.occupation"] = {
                         $in: partnerPreference.educationDetails.occupation.preferences,
                     };
@@ -261,52 +263,52 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 // --- Annual Income (partner preference fallback) ---
                 // Stored as a single AnnualIncome _id ref, so match it directly —
                 // no range resolution needed here.
-                if ((_z = partnerPreference.educationDetails) === null || _z === void 0 ? void 0 : _z.annualIncome) {
+                if ((_x = partnerPreference.educationDetails) === null || _x === void 0 ? void 0 : _x.annualIncome) {
                     filter["educationDetails.annualIncome"] = partnerPreference.educationDetails.annualIncome;
                 }
-                if ((_1 = (_0 = partnerPreference.religionAndEthnicity) === null || _0 === void 0 ? void 0 : _0.religion) === null || _1 === void 0 ? void 0 : _1.preference) {
+                if ((_z = (_y = partnerPreference.religionAndEthnicity) === null || _y === void 0 ? void 0 : _y.religion) === null || _z === void 0 ? void 0 : _z.preference) {
                     filter["religionDetails.religion"] = partnerPreference.religionAndEthnicity.religion.preference;
                 }
-                if (((_4 = (_3 = (_2 = partnerPreference.religionAndEthnicity) === null || _2 === void 0 ? void 0 : _2.caste) === null || _3 === void 0 ? void 0 : _3.preferences) === null || _4 === void 0 ? void 0 : _4.length) > 0) {
+                if (((_2 = (_1 = (_0 = partnerPreference.religionAndEthnicity) === null || _0 === void 0 ? void 0 : _0.caste) === null || _1 === void 0 ? void 0 : _1.preferences) === null || _2 === void 0 ? void 0 : _2.length) > 0) {
                     filter["religionDetails.caste"] = {
                         $in: partnerPreference.religionAndEthnicity.caste.preferences,
                     };
                 }
-                if (((_7 = (_6 = (_5 = partnerPreference.religionAndEthnicity) === null || _5 === void 0 ? void 0 : _5.subCaste) === null || _6 === void 0 ? void 0 : _6.preferences) === null || _7 === void 0 ? void 0 : _7.length) > 0) {
+                if (((_5 = (_4 = (_3 = partnerPreference.religionAndEthnicity) === null || _3 === void 0 ? void 0 : _3.subCaste) === null || _4 === void 0 ? void 0 : _4.preferences) === null || _5 === void 0 ? void 0 : _5.length) > 0) {
                     filter["religionDetails.subCaste"] = {
                         $in: partnerPreference.religionAndEthnicity.subCaste.preferences,
                     };
                 }
-                if ((_9 = (_8 = partnerPreference.religionAndEthnicity) === null || _8 === void 0 ? void 0 : _8.motherTongue) === null || _9 === void 0 ? void 0 : _9.preference) {
+                if ((_7 = (_6 = partnerPreference.religionAndEthnicity) === null || _6 === void 0 ? void 0 : _6.motherTongue) === null || _7 === void 0 ? void 0 : _7.preference) {
                     filter["religionDetails.motherTongue"] =
                         partnerPreference.religionAndEthnicity.motherTongue.preference;
                 }
-                if (hasActivePreference((_11 = (_10 = partnerPreference.religionAndEthnicity) === null || _10 === void 0 ? void 0 : _10.manglikStatus) === null || _11 === void 0 ? void 0 : _11.preferences)) {
+                if (hasActivePreference((_9 = (_8 = partnerPreference.religionAndEthnicity) === null || _8 === void 0 ? void 0 : _8.manglikStatus) === null || _9 === void 0 ? void 0 : _9.preferences)) {
                     filter["religionDetails.manglik"] = {
                         $in: partnerPreference.religionAndEthnicity.manglikStatus.preferences,
                     };
                 }
-                if (hasActivePreference((_13 = (_12 = partnerPreference.lifestyleAndAppearance) === null || _12 === void 0 ? void 0 : _12.dietaryHabits) === null || _13 === void 0 ? void 0 : _13.preferences)) {
+                if (hasActivePreference((_11 = (_10 = partnerPreference.lifestyleAndAppearance) === null || _10 === void 0 ? void 0 : _10.dietaryHabits) === null || _11 === void 0 ? void 0 : _11.preferences)) {
                     filter["lifestyleDetails.eatingHabit"] = {
                         $in: partnerPreference.lifestyleAndAppearance.dietaryHabits.preferences,
                     };
                 }
-                if (hasActivePreference((_15 = (_14 = partnerPreference.lifestyleAndAppearance) === null || _14 === void 0 ? void 0 : _14.smokingHabits) === null || _15 === void 0 ? void 0 : _15.preferences)) {
+                if (hasActivePreference((_13 = (_12 = partnerPreference.lifestyleAndAppearance) === null || _12 === void 0 ? void 0 : _12.smokingHabits) === null || _13 === void 0 ? void 0 : _13.preferences)) {
                     filter["additionalDetails.smoking"] = {
                         $in: partnerPreference.lifestyleAndAppearance.smokingHabits.preferences,
                     };
                 }
-                if (hasActivePreference((_17 = (_16 = partnerPreference.lifestyleAndAppearance) === null || _16 === void 0 ? void 0 : _16.drinkingHabits) === null || _17 === void 0 ? void 0 : _17.preferences)) {
+                if (hasActivePreference((_15 = (_14 = partnerPreference.lifestyleAndAppearance) === null || _14 === void 0 ? void 0 : _14.drinkingHabits) === null || _15 === void 0 ? void 0 : _15.preferences)) {
                     filter["additionalDetails.drinking"] = {
                         $in: partnerPreference.lifestyleAndAppearance.drinkingHabits.preferences,
                     };
                 }
-                if (hasActivePreference((_19 = (_18 = partnerPreference.lifestyleAndAppearance) === null || _18 === void 0 ? void 0 : _18.disability) === null || _19 === void 0 ? void 0 : _19.preferences)) {
+                if (hasActivePreference((_17 = (_16 = partnerPreference.lifestyleAndAppearance) === null || _16 === void 0 ? void 0 : _16.disability) === null || _17 === void 0 ? void 0 : _17.preferences)) {
                     filter["additionalDetails.disability"] = {
                         $in: partnerPreference.lifestyleAndAppearance.disability.preferences,
                     };
                 }
-                if ((_21 = (_20 = partnerPreference.familyDetails) === null || _20 === void 0 ? void 0 : _20.familyBasedOutOfCountry) === null || _21 === void 0 ? void 0 : _21.country) {
+                if ((_19 = (_18 = partnerPreference.familyDetails) === null || _18 === void 0 ? void 0 : _18.familyBasedOutOfCountry) === null || _19 === void 0 ? void 0 : _19.country) {
                     filter["familyDetails.basedOutOfCountry"] =
                         partnerPreference.familyDetails.familyBasedOutOfCountry.country;
                 }
