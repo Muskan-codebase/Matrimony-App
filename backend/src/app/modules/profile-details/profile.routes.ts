@@ -449,24 +449,37 @@ router.get("/me", authenticate, getMyProfile);
  *         schema:
  *           type: string
  *         description: >
- *           Multi-select feed preference filter. Supports `verified`, `nearby`, and `justJoined`.
+ *           Multi-select feed preference filter. Supports `verified` and `justJoined`.
  *
  *           `verified` returns only profiles where `isVerified` is `true`.
- *
- *           `nearby` returns profiles whose `birthPlace.city` and `birthPlace.state`
- *           match the logged-in user's city and state.
  *
  *           `justJoined` returns profiles created within the last 24 hours. If no such
  *           profiles exist, the API falls back to the newest matching profiles.
  *
  *           Accepts comma-separated values
- *           (`matchPreference=verified,nearby,justJoined`)
+ *           (`matchPreference=verified,justJoined`)
  *           or repeated parameters
- *           (`matchPreference=verified&matchPreference=nearby`).
+ *           (`matchPreference=verified&matchPreference=justJoined`).
  *
  *           Multiple values are combined together. For example,
- *           `matchPreference=verified,nearby` returns only verified profiles
- *           from the logged-in user's city and state.
+ *           `matchPreference=verified,justJoined` returns only verified profiles
+ *           that were created within the last 24 hours.
+ *
+ *       - in: query
+ *         name: nearby
+ *         schema:
+ *           type: string
+ *         description: >
+ *           Filters profiles by nearby location using the provided city or state.
+ *
+ *           If the value matches `locationDetails.city`, profiles from that city are returned.
+ *           If the value matches `locationDetails.state`, profiles from that state are returned.
+ *
+ *           Examples: `nearby=Pune` or `nearby=Maharashtra`.
+ *
+ *           The nearby filter can also be combined with other filters.
+ *           For example, `matchPreference=verified&nearby=Pune` returns only verified
+ *           profiles whose city or state matches Pune.
  *       - in: query
  *         name: gender
  *         schema:

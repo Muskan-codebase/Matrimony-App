@@ -147,6 +147,7 @@ export const getProfiles = async (req: Request, res: Response) => {
 
         const {
             matchPreference,
+            nearby,
             gender,
             minAge,
             maxAge,
@@ -227,6 +228,21 @@ export const getProfiles = async (req: Request, res: Response) => {
         applyMulti("horoscopeDetails.starDetails.nakshatra", nakshatra);
         applyMulti("horoscopeDetails.starDetails.rashi", rashi);
 
+        if (nearby) {
+            const nearbyLocation = String(nearby).trim();
+
+            filter.$or = [
+                {
+                    "locationDetails.city": nearbyLocation,
+                },
+                {
+                    "locationDetails.state": nearbyLocation,
+                },
+            ];
+
+            hasExplicitFilters = true;
+        }
+
         if (hasDosh !== undefined) {
             filter["religionDetails.hasDosh"] = hasDosh === "true";
             hasExplicitFilters = true;
@@ -258,19 +274,6 @@ export const getProfiles = async (req: Request, res: Response) => {
             // Only verified profiles
             filter.isVerified = true;
             hasExplicitFilters = true;
-        }
-
-        if (matchPreferences.includes("nearby")) {
-            const userCity = loggedInProfile.locationDetails?.city;
-            const userState = loggedInProfile.locationDetails?.state;
-
-            if (userCity && userState) {
-                // Nearby means same city AND same state
-                filter["locationDetails.city"] = userCity;
-                filter["locationDetails.state"] = userState;
-
-                hasExplicitFilters = true;
-            }
         }
 
         if (matchPreferences.includes("justJoined")) {
