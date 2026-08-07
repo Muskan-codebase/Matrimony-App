@@ -79,6 +79,8 @@ const storage = new CloudinaryStorage({
         return "matrimony/hero-banners";
       } else if (req.originalUrl.includes("/about-us")) {
         return "matrimony/about-us";
+      } else if (req.originalUrl.includes("/profile-verification")) {
+        return "matrimony/profile-verification";
       }
       return 'restaurant-uploads';
     },
