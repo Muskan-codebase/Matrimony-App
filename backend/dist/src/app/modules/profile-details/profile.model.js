@@ -314,18 +314,9 @@ const profileSchema = new mongoose_1.Schema({
         },
         familyType: {
             type: String,
-            enum: [
-                "Joint Family",
-                "Nuclear Family",
-            ],
         },
         familyValue: {
             type: String,
-            enum: [
-                "Traditional",
-                "Moderate",
-                "Liberal",
-            ],
         },
         livingWithParents: {
             type: Boolean,

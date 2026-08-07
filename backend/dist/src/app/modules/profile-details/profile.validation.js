@@ -164,15 +164,8 @@ const familySchema = zod_1.z.object({
         "Affluent",
         "Elite",
     ]),
-    familyType: optionalEnum([
-        "Joint Family",
-        "Nuclear Family",
-    ]),
-    familyValue: optionalEnum([
-        "Traditional",
-        "Moderate",
-        "Liberal",
-    ]),
+    familyType: zod_1.z.string().trim().optional(),
+    familyValue: zod_1.z.string().trim().optional(),
     livingWithParents: zod_1.z.boolean().optional(),
     familyBasedOutOf: zod_1.z.string().trim().optional(),
 });
