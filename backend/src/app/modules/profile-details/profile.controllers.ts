@@ -147,7 +147,6 @@ export const getProfiles = async (req: Request, res: Response) => {
 
         const {
             matchPreference,
-            nearby,
             gender,
             minAge,
             maxAge,
@@ -228,21 +227,6 @@ export const getProfiles = async (req: Request, res: Response) => {
         applyMulti("horoscopeDetails.starDetails.nakshatra", nakshatra);
         applyMulti("horoscopeDetails.starDetails.rashi", rashi);
 
-        if (nearby) {
-            const nearbyLocation = String(nearby).trim();
-
-            filter.$or = [
-                {
-                    "locationDetails.city": nearbyLocation,
-                },
-                {
-                    "locationDetails.state": nearbyLocation,
-                },
-            ];
-
-            hasExplicitFilters = true;
-        }
-
         if (hasDosh !== undefined) {
             filter["religionDetails.hasDosh"] = hasDosh === "true";
             hasExplicitFilters = true;
@@ -284,6 +268,30 @@ export const getProfiles = async (req: Request, res: Response) => {
             filter.createdAt = {
                 $gte: last24Hours,
             };
+
+            hasExplicitFilters = true;
+        }
+
+        // Match Preference → City / State
+        const locationPreference = matchPreferences.filter(
+            (preference: string) =>
+                preference !== "verified" &&
+                preference !== "justJoined"
+        );
+
+        if (locationPreference.length > 0) {
+            filter.$or = [
+                {
+                    "locationDetails.city": {
+                        $in: locationPreference,
+                    },
+                },
+                {
+                    "locationDetails.state": {
+                        $in: locationPreference,
+                    },
+                },
+            ];
 
             hasExplicitFilters = true;
         }
