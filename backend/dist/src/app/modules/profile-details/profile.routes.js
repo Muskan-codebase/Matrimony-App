@@ -428,50 +428,47 @@ router.get("/me", authMiddleware_1.authenticate, profile_controllers_1.getMyProf
  *       - If no query filters are provided, the user's saved Partner Preferences (if any) are
  *         applied automatically as the default feed.
  *
- *       **Multi-select fields:** Any filter marked as multi-select accepts multiple values via
- *       a comma-separated string (`city=Pune,Mumbai,Delhi`) or repeated params (`city=Pune&city=Mumbai`).
+ *       **Multi-select fields:**
+ *       Any filter marked as multi-select accepts multiple values via a comma-separated string
+ *       (`city=Pune,Mumbai,Delhi`) or repeated params
+ *       (`city=Pune&city=Mumbai`).
  *
- *       **Annual income filter:** `minIncome`/`maxIncome` are raw numeric values (in rupees), not
- *       bracket labels or ids. The server resolves them internally to every saved AnnualIncome
- *       bracket that overlaps the given range and filters profiles accordingly. Either value can
- *       be provided alone (e.g. only `minIncome` for "X and above").
+ *       **Annual income filter:**
+ *       `minIncome`/`maxIncome` are raw numeric values (in rupees), not bracket labels or IDs.
+ *       The server resolves them internally to matching AnnualIncome brackets.
+ *
  *     parameters:
+ *
  *       - in: query
  *         name: matchPreference
  *         schema:
  *           type: string
  *         description: >
- *           Multi-select feed preference filter. Supports `verified` and `justJoined`.
+ *           Feed preference filter.
  *
- *           `verified` returns only profiles where `isVerified` is `true`.
+ *           Supported values:
+ *           - `verified` - Returns only profiles where `isVerified` is true.
+ *           - `justJoined` - Returns profiles created within the last 24 hours. If no profiles
+ *             are found, the API falls back to the newest matching profiles.
+ *           - City name - Returns profiles whose `locationDetails.city` matches the provided value.
+ *             Example: `Pune`.
+ *           - State name - Returns profiles whose `locationDetails.state` matches the provided value.
+ *             Example: `Maharashtra`.
  *
- *           `justJoined` returns profiles created within the last 24 hours. If no such
- *           profiles exist, the API falls back to the newest matching profiles.
+ *           For location filtering, the user can enter either a city or a state directly.
+ *           The API checks the provided value against both `locationDetails.city` and
+ *           `locationDetails.state`.
  *
- *           Accepts comma-separated values
- *           (`matchPreference=verified,justJoined`)
- *           or repeated parameters
- *           (`matchPreference=verified&matchPreference=justJoined`).
+ *           Examples:
+ *           - `matchPreference=verified`
+ *           - `matchPreference=justJoined`
+ *           - `matchPreference=Pune`
+ *           - `matchPreference=Maharashtra`
+ *           - `matchPreference=verified,Pune`
+ *           - `matchPreference=verified,Maharashtra`
  *
- *           Multiple values are combined together. For example,
- *           `matchPreference=verified,justJoined` returns only verified profiles
- *           that were created within the last 24 hours.
+ *           Multiple values can be provided using comma-separated values or repeated parameters.
  *
- *       - in: query
- *         name: nearby
- *         schema:
- *           type: string
- *         description: >
- *           Filters profiles by nearby location using the provided city or state.
- *
- *           If the value matches `locationDetails.city`, profiles from that city are returned.
- *           If the value matches `locationDetails.state`, profiles from that state are returned.
- *
- *           Examples: `nearby=Pune` or `nearby=Maharashtra`.
- *
- *           The nearby filter can also be combined with other filters.
- *           For example, `matchPreference=verified&nearby=Pune` returns only verified
- *           profiles whose city or state matches Pune.
  *       - in: query
  *         name: gender
  *         schema:
