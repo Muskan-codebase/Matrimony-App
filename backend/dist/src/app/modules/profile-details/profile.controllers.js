@@ -124,7 +124,7 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         };
         // 3. Explicit query filters (multi-select supported on every list-type field)
         const query = normalizeQueryKeys(req.query);
-        const { matchPreference, nearby, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
+        const { matchPreference, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
         // Match preference for multiple filters
         const matchPreferences = toArray(matchPreference);
         let hasExplicitFilters = false;
@@ -163,18 +163,6 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         applyMulti("lifestyleDetails.eatingHabit", eatingHabit);
         applyMulti("horoscopeDetails.starDetails.nakshatra", nakshatra);
         applyMulti("horoscopeDetails.starDetails.rashi", rashi);
-        if (nearby) {
-            const nearbyLocation = String(nearby).trim();
-            filter.$or = [
-                {
-                    "locationDetails.city": nearbyLocation,
-                },
-                {
-                    "locationDetails.state": nearbyLocation,
-                },
-            ];
-            hasExplicitFilters = true;
-        }
         if (hasDosh !== undefined) {
             filter["religionDetails.hasDosh"] = hasDosh === "true";
             hasExplicitFilters = true;
@@ -206,6 +194,24 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             filter.createdAt = {
                 $gte: last24Hours,
             };
+            hasExplicitFilters = true;
+        }
+        // Match Preference → City / State
+        const locationPreference = matchPreferences.filter((preference) => preference !== "verified" &&
+            preference !== "justJoined");
+        if (locationPreference.length > 0) {
+            filter.$or = [
+                {
+                    "locationDetails.city": {
+                        $in: locationPreference,
+                    },
+                },
+                {
+                    "locationDetails.state": {
+                        $in: locationPreference,
+                    },
+                },
+            ];
             hasExplicitFilters = true;
         }
         // 4. No explicit filters at all → fall back to saved partner preferences
