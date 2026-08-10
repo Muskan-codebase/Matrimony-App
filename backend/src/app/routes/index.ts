@@ -30,6 +30,7 @@ import { notificationRouter } from '../modules/profile-details/notification/noti
 import { callRouter } from '../modules/profile-details/call/call.routes';
 // import { profileVisitsRouter } from '../modules/profile-details/profile-visits/profileVisits.routes';
 import { profileVerificationRouter } from '../modules/profile-details/profile-verification/profileVerification.routes';
+import { reportProfileRouter } from '../modules/profile-details/report-profile/reportProfile.routes';
 
 const router = Router();
 
@@ -157,6 +158,10 @@ const moduleRoutes = [
   {
     path: "/profile-verification",
     route: profileVerificationRouter
+  },
+  {
+    path: "/profile-report",
+    route: reportProfileRouter
   }
 ];
 
