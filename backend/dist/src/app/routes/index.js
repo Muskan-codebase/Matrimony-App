@@ -32,6 +32,7 @@ const notification_routes_1 = require("../modules/profile-details/notification/n
 const call_routes_1 = require("../modules/profile-details/call/call.routes");
 // import { profileVisitsRouter } from '../modules/profile-details/profile-visits/profileVisits.routes';
 const profileVerification_routes_1 = require("../modules/profile-details/profile-verification/profileVerification.routes");
+const reportProfile_routes_1 = require("../modules/profile-details/report-profile/reportProfile.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -157,6 +158,10 @@ const moduleRoutes = [
     {
         path: "/profile-verification",
         route: profileVerification_routes_1.profileVerificationRouter
+    },
+    {
+        path: "/profile-report",
+        route: reportProfile_routes_1.reportProfileRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
