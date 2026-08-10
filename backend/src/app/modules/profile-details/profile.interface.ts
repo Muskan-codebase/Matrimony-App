@@ -296,6 +296,7 @@ export interface IProfile {
 
     };
     isVerified?: Boolean
+    isBlocked?: Boolean
     isDeleted?: Boolean
 
     // =========================
