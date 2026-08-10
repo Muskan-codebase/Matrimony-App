@@ -33,6 +33,9 @@ const call_routes_1 = require("../modules/profile-details/call/call.routes");
 // import { profileVisitsRouter } from '../modules/profile-details/profile-visits/profileVisits.routes';
 const profileVerification_routes_1 = require("../modules/profile-details/profile-verification/profileVerification.routes");
 const reportProfile_routes_1 = require("../modules/profile-details/report-profile/reportProfile.routes");
+const contactUs_routes_1 = require("../modules/admin/contact-us/contactUs.routes");
+const press_routes_1 = require("../modules/admin/press/press.routes");
+const privacyPolicy_routes_1 = require("../modules/admin/privacy-policy/privacyPolicy.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -136,15 +139,15 @@ const moduleRoutes = [
         route: payment_routes_1.paymentRouter
     },
     {
-        path: "/faqs",
+        path: "/admin/faqs",
         route: faq_routes_1.faqRouter
     },
     {
-        path: "/hero-banner",
+        path: "/admin/hero-banner",
         route: heroBanner_routes_1.heroBannerRouter
     },
     {
-        path: "/about-us",
+        path: "/admin/about-us",
         route: aboutUs_routes_1.aboutUsRouter
     },
     {
@@ -162,6 +165,18 @@ const moduleRoutes = [
     {
         path: "/profile-report",
         route: reportProfile_routes_1.reportProfileRouter
+    },
+    {
+        path: "/admin/contact-us",
+        route: contactUs_routes_1.contactUsRouter
+    },
+    {
+        path: "/admin/press",
+        route: press_routes_1.pressRouter
+    },
+    {
+        path: "/admin/privacy-policy",
+        route: privacyPolicy_routes_1.privacyPolicyRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pressRouter = void 0;
+const express_1 = require("express");
+const press_controllers_1 = require("./press.controllers");
+const authMiddleware_1 = require("../../../middlewares/authMiddleware");
+const cloudinary_1 = require("../../../config/cloudinary");
+const router = (0, express_1.Router)();
+router.post("/", authMiddleware_1.authenticate, cloudinary_1.upload.single("image"), press_controllers_1.createPress);
+router.get("/", press_controllers_1.getPress);
+router.get("/:id", press_controllers_1.getPressById);
+router.put("/:id", authMiddleware_1.authenticate, cloudinary_1.upload.single("image"), press_controllers_1.updatePress);
+router.delete("/:id", authMiddleware_1.authenticate, press_controllers_1.deletePress);
+exports.pressRouter = router;
