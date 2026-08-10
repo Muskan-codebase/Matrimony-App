@@ -20,7 +20,7 @@ const router = Router();
 
 /**
  * @swagger
- * /profile-verification/submit:
+ * /v1/api/profile-verification/submit:
  *   post:
  *     summary: Submit profile verification
  *     description: Allows a logged-in user to submit their selfie and Aadhaar document for profile verification.
@@ -35,16 +35,16 @@ const router = Router();
  *             type: object
  *             required:
  *               - selfie
- *               - aadhaarFront
+ *               - adhaarFront
  *             properties:
  *               selfie:
  *                 type: string
  *                 format: binary
  *                 description: User selfie image
- *               aadhaarFront:
+ *               adhaarFront:
  *                 type: string
  *                 format: binary
- *                 description: Aadhaar document image or PDF
+ *                 description: Adhaar document image or PDF
  *     responses:
  *       200:
  *         description: Profile verification submitted successfully
@@ -61,7 +61,7 @@ router.post("/submit", authenticate, upload.fields([
 ]), submitVerification);
 /**
  * @swagger
- * /profile-verification/my:
+ * /v1/api/profile-verification/my:
  *   get:
  *     summary: Get my profile verification
  *     description: Returns the logged-in user's profile verification status and verification details.
@@ -133,7 +133,7 @@ router.post("/submit", authenticate, upload.fields([
 router.get("/my", authenticate, getMyVerification);
 /**
  * @swagger
- * /profile-verification/admin:
+ * /v1/api/profile-verification/admin:
  *   get:
  *     summary: Get all profile verification requests
  *     description: Returns all profile verification requests for admin review.
@@ -149,7 +149,7 @@ router.get("/my", authenticate, getMyVerification);
 router.get("/admin", authenticate, getAllVerifications);
 /**
  * @swagger
- * /profile-verification/admin/{id}:
+ * /v1/api/profile-verification/admin/{id}:
  *   get:
  *     summary: Get profile verification by ID
  *     description: Returns a specific profile verification request for admin review.
@@ -177,7 +177,7 @@ router.get("/admin", authenticate, getAllVerifications);
 router.get("/admin/:id", authenticate, getVerificationById);
 /**
  * @swagger
- * /profile-verification/admin/{id}:
+ * /v1/api/profile-verification/admin/{id}:
  *   patch:
  *     summary: Review profile verification
  *     description: Allows an admin to approve or reject a profile verification request.
@@ -224,7 +224,7 @@ router.get("/admin/:id", authenticate, getVerificationById);
 router.patch("/admin/:id", authenticate, reviewVerification);
 /**
  * @swagger
- * /profile-verification/admin/{id}:
+ * /v1/api/profile-verification/admin/{id}:
  *   delete:
  *     summary: Delete profile verification
  *     description: Deletes a profile verification request.
