@@ -31,6 +31,9 @@ import { callRouter } from '../modules/profile-details/call/call.routes';
 // import { profileVisitsRouter } from '../modules/profile-details/profile-visits/profileVisits.routes';
 import { profileVerificationRouter } from '../modules/profile-details/profile-verification/profileVerification.routes';
 import { reportProfileRouter } from '../modules/profile-details/report-profile/reportProfile.routes';
+import { contactUsRouter } from '../modules/admin/contact-us/contactUs.routes';
+import { pressRouter } from '../modules/admin/press/press.routes';
+import { privacyPolicyRouter } from '../modules/admin/privacy-policy/privacyPolicy.routes';
 
 const router = Router();
 
@@ -136,15 +139,15 @@ const moduleRoutes = [
     route: paymentRouter
   },
   {
-    path: "/faqs",
+    path: "/admin/faqs",
     route: faqRouter
   },
   {
-    path: "/hero-banner",
+    path: "/admin/hero-banner",
     route: heroBannerRouter
   },
   {
-    path: "/about-us",
+    path: "/admin/about-us",
     route: aboutUsRouter
   },
   {
@@ -162,6 +165,18 @@ const moduleRoutes = [
   {
     path: "/profile-report",
     route: reportProfileRouter
+  },
+  {
+    path: "/admin/contact-us",
+    route: contactUsRouter
+  },
+  {
+    path: "/admin/press",
+    route: pressRouter
+  },
+  {
+    path: "/admin/privacy-policy",
+    route: privacyPolicyRouter
   }
 ];
 
