@@ -6,6 +6,7 @@ import {
     resendOTP,
     refreshToken,
     getCurrentUser,
+    saveFirebaseUid
 } from "./auth.controller";
 
 import { authenticate } from "../../middlewares/authMiddleware";
@@ -133,6 +134,121 @@ router.post("/resend-otp", resendOTP);
  *         description: Invalid or expired refresh token.
  */
 router.post("/refresh-token", refreshToken);
+/**
+ * @swagger
+ * /v1/api/auth/firebase-uid:
+ *   post:
+ *     summary: Save Firebase UID
+ *     description: Saves the Firebase UID of the currently authenticated user for Firebase services such as online/offline presence and messaging.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firebaseUid
+ *             properties:
+ *               firebaseUid:
+ *                 type: string
+ *                 example: "abc123XYZfirebaseUid"
+ *                 description: Firebase Authentication UID of the logged-in user.
+ *     responses:
+ *       200:
+ *         description: Firebase UID saved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Firebase UID saved successfully.
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     firebaseUid:
+ *                       type: string
+ *                       example: "abc123XYZfirebaseUid"
+ *
+ *       400:
+ *         description: Firebase UID is missing or invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Firebase UID is required.
+ *
+ *       401:
+ *         description: Unauthorized. Access token is missing or invalid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized.
+ *
+ *       404:
+ *         description: User not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: User not found.
+ *
+ *       409:
+ *         description: Firebase UID is already linked to another account.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: This Firebase UID is already linked to another account.
+ *
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+router.post("/firebase-uid", authenticate, saveFirebaseUid);
 /**
  * @swagger
  * /v1/api/auth/me:
