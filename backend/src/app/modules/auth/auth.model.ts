@@ -36,6 +36,13 @@ const authSchema = new Schema<IUserAuth>(
             default: AuthProvider.OTP,
         },
 
+        firebaseUid: {
+            type: String,
+            unique: true,
+            sparse: true,
+            trim: true,
+        },
+
         isVerified: {
             type: Boolean,
             default: false,
