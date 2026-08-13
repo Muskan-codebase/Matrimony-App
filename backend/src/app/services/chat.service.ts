@@ -392,7 +392,7 @@ export const getChats = async (authUserId: string) => {
             const otherAuth = await Auth.findById(
                 otherProfile.userId
             )
-                .select("mobile countryCode")
+                .select("mobile countryCode firebaseUid")
                 .lean();
 
             return {
@@ -402,6 +402,8 @@ export const getChats = async (authUserId: string) => {
                 participant: {
 
                     profileId: otherProfile._id,
+
+                    firebaseUid: otherAuth?.firebaseUid || null,
 
                     firstName:
                         otherProfile.basicDetails?.firstName || "",
@@ -514,7 +516,7 @@ export const getMessages = async (
     const otherAuth = await Auth.findById(
         otherProfile.userId
     )
-        .select("mobile countryCode")
+        .select("mobile countryCode firebaseUid")
         .lean();
 
     // Fetch all messages
@@ -534,6 +536,8 @@ export const getMessages = async (
     return {
         participant: {
             profileId: otherProfile._id,
+
+            firebaseUid: otherAuth?.firebaseUid || null,
 
             fullName:
                 `${otherProfile.basicDetails?.firstName || ""} ${otherProfile.basicDetails?.lastName || ""}`.trim(),
