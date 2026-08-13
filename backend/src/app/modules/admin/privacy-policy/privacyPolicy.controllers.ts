@@ -43,7 +43,7 @@ export const createOrUpdatePrivacyPolicy = async (req: Request, res: Response) =
 };
 
 export const getPrivacyPolicy = async (req: Request, res: Response) => {
-    
+
     try {
         const privacyPolicy = await PrivacyPolicy.findOne().lean();
 
