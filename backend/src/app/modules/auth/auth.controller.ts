@@ -424,6 +424,66 @@ export const getCurrentUser = async (
 
 };
 
+export const saveFirebaseUid = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    try {
+        const { firebaseUid } = req.body;
+
+        if (!firebaseUid || typeof firebaseUid !== "string") {
+            res.status(400).json({
+                success: false,
+                message: "Firebase UID is required.",
+            });
+            return;
+        }
+
+        const authUser = await Auth.findById(req.user.id);
+
+        if (!authUser) {
+            res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+            return;
+        }
+
+        // Check if this Firebase UID is already linked
+        const existingUser = await Auth.findOne({
+            firebaseUid,
+            _id: { $ne: authUser._id },
+        });
+
+        if (existingUser) {
+            res.status(409).json({
+                success: false,
+                message: "This Firebase UID is already linked to another account.",
+            });
+            return;
+        }
+
+        authUser.firebaseUid = firebaseUid;
+        await authUser.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Firebase UID saved successfully.",
+            data: {
+                firebaseUid: authUser.firebaseUid,
+            },
+        });
+
+    } catch (error: any) {
+        console.error("Save Firebase UID Error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+        });
+    }
+};
+
 // export const logout = async (
 //     req: Request,
 //     res: Response
