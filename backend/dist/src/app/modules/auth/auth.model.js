@@ -63,6 +63,12 @@ const authSchema = new mongoose_1.Schema({
         enum: Object.values(auth_interface_1.AuthProvider),
         default: auth_interface_1.AuthProvider.OTP,
     },
+    firebaseUid: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+    },
     isVerified: {
         type: Boolean,
         default: false,

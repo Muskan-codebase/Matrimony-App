@@ -221,6 +221,9 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 profileId: loggedInProfile._id,
                 isDeleted: false,
             });
+            console.log("PARTNER PREF ID:", partnerPreference === null || partnerPreference === void 0 ? void 0 : partnerPreference._id);
+            console.log("PARTNER PREF PROFILE ID:", partnerPreference === null || partnerPreference === void 0 ? void 0 : partnerPreference.profileId);
+            console.log("PARTNER PREF RAW:", JSON.stringify(partnerPreference === null || partnerPreference === void 0 ? void 0 : partnerPreference.toObject(), null, 2));
             if (partnerPreference) {
                 if (((_b = (_a = partnerPreference.basicDetails) === null || _a === void 0 ? void 0 : _a.age) === null || _b === void 0 ? void 0 : _b.minAge) !== undefined ||
                     ((_d = (_c = partnerPreference.basicDetails) === null || _c === void 0 ? void 0 : _c.age) === null || _d === void 0 ? void 0 : _d.maxAge) !== undefined) {
@@ -321,6 +324,41 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             }
         }
         // 5. Fetch
+        // let profiles = await Profile.find(filter)
+        console.log("========== DEBUG ==========");
+        // console.log(
+        //     "Partner Preference Country:",
+        //     partnerPreference?.basicDetails?.partnerCountry
+        // );
+        console.log("FINAL FILTER:", JSON.stringify(filter, null, 2));
+        const indiaProfiles = yield profile_model_1.Profile.find({
+            isDeleted: false,
+            "locationDetails.country": "India",
+        }).select("_id basicDetails.age locationDetails.country");
+        console.log("India profiles:", indiaProfiles.length);
+        console.log("India profiles data:", indiaProfiles);
+        const indiaAgeProfiles = yield profile_model_1.Profile.find({
+            isDeleted: false,
+            "locationDetails.country": "India",
+            "basicDetails.age": {
+                $gte: 19,
+                $lte: 40,
+            },
+        }).select("_id basicDetails.age locationDetails.country");
+        console.log("India + Age 19-40:", indiaAgeProfiles.length);
+        const indiaAgeExcludedProfiles = yield profile_model_1.Profile.find({
+            isDeleted: false,
+            "locationDetails.country": "India",
+            "basicDetails.age": {
+                $gte: 19,
+                $lte: 40,
+            },
+            _id: {
+                $nin: uniqueExcludedIds,
+            },
+        }).select("_id basicDetails.age locationDetails.country");
+        console.log("India + Age + Exclusions:", indiaAgeExcludedProfiles.length);
+        console.log("===========================");
         let profiles = yield profile_model_1.Profile.find(filter);
         // Just Joined fallback
         if (matchPreferences.includes("justJoined") && profiles.length === 0) {

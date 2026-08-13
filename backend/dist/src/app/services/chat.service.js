@@ -279,12 +279,13 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
             return null;
         }
         const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
-            .select("mobile countryCode")
+            .select("mobile countryCode firebaseUid")
             .lean();
         return {
             roomId: doc.id,
             participant: {
                 profileId: otherProfile._id,
+                firebaseUid: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.firebaseUid) || null,
                 firstName: ((_a = otherProfile.basicDetails) === null || _a === void 0 ? void 0 : _a.firstName) || "",
                 lastName: ((_b = otherProfile.basicDetails) === null || _b === void 0 ? void 0 : _b.lastName) || "",
                 fullName: `${((_c = otherProfile.basicDetails) === null || _c === void 0 ? void 0 : _c.firstName) || ""} ${((_d = otherProfile.basicDetails) === null || _d === void 0 ? void 0 : _d.lastName) || ""}`.trim(),
@@ -355,7 +356,7 @@ const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, fu
         throw new Error("Other profile not found.");
     }
     const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
-        .select("mobile countryCode")
+        .select("mobile countryCode firebaseUid")
         .lean();
     // Fetch all messages
     const messagesSnapshot = yield roomRef
@@ -369,6 +370,7 @@ const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, fu
     return {
         participant: {
             profileId: otherProfile._id,
+            firebaseUid: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.firebaseUid) || null,
             fullName: `${((_a = otherProfile.basicDetails) === null || _a === void 0 ? void 0 : _a.firstName) || ""} ${((_b = otherProfile.basicDetails) === null || _b === void 0 ? void 0 : _b.lastName) || ""}`.trim(),
             profilePhoto: ((_c = otherProfile.photos) === null || _c === void 0 ? void 0 : _c.length)
                 ? otherProfile.photos[0]

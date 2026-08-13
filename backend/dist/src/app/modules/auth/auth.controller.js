@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentUser = exports.refreshToken = exports.resendOTP = exports.verifyOTP = exports.sendOTP = void 0;
+exports.saveFirebaseUid = exports.getCurrentUser = exports.refreshToken = exports.resendOTP = exports.verifyOTP = exports.sendOTP = void 0;
 const auth_model_1 = __importDefault(require("./auth.model"));
 const otp_model_1 = __importDefault(require("./otp/otp.model"));
 const generateOTP_1 = require("../../utils/generateOTP");
@@ -291,6 +291,55 @@ const getCurrentUser = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getCurrentUser = getCurrentUser;
+const saveFirebaseUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { firebaseUid } = req.body;
+        if (!firebaseUid || typeof firebaseUid !== "string") {
+            res.status(400).json({
+                success: false,
+                message: "Firebase UID is required.",
+            });
+            return;
+        }
+        const authUser = yield auth_model_1.default.findById(req.user.id);
+        if (!authUser) {
+            res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+            return;
+        }
+        // Check if this Firebase UID is already linked
+        const existingUser = yield auth_model_1.default.findOne({
+            firebaseUid,
+            _id: { $ne: authUser._id },
+        });
+        if (existingUser) {
+            res.status(409).json({
+                success: false,
+                message: "This Firebase UID is already linked to another account.",
+            });
+            return;
+        }
+        authUser.firebaseUid = firebaseUid;
+        yield authUser.save();
+        res.status(200).json({
+            success: true,
+            message: "Firebase UID saved successfully.",
+            data: {
+                firebaseUid: authUser.firebaseUid,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Save Firebase UID Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+        });
+    }
+});
+exports.saveFirebaseUid = saveFirebaseUid;
 // export const logout = async (
 //     req: Request,
 //     res: Response
