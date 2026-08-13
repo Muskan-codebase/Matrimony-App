@@ -23,6 +23,8 @@ export interface IUserAuth extends Document {
 
     provider: AuthProvider;
 
+    firebaseUid?: string;
+
     isVerified: boolean;
 
     loginCount: number;
