@@ -34,6 +34,7 @@ import { reportProfileRouter } from '../modules/profile-details/report-profile/r
 import { contactUsRouter } from '../modules/admin/contact-us/contactUs.routes';
 import { pressRouter } from '../modules/admin/press/press.routes';
 import { privacyPolicyRouter } from '../modules/admin/privacy-policy/privacyPolicy.routes';
+import { inAppNotificationsRouter } from '../modules/profile-details/in-app-notifications/inAppNotification.routes';
 
 const router = Router();
 
@@ -177,6 +178,10 @@ const moduleRoutes = [
   {
     path: "/admin/privacy-policy",
     route: privacyPolicyRouter
+  },
+  {
+    path: "/app-notification",
+    route: inAppNotificationsRouter
   }
 ];
 
