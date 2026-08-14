@@ -304,6 +304,13 @@ export const getProfiles = async (req: Request, res: Response) => {
                 isDeleted: false,
             });
 
+            console.log("PARTNER PREF ID:", partnerPreference?._id);
+            console.log("PARTNER PREF PROFILE ID:", partnerPreference?.profileId);
+            console.log(
+                "PARTNER PREF RAW:",
+                JSON.stringify(partnerPreference?.toObject(), null, 2)
+            );
+
             if (partnerPreference) {
                 if (
                     partnerPreference.basicDetails?.age?.minAge !== undefined ||
@@ -434,7 +441,58 @@ export const getProfiles = async (req: Request, res: Response) => {
         }
 
         // 5. Fetch
-        let profiles = await Profile.find(filter)
+        // let profiles = await Profile.find(filter)
+        console.log("========== DEBUG ==========");
+
+        // console.log(
+        //     "Partner Preference Country:",
+        //     partnerPreference?.basicDetails?.partnerCountry
+        // );
+
+        console.log(
+            "FINAL FILTER:",
+            JSON.stringify(filter, null, 2)
+        );
+
+        const indiaProfiles = await Profile.find({
+            isDeleted: false,
+            "locationDetails.country": "India",
+        }).select("_id basicDetails.age locationDetails.country");
+
+        console.log("India profiles:", indiaProfiles.length);
+        console.log("India profiles data:", indiaProfiles);
+
+        const indiaAgeProfiles = await Profile.find({
+            isDeleted: false,
+            "locationDetails.country": "India",
+            "basicDetails.age": {
+                $gte: 19,
+                $lte: 40,
+            },
+        }).select("_id basicDetails.age locationDetails.country");
+
+        console.log("India + Age 19-40:", indiaAgeProfiles.length);
+
+        const indiaAgeExcludedProfiles = await Profile.find({
+            isDeleted: false,
+            "locationDetails.country": "India",
+            "basicDetails.age": {
+                $gte: 19,
+                $lte: 40,
+            },
+            _id: {
+                $nin: uniqueExcludedIds,
+            },
+        }).select("_id basicDetails.age locationDetails.country");
+
+        console.log(
+            "India + Age + Exclusions:",
+            indiaAgeExcludedProfiles.length
+        );
+
+        console.log("===========================");
+
+        let profiles = await Profile.find(filter);
 
         // Just Joined fallback
         if (matchPreferences.includes("justJoined") && profiles.length === 0) {
