@@ -23,6 +23,8 @@ export const getMyNotifications = async (
             return;
         }
 
+        const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName";
+
         // 1. Interests received by logged-in user
         const receivedInterests = await Interest.find({
             receiverId: loggedInProfile._id,
@@ -31,6 +33,7 @@ export const getMyNotifications = async (
             .populate({
                 path: "senderId",
                 model: "Profile",
+                select: profileFields,
             })
             .sort({ createdAt: -1 })
             .lean();
@@ -42,6 +45,7 @@ export const getMyNotifications = async (
             .populate({
                 path: "userId",
                 model: "Profile",
+                select: profileFields,
             })
             .sort({ createdAt: -1 })
             .lean();
@@ -53,6 +57,7 @@ export const getMyNotifications = async (
             .populate({
                 path: "viewerProfileId",
                 model: "Profile",
+                select: profileFields,
             })
             .sort({ createdAt: -1 })
             .lean();

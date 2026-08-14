@@ -31,6 +31,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
             });
             return;
         }
+        const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName";
         // 1. Interests received by logged-in user
         const receivedInterests = yield interest_model_1.Interest.find({
             receiverId: loggedInProfile._id,
@@ -39,6 +40,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .populate({
             path: "senderId",
             model: "Profile",
+            select: profileFields,
         })
             .sort({ createdAt: -1 })
             .lean();
@@ -49,6 +51,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .populate({
             path: "userId",
             model: "Profile",
+            select: profileFields,
         })
             .sort({ createdAt: -1 })
             .lean();
@@ -59,6 +62,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .populate({
             path: "viewerProfileId",
             model: "Profile",
+            select: profileFields,
         })
             .sort({ createdAt: -1 })
             .lean();
