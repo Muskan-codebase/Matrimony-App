@@ -67,21 +67,38 @@ export const getMyNotifications = async (
             ...receivedInterests.map((interest: any) => ({
                 type: "interest_received",
                 message: "sent you an interest request",
-                data: interest,
+                data: {
+                    id: interest.senderId?._id,
+                    matrimonyId: interest.senderId?.matrimonyId,
+                    firstName: interest.senderId?.basicDetails?.firstName,
+                    lastName: interest.senderId?.basicDetails?.lastName,
+                },
                 createdAt: interest.createdAt,
             })),
 
             ...shortlistedBy.map((shortlist: any) => ({
                 type: "profile_shortlisted",
                 message: "shortlisted your profile",
-                data: shortlist,
+                data: {
+                    id: shortlist.userId?._id,
+                    matrimonyId: shortlist.userId?.matrimonyId,
+                    firstName: shortlist.userId?.basicDetails?.firstName,
+                    lastName: shortlist.userId?.basicDetails?.lastName,
+                },
                 createdAt: shortlist.createdAt,
             })),
 
             ...profileVisitors.map((visitor: any) => ({
                 type: "profile_visited",
                 message: "visited your profile",
-                data: visitor,
+                data: {
+                    id: visitor.viewerProfileId?._id,
+                    matrimonyId: visitor.viewerProfileId?.matrimonyId,
+                    firstName:
+                        visitor.viewerProfileId?.basicDetails?.firstName,
+                    lastName:
+                        visitor.viewerProfileId?.basicDetails?.lastName,
+                },
                 createdAt: visitor.createdAt,
             })),
         ];
