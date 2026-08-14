@@ -68,24 +68,48 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
             .lean();
         // Combine all notifications
         const notifications = [
-            ...receivedInterests.map((interest) => ({
-                type: "interest_received",
-                message: "sent you an interest request",
-                data: interest,
-                createdAt: interest.createdAt,
-            })),
-            ...shortlistedBy.map((shortlist) => ({
-                type: "profile_shortlisted",
-                message: "shortlisted your profile",
-                data: shortlist,
-                createdAt: shortlist.createdAt,
-            })),
-            ...profileVisitors.map((visitor) => ({
-                type: "profile_visited",
-                message: "visited your profile",
-                data: visitor,
-                createdAt: visitor.createdAt,
-            })),
+            ...receivedInterests.map((interest) => {
+                var _a, _b, _c, _d, _e, _f;
+                return ({
+                    type: "interest_received",
+                    message: "sent you an interest request",
+                    data: {
+                        id: (_a = interest.senderId) === null || _a === void 0 ? void 0 : _a._id,
+                        matrimonyId: (_b = interest.senderId) === null || _b === void 0 ? void 0 : _b.matrimonyId,
+                        firstName: (_d = (_c = interest.senderId) === null || _c === void 0 ? void 0 : _c.basicDetails) === null || _d === void 0 ? void 0 : _d.firstName,
+                        lastName: (_f = (_e = interest.senderId) === null || _e === void 0 ? void 0 : _e.basicDetails) === null || _f === void 0 ? void 0 : _f.lastName,
+                    },
+                    createdAt: interest.createdAt,
+                });
+            }),
+            ...shortlistedBy.map((shortlist) => {
+                var _a, _b, _c, _d, _e, _f;
+                return ({
+                    type: "profile_shortlisted",
+                    message: "shortlisted your profile",
+                    data: {
+                        id: (_a = shortlist.userId) === null || _a === void 0 ? void 0 : _a._id,
+                        matrimonyId: (_b = shortlist.userId) === null || _b === void 0 ? void 0 : _b.matrimonyId,
+                        firstName: (_d = (_c = shortlist.userId) === null || _c === void 0 ? void 0 : _c.basicDetails) === null || _d === void 0 ? void 0 : _d.firstName,
+                        lastName: (_f = (_e = shortlist.userId) === null || _e === void 0 ? void 0 : _e.basicDetails) === null || _f === void 0 ? void 0 : _f.lastName,
+                    },
+                    createdAt: shortlist.createdAt,
+                });
+            }),
+            ...profileVisitors.map((visitor) => {
+                var _a, _b, _c, _d, _e, _f;
+                return ({
+                    type: "profile_visited",
+                    message: "visited your profile",
+                    data: {
+                        id: (_a = visitor.viewerProfileId) === null || _a === void 0 ? void 0 : _a._id,
+                        matrimonyId: (_b = visitor.viewerProfileId) === null || _b === void 0 ? void 0 : _b.matrimonyId,
+                        firstName: (_d = (_c = visitor.viewerProfileId) === null || _c === void 0 ? void 0 : _c.basicDetails) === null || _d === void 0 ? void 0 : _d.firstName,
+                        lastName: (_f = (_e = visitor.viewerProfileId) === null || _e === void 0 ? void 0 : _e.basicDetails) === null || _f === void 0 ? void 0 : _f.lastName,
+                    },
+                    createdAt: visitor.createdAt,
+                });
+            }),
         ];
         // Sort all notification types by latest activity
         notifications.sort((a, b) => new Date(b.createdAt).getTime() -
