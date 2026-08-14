@@ -36,6 +36,7 @@ const reportProfile_routes_1 = require("../modules/profile-details/report-profil
 const contactUs_routes_1 = require("../modules/admin/contact-us/contactUs.routes");
 const press_routes_1 = require("../modules/admin/press/press.routes");
 const privacyPolicy_routes_1 = require("../modules/admin/privacy-policy/privacyPolicy.routes");
+const inAppNotification_routes_1 = require("../modules/profile-details/in-app-notifications/inAppNotification.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -177,6 +178,10 @@ const moduleRoutes = [
     {
         path: "/admin/privacy-policy",
         route: privacyPolicy_routes_1.privacyPolicyRouter
+    },
+    {
+        path: "/app-notification",
+        route: inAppNotification_routes_1.inAppNotificationsRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
