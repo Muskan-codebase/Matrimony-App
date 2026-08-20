@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import ProfileVisit from "./profileVisits.model";
 import { Profile } from "../profile.model";
 import { createProfileVisitSchema } from "./profileVisits.validation";
+import { AccountSettings } from "../../account-settings/accountSettings.model";
 import { sendNotification } from "../../../services/sendNotification.service";
 
 export const createProfileVisit = async (req: Request, res: Response) => {
@@ -82,15 +83,37 @@ export const createProfileVisit = async (req: Request, res: Response) => {
         }
 
         // Send notification
-        await sendNotification({
-            receiverId: receiverProfile.userId.toString(),
-            title: "New Profile Visit",
-            body: `${loggedInProfile.basicDetails.firstName} viewed your profile.`,
-            data: {
-                type: "profile_visit",
-                visitorProfileId: loggedInProfile._id.toString(),
-            },
-        });
+        // await sendNotification({
+        //     receiverId: receiverProfile.userId.toString(),
+        //     title: "New Profile Visit",
+        //     body: `${loggedInProfile.basicDetails.firstName} viewed your profile.`,
+        //     data: {
+        //         type: "profile_visit",
+        //         visitorProfileId: loggedInProfile._id.toString(),
+        //     },
+        // });
+
+        // Check receiver's notification settings
+        const accountSettings = await AccountSettings.findOne({
+            userId: receiverProfile.userId,
+            isDeleted: false,
+        }).lean();
+
+        // Send Firebase notification only if profile visitor notifications are enabled
+        if (
+            accountSettings?.notificationSettings?.appNotifications
+                ?.profileVisitors === true
+        ) {
+            await sendNotification({
+                receiverId: receiverProfile.userId.toString(),
+                title: "New Profile Visit",
+                body: `${loggedInProfile.basicDetails.firstName} viewed your profile.`,
+                data: {
+                    type: "profile_visit",
+                    visitorProfileId: loggedInProfile._id.toString(),
+                },
+            });
+        }
 
         return res.status(201).json({
             success: true,
