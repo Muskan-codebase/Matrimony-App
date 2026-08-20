@@ -3,6 +3,8 @@ import { Profile } from "../profile.model";
 import { Shortlist } from "../shortlist/shortlist.model";
 import ProfileVisit from "../profile-visits/profileVisits.model";
 import { Interest } from "../interest/interest.model";
+import { AccountSettings } from "../../account-settings/accountSettings.model";
+import { getRecommended } from "../../../services/recommendation.service";
 
 export const getMyNotifications = async (
     req: Request,
@@ -22,6 +24,12 @@ export const getMyNotifications = async (
             });
             return;
         }
+
+        // Get account settings
+        const accountSettings = await AccountSettings.findOne({
+            userId: req.user.id,
+            isDeleted: false,
+        });
 
         const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName";
 
@@ -62,8 +70,41 @@ export const getMyNotifications = async (
             .sort({ createdAt: -1 })
             .lean();
 
+        // 4. Recommended profiles
+        const recommendedProfiles = await getRecommended(
+            loggedInProfile._id.toString()
+        );
+
+        // 5. Just Joined profiles - last 24 hours
+        const last24Hours = new Date(
+            Date.now() - 24 * 60 * 60 * 1000
+        );
+
+        const justJoinedProfiles = await Profile.find({
+            createdAt: {
+                $gte: last24Hours,
+            },
+            isDeleted: false,
+            _id: {
+                $ne: loggedInProfile._id,
+            },
+        })
+            .select(
+                "_id userId matrimonyId basicDetails.firstName basicDetails.lastName photo"
+            )
+            .lean();
+
+        // 6. Pending interests
+        const pendingInterests = await Interest.find({
+            receiverId: loggedInProfile._id,
+            status: "Pending",
+            isDeleted: false,
+        })
+            .select("_id")
+            .lean();
+
         // Combine all notifications
-        const notifications = [
+        const notifications: any[] = [
             ...receivedInterests.map((interest: any) => ({
                 type: "interest_received",
                 message: "sent you an interest request",
@@ -88,20 +129,96 @@ export const getMyNotifications = async (
                 createdAt: shortlist.createdAt,
             })),
 
-            ...profileVisitors.map((visitor: any) => ({
-                type: "profile_visited",
-                message: "visited your profile",
-                data: {
-                    id: visitor.viewerProfileId?._id,
-                    matrimonyId: visitor.viewerProfileId?.matrimonyId,
-                    firstName:
-                        visitor.viewerProfileId?.basicDetails?.firstName,
-                    lastName:
-                        visitor.viewerProfileId?.basicDetails?.lastName,
-                },
-                createdAt: visitor.createdAt,
-            })),
+            // ...profileVisitors.map((visitor: any) => ({
+            //     type: "profile_visited",
+            //     message: "visited your profile",
+            //     data: {
+            //         id: visitor.viewerProfileId?._id,
+            //         matrimonyId: visitor.viewerProfileId?.matrimonyId,
+            //         firstName:
+            //             visitor.viewerProfileId?.basicDetails?.firstName,
+            //         lastName:
+            //             visitor.viewerProfileId?.basicDetails?.lastName,
+            //     },
+            //     createdAt: visitor.createdAt,
+            // })),
         ];
+
+        // Profile Visitors
+        // Show in-app notifications only when push notifications are disabled
+        if (
+            profileVisitors.length > 0 &&
+            accountSettings?.notificationSettings?.appNotifications
+                ?.profileVisitors === false
+        ) {
+            notifications.push(
+                ...profileVisitors.map((visitor: any) => ({
+                    type: "profile_visited",
+                    message: "visited your profile",
+                    data: {
+                        id: visitor.viewerProfileId?._id,
+                        matrimonyId:
+                            visitor.viewerProfileId?.matrimonyId,
+                        firstName:
+                            visitor.viewerProfileId?.basicDetails?.firstName,
+                        lastName:
+                            visitor.viewerProfileId?.basicDetails?.lastName,
+                    },
+                    createdAt: visitor.createdAt,
+                }))
+            );
+        }
+
+        // Add recommendation as in-app notification
+        // only when push notifications are disabled
+        if (
+            recommendedProfiles.length > 0 &&
+            accountSettings?.notificationSettings?.appNotifications
+                ?.dailyRecommendations === false
+        ) {
+            notifications.push({
+                type: "recommended_profiles",
+                message: "found recommended profiles for you",
+                data: {
+                    count: recommendedProfiles.length,
+                },
+                createdAt: new Date(),
+            });
+        }
+
+        // Just Joined in-app notification
+        // Only when push notifications are disabled
+        if (
+            justJoinedProfiles.length > 0 &&
+            accountSettings?.notificationSettings?.appNotifications
+                ?.justJoined === false
+        ) {
+            notifications.push({
+                type: "just_joined",
+                message: "new profiles just joined SahaJeevan",
+                data: {
+                    count: justJoinedProfiles.length,
+                },
+                createdAt: new Date(),
+            });
+        }
+
+        // Pending Interests
+        // Show in-app notification only when Firebase push is disabled
+        if (
+            pendingInterests.length > 0 &&
+            accountSettings?.notificationSettings?.appNotifications
+                ?.pendingInterests === false
+        ) {
+            notifications.push({
+                type: "pending_interests",
+                message: "you have pending interest requests",
+                data: {
+                    count: pendingInterests.length,
+                },
+                createdAt: new Date(),
+            });
+        }
 
         // Sort all notification types by latest activity
         notifications.sort(
