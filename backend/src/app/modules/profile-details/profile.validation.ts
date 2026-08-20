@@ -27,11 +27,11 @@ const basicDetailsSchema = z.object({
         "Female",
     ]),
 
-    firstName: z.string().trim().optional(),
+    firstName: z.string().trim().min(1, "First name is required"),
 
-    lastName: z.string().trim().optional(),
+    lastName: z.string().trim().min(1, "Last name is required"),
 
-    dob: z.coerce.date().optional(),
+    dob: z.coerce.date(),
 
     age: z.number().optional(),
 
@@ -368,7 +368,7 @@ export const createProfileSchema = z.object({
 
     body: z.object({
 
-        basicDetails: basicDetailsSchema.optional(),
+        basicDetails: basicDetailsSchema,
 
         educationDetails: educationDetailsSchema.optional(),
 
@@ -396,7 +396,7 @@ export const createProfileSchema = z.object({
 
         photos: z.array(z.string()).optional(),
 
-    }).partial()
+    })
 
 });
 
