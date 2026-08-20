@@ -12,7 +12,7 @@ const generateAccessToken = (user) => {
         email: user.email,
         role: user.role,
     }, process.env.JWT_SECRET, {
-        expiresIn: "5m",
+        expiresIn: "2d",
     });
 };
 exports.generateAccessToken = generateAccessToken;
