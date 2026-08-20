@@ -8,7 +8,24 @@ import { Shortlist } from "./shortlist/shortlist.model";
 import { AnnualIncome } from "../admin/annual-income/annualIncome.model";
 import { PartnerPreference } from "./partner-preference/partnerPreference.model";
 import { createProfileSchema, updateProfileSchema } from "./profile.validation";
-import { generateMatrimonyId } from "../../utils/counter/counter.service";
+// import { generateMatrimonyId } from "../../utils/counter/counter.service";
+
+export const generateMatrimonyId = (
+    firstName: string,
+    lastName: string,
+    dob: Date
+): string => {
+    const firstInitial = firstName.trim().charAt(0).toUpperCase();
+    const lastInitial = lastName.trim().charAt(0).toUpperCase();
+
+    const date = new Date(dob);
+
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
+
+    return `${firstInitial}${lastInitial}${day}${month}${year}`;
+};
 
 export const createProfile = async (req: Request, res: Response) => {
 
@@ -30,8 +47,15 @@ export const createProfile = async (req: Request, res: Response) => {
             });
         }
 
-        // Generate profile ID
-        const matrimonyId = await generateMatrimonyId();
+        // Get basic details from validated data
+        const { basicDetails } = validatedData.body;
+
+        // Generate matrimony ID
+        const matrimonyId = generateMatrimonyId(
+            basicDetails?.firstName,
+            basicDetails?.lastName,
+            basicDetails?.dob
+        );
 
         const profile = await Profile.create({
             userId: req.user.id,
