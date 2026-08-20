@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRecommendedMatches = exports.deleteProfile = exports.getProfileById = exports.uploadProfilePhotos = exports.updateProfile = exports.getMyProfile = exports.getProfiles = exports.createProfile = void 0;
+exports.getRecommendedMatches = exports.deleteProfile = exports.getProfileById = exports.uploadProfilePhotos = exports.updateProfile = exports.getMyProfile = exports.getProfiles = exports.createProfile = exports.generateMatrimonyId = void 0;
 const profile_model_1 = require("./profile.model");
 const ignore_model_1 = require("./ignore/ignore.model");
 const block_model_1 = require("./block/block.model");
@@ -18,7 +18,17 @@ const shortlist_model_1 = require("./shortlist/shortlist.model");
 const annualIncome_model_1 = require("../admin/annual-income/annualIncome.model");
 const partnerPreference_model_1 = require("./partner-preference/partnerPreference.model");
 const profile_validation_1 = require("./profile.validation");
-const counter_service_1 = require("../../utils/counter/counter.service");
+// import { generateMatrimonyId } from "../../utils/counter/counter.service";
+const generateMatrimonyId = (firstName, lastName, dob) => {
+    const firstInitial = firstName.trim().charAt(0).toUpperCase();
+    const lastInitial = lastName.trim().charAt(0).toUpperCase();
+    const date = new Date(dob);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
+    return `${firstInitial}${lastInitial}${day}${month}${year}`;
+};
+exports.generateMatrimonyId = generateMatrimonyId;
 const createProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = profile_validation_1.createProfileSchema.parse({
@@ -34,8 +44,10 @@ const createProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 message: "Profile already exists.",
             });
         }
-        // Generate profile ID
-        const matrimonyId = yield (0, counter_service_1.generateMatrimonyId)();
+        // Get basic details from validated data
+        const { basicDetails } = validatedData.body;
+        // Generate matrimony ID
+        const matrimonyId = (0, exports.generateMatrimonyId)(basicDetails === null || basicDetails === void 0 ? void 0 : basicDetails.firstName, basicDetails === null || basicDetails === void 0 ? void 0 : basicDetails.lastName, basicDetails === null || basicDetails === void 0 ? void 0 : basicDetails.dob);
         const profile = yield profile_model_1.Profile.create(Object.assign({ userId: req.user.id, matrimonyId }, validatedData.body));
         return res.status(201).json({
             success: true,

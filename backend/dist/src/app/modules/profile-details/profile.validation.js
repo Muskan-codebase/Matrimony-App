@@ -15,9 +15,9 @@ const basicDetailsSchema = zod_1.z.object({
         "Male",
         "Female",
     ]),
-    firstName: zod_1.z.string().trim().optional(),
-    lastName: zod_1.z.string().trim().optional(),
-    dob: zod_1.z.coerce.date().optional(),
+    firstName: zod_1.z.string().trim().min(1, "First name is required"),
+    lastName: zod_1.z.string().trim().min(1, "Last name is required"),
+    dob: zod_1.z.coerce.date(),
     age: zod_1.z.number().optional(),
     height: zod_1.z.string().optional(),
     maritalStatus: optionalEnum([
@@ -231,7 +231,7 @@ const aboutMeSchema = zod_1.z.object({
 });
 exports.createProfileSchema = zod_1.z.object({
     body: zod_1.z.object({
-        basicDetails: basicDetailsSchema.optional(),
+        basicDetails: basicDetailsSchema,
         educationDetails: educationDetailsSchema.optional(),
         education: educationSchema.optional(),
         careerDetails: careerDetailsSchema.optional(),
@@ -245,6 +245,6 @@ exports.createProfileSchema = zod_1.z.object({
         lifestyle: lifestyleSchema.optional(),
         aboutMe: aboutMeSchema.optional().optional(),
         photos: zod_1.z.array(zod_1.z.string()).optional(),
-    }).partial()
+    })
 });
 exports.updateProfileSchema = exports.createProfileSchema;
