@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Auth from "./auth.model";
 import Otp from "./otp/otp.model";
+import { Profile } from "../profile-details/profile.model";
 import { generateOtp } from "../../utils/generateOTP";
 import {
     sendOtpValidation, verifyOtpValidation,
@@ -153,9 +154,20 @@ export const verifyOTP = async (req: Request, res: Response) => {
         otpRecord.isUsed = true;
         await otpRecord.save();
 
+        // --------------------------------------------------
+        // CHECK PROFILE EXISTENCE
+        // --------------------------------------------------
+
+        const profileExists = await Profile.exists({
+            userId: auth._id
+        });
+
+        // No profile = new user
+        const isNewUser = !profileExists;
+
         // Capture this BEFORE mutating isVerified below —
         // tells us whether this is a first-time registration or a returning login
-        const isNewUser = !auth.isVerified;
+        // const isNewUser = !auth.isVerified;
 
         auth.isVerified = true;
         auth.loginCount += 1;
