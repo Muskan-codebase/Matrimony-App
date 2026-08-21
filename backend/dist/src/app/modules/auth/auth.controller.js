@@ -131,6 +131,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Capture this BEFORE mutating isVerified below —
         // tells us whether this is a first-time registration or a returning login
         // const isNewUser = !auth.isVerified;
+        const isFirstLogin = auth.loginCount === 0;
         auth.isVerified = true;
         auth.loginCount += 1;
         auth.lastLogin = new Date();
@@ -144,7 +145,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield auth.save();
         return res.status(200).json({
             success: true,
-            message: isNewUser
+            message: isFirstLogin
                 ? "Registered successfully."
                 : "Logged in successfully.",
             isNewUser,
