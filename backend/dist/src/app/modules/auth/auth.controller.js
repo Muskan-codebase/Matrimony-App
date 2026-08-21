@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.saveFirebaseUid = exports.getCurrentUser = exports.refreshToken = exports.resendOTP = exports.verifyOTP = exports.sendOTP = void 0;
 const auth_model_1 = __importDefault(require("./auth.model"));
 const otp_model_1 = __importDefault(require("./otp/otp.model"));
+const profile_model_1 = require("../profile-details/profile.model");
 const generateOTP_1 = require("../../utils/generateOTP");
 const auth_validation_1 = require("./auth.validation");
 const generateJWT_1 = require("../../utils/generateJWT");
@@ -119,9 +120,17 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // OTP Verified
         otpRecord.isUsed = true;
         yield otpRecord.save();
+        // --------------------------------------------------
+        // CHECK PROFILE EXISTENCE
+        // --------------------------------------------------
+        const profileExists = yield profile_model_1.Profile.exists({
+            userId: auth._id
+        });
+        // No profile = new user
+        const isNewUser = !profileExists;
         // Capture this BEFORE mutating isVerified below —
         // tells us whether this is a first-time registration or a returning login
-        const isNewUser = !auth.isVerified;
+        // const isNewUser = !auth.isVerified;
         auth.isVerified = true;
         auth.loginCount += 1;
         auth.lastLogin = new Date();
