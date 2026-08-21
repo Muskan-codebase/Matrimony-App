@@ -169,6 +169,8 @@ export const verifyOTP = async (req: Request, res: Response) => {
         // tells us whether this is a first-time registration or a returning login
         // const isNewUser = !auth.isVerified;
 
+        const isFirstLogin = auth.loginCount === 0;
+
         auth.isVerified = true;
         auth.loginCount += 1;
         auth.lastLogin = new Date();
@@ -187,7 +189,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             success: true,
-            message: isNewUser
+            message: isFirstLogin
                 ? "Registered successfully."
                 : "Logged in successfully.",
             isNewUser,
