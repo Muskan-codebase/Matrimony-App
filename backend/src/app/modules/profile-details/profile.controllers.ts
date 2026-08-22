@@ -53,11 +53,18 @@ export const createProfile = async (req: Request, res: Response) => {
         // Get basic details from validated data
         const { basicDetails } = validatedData.body;
 
+        if (!basicDetails) {
+            return res.status(400).json({
+                success: false,
+                message: "Basic details are required to create a profile.",
+            });
+        }
+
         // Generate matrimony ID
         const matrimonyId = generateMatrimonyId(
-            basicDetails?.firstName,
-            basicDetails?.lastName,
-            basicDetails?.dob
+            basicDetails.firstName,
+            basicDetails.lastName,
+            basicDetails.dob
         );
 
         const profile = await Profile.create({
