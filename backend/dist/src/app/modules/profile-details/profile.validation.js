@@ -231,7 +231,7 @@ const aboutMeSchema = zod_1.z.object({
 });
 exports.createProfileSchema = zod_1.z.object({
     body: zod_1.z.object({
-        basicDetails: basicDetailsSchema,
+        basicDetails: basicDetailsSchema.optional(),
         educationDetails: educationDetailsSchema.optional(),
         education: educationSchema.optional(),
         careerDetails: careerDetailsSchema.optional(),
