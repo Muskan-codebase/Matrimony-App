@@ -18,6 +18,7 @@ const corsOptions: CorsOptions = {
     const allowedOrigins = [
       'https://heaven-holiday2026.vercel.app',
       'https://heaven-holiday2026-pnpk.vercel.app',
+      ''
     ];
 
     if (!origin) return callback(null, true);
