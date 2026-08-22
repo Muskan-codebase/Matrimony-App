@@ -368,7 +368,7 @@ export const createProfileSchema = z.object({
 
     body: z.object({
 
-        basicDetails: basicDetailsSchema,
+        basicDetails: basicDetailsSchema.optional(),
 
         educationDetails: educationDetailsSchema.optional(),
 
