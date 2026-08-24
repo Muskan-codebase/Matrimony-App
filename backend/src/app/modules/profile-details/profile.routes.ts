@@ -6,6 +6,7 @@ import {
     getProfiles,
     updateProfile,
     uploadProfilePhotos,
+    removeProfilePhoto,
     // filterProfiles,
     getProfileById,
     getRecommendedMatches
@@ -1117,6 +1118,93 @@ router.get("/:id", authenticate, getProfileById);
  *         description: Internal server error.
  */
 router.put("/", authenticate, upload.array("photos", 6), updateProfile);
+/**
+ * @swagger
+ * /v1/api/profile/remove-photo:
+ *   delete:
+ *     summary: Remove a profile photo
+ *     description: Removes a specific photo from the logged-in user's profile.
+ *     tags:
+ *       - Profile Details
+ *
+ *     security:
+ *       - bearerAuth: []
+ *
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - photoUrl
+ *             properties:
+ *               photoUrl:
+ *                 type: string
+ *                 description: URL of the profile photo to remove.
+ *                 example: https://res.cloudinary.com/demo/image/upload/v123456789/profile/photo1.jpg
+ *
+ *     responses:
+ *       200:
+ *         description: Profile photo removed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Profile photo removed successfully.
+ *                 data:
+ *                   type: object
+ *                   description: Updated profile with the remaining photos.
+ *
+ *       400:
+ *         description: Photo URL is missing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Photo URL is required.
+ *
+ *       404:
+ *         description: Profile or photo not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Profile or photo not found.
+ *
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to remove profile photo.
+ */
+router.delete("/remove-photo", authenticate, removeProfilePhoto);
 /**
  * @swagger
  * /v1/api/profile:
