@@ -476,23 +476,28 @@ const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         Object.keys(validatedData.body)
             .forEach((key) => {
             const value = validatedData.body[key];
-            if (value !== undefined && value !== null) {
+            if (value !== undefined && value !== null && key !== "photos") {
                 updateData[key] = value;
             }
         });
-        // Photos
+        const updateQuery = {
+            $set: updateData,
+        };
         if (req.files) {
             const files = req.files;
             if (files.length > 0) {
-                updateData.photos = files.map((file) => file.path);
+                const imageUrls = files.map((file) => file.path);
+                updateQuery.$push = {
+                    photos: {
+                        $each: imageUrls,
+                    },
+                };
             }
         }
         const profile = yield profile_model_1.Profile.findOneAndUpdate({
             userId: req.user.id,
             isDeleted: false,
-        }, {
-            $set: updateData,
-        }, {
+        }, updateQuery, {
             new: true,
             runValidators: true,
         });
