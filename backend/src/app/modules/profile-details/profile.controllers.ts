@@ -827,6 +827,60 @@ export const uploadProfilePhotos = async (req: Request, res: Response) => {
 
 };
 
+export const removeProfilePhoto = async (
+    req: Request,
+    res: Response
+) => {
+    try {
+        const { photoUrl } = req.body;
+
+        if (!photoUrl) {
+            return res.status(400).json({
+                success: false,
+                message: "Photo URL is required.",
+            });
+        }
+
+        const profile = await Profile.findOneAndUpdate(
+            {
+                userId: req.user.id,
+                isDeleted: false,
+                photos: photoUrl,
+            },
+            {
+                $pull: {
+                    photos: photoUrl,
+                },
+            },
+            {
+                new: true,
+            }
+        );
+
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "Profile or photo not found.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile photo removed successfully.",
+            data: profile,
+        });
+
+    } catch (error: any) {
+        console.error("Remove Profile Photo Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to remove profile photo.",
+            error: error.message,
+        });
+    }
+};
+
 // Normalizes query keys so "Gender", "MinAge", etc. are treated the same as "gender", "minAge"
 const normalizeQueryKeys = (query: Record<string, any>) => {
     const normalized: Record<string, any> = {};
