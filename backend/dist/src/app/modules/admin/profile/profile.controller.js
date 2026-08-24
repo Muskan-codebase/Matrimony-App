@@ -30,8 +30,21 @@ const profile_validation_1 = require("../../profile-details/profile.validation")
 const profile_controllers_1 = require("../../profile-details/profile.controllers");
 const addProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        let profileBody;
+        try {
+            profileBody =
+                typeof req.body.data === "string"
+                    ? JSON.parse(req.body.data)
+                    : req.body.data;
+        }
+        catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid JSON data.",
+            });
+        }
         const validation = profile_validation_1.createProfileSchema.safeParse({
-            body: req.body
+            body: profileBody,
         });
         if (!validation.success) {
             return res.status(400).json({
