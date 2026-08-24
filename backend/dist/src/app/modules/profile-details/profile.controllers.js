@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRecommendedMatches = exports.deleteProfile = exports.getProfileById = exports.uploadProfilePhotos = exports.updateProfile = exports.getMyProfile = exports.getProfiles = exports.createProfile = exports.generateMatrimonyId = void 0;
+exports.getRecommendedMatches = exports.deleteProfile = exports.getProfileById = exports.removeProfilePhoto = exports.uploadProfilePhotos = exports.updateProfile = exports.getMyProfile = exports.getProfiles = exports.createProfile = exports.generateMatrimonyId = void 0;
 const profile_model_1 = require("./profile.model");
 const ignore_model_1 = require("./ignore/ignore.model");
 const block_model_1 = require("./block/block.model");
@@ -601,6 +601,48 @@ const uploadProfilePhotos = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.uploadProfilePhotos = uploadProfilePhotos;
+const removeProfilePhoto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { photoUrl } = req.body;
+        if (!photoUrl) {
+            return res.status(400).json({
+                success: false,
+                message: "Photo URL is required.",
+            });
+        }
+        const profile = yield profile_model_1.Profile.findOneAndUpdate({
+            userId: req.user.id,
+            isDeleted: false,
+            photos: photoUrl,
+        }, {
+            $pull: {
+                photos: photoUrl,
+            },
+        }, {
+            new: true,
+        });
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "Profile or photo not found.",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Profile photo removed successfully.",
+            data: profile,
+        });
+    }
+    catch (error) {
+        console.error("Remove Profile Photo Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to remove profile photo.",
+            error: error.message,
+        });
+    }
+});
+exports.removeProfilePhoto = removeProfilePhoto;
 // Normalizes query keys so "Gender", "MinAge", etc. are treated the same as "gender", "minAge"
 const normalizeQueryKeys = (query) => {
     const normalized = {};
