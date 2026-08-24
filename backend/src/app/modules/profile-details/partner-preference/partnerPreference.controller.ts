@@ -198,3 +198,144 @@ export const getPartnerPreference = async (
         });
     }
 };
+
+// Reset values for each section
+const resetSectionValues: Record<string, Record<string, any>> = {
+
+    educationDetails: {
+        "educationDetails.doesntMatter": false,
+        "educationDetails.highestDegrees": [],
+        "educationDetails.wellKnownColleges": "",
+        "educationDetails.occupation.doesntMatter": false,
+        "educationDetails.occupation.preferences": [],
+        "educationDetails.annualIncome": null,
+    },
+
+    familyDetails: {
+        "familyDetails.familyBasedOutOfCountry.country": "",
+    },
+
+    religionAndEthnicity: {
+        "religionAndEthnicity.religion.preference": null,
+        "religionAndEthnicity.caste.preferences": [],
+        "religionAndEthnicity.subCaste.preferences": [],
+        "religionAndEthnicity.motherTongue.preference": null,
+        "religionAndEthnicity.manglikStatus.preferences": [],
+    },
+
+    lifestyleAndAppearance: {
+        "lifestyleAndAppearance.dietaryHabits.preferences": [],
+        "lifestyleAndAppearance.smokingHabits.preferences": [],
+        "lifestyleAndAppearance.drinkingHabits.preferences": [],
+        "lifestyleAndAppearance.disability.preferences": [],
+    },
+
+    aboutMyPartner: {
+        "aboutMyPartner.description": "",
+    },
+};
+
+export const resetPartnerPreferenceSection = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+
+    try {
+
+        const { section } = req.params;
+
+        // Basic details should NEVER be reset
+        const allowedSections = Object.keys(resetSectionValues);
+
+        if (!allowedSections.includes(section)) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid or non-resettable section.",
+            });
+
+            return;
+        }
+
+        // Find logged-in user's profile
+        const profile = await Profile.findOne({
+            userId: req.user.id,
+            isDeleted: false,
+        });
+
+        if (!profile) {
+            res.status(404).json({
+                success: false,
+                message: "Profile not found.",
+            });
+
+            return;
+        }
+
+        // Find partner preference
+        const partnerPreference = await PartnerPreference.findOne({
+            profileId: profile._id,
+            isDeleted: false,
+        });
+
+        if (!partnerPreference) {
+            res.status(404).json({
+                success: false,
+                message: "Partner preferences not found.",
+            });
+
+            return;
+        }
+
+        // Get reset values for requested section
+        const resetValues = resetSectionValues[section];
+
+        // Reset only that section
+        const updatedPartnerPreference =
+            await PartnerPreference.findOneAndUpdate(
+                {
+                    profileId: profile._id,
+                    isDeleted: false,
+                },
+                {
+                    $set: resetValues,
+                },
+                {
+                    new: true,
+                    runValidators: true,
+                }
+            );
+
+        if (!updatedPartnerPreference) {
+            res.status(404).json({
+                success: false,
+                message: "Partner preferences not found.",
+            });
+
+            return;
+        }
+
+        // Populate response
+        const populatedPartnerPreference =
+            await populatePartnerPreference(
+                PartnerPreference.findById(updatedPartnerPreference._id)
+            );
+
+        res.status(200).json({
+            success: true,
+            message: `${section} reset successfully.`,
+            data: populatedPartnerPreference,
+        });
+
+    } catch (error: any) {
+
+        console.error(
+            "Reset Partner Preference Section Error:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+        });
+    }
+};
