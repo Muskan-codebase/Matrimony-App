@@ -309,9 +309,9 @@ router.get("/", authMiddleware_1.authenticate, partnerPreference_controller_1.ge
  *     summary: Reset a partner preference section
  *     description: |
  *       Resets a specific partner preference section to its default/empty values.
- *       The basicDetails section cannot be reset using this API.
  *
  *       Supported sections:
+ *       - basicDetails
  *       - educationDetails
  *       - familyDetails
  *       - religionAndEthnicity
@@ -332,6 +332,7 @@ router.get("/", authMiddleware_1.authenticate, partnerPreference_controller_1.ge
  *         schema:
  *           type: string
  *           enum:
+ *             - basicDetails
  *             - educationDetails
  *             - familyDetails
  *             - religionAndEthnicity
@@ -351,7 +352,7 @@ router.get("/", authMiddleware_1.authenticate, partnerPreference_controller_1.ge
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: educationDetails reset successfully.
+ *                   example: basicDetails reset successfully.
  *                 data:
  *                   type: object
  *                   description: Updated partner preference with populated references.

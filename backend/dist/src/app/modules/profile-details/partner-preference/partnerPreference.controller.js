@@ -170,6 +170,16 @@ const getPartnerPreference = (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.getPartnerPreference = getPartnerPreference;
 // Reset values for each section
 const resetSectionValues = {
+    basicDetails: {
+        "basicDetails.age.minAge": null,
+        "basicDetails.age.maxAge": null,
+        "basicDetails.height.minHeight": null,
+        "basicDetails.height.maxHeight": null,
+        "basicDetails.partnerCountry": [],
+        "basicDetails.partnerState": [],
+        "basicDetails.partnerCity": [],
+        "basicDetails.maritalStatus.preferences": [],
+    },
     educationDetails: {
         "educationDetails.doesntMatter": false,
         "educationDetails.highestDegrees": [],
@@ -255,9 +265,12 @@ const resetPartnerPreferenceSection = (req, res) => __awaiter(void 0, void 0, vo
         }
         // Populate response
         const populatedPartnerPreference = yield populatePartnerPreference(partnerPreference_model_1.PartnerPreference.findById(updatedPartnerPreference._id));
+        const formattedSection = section
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (char) => char.toUpperCase());
         res.status(200).json({
             success: true,
-            message: `${section} reset successfully.`,
+            message: `${formattedSection} reset successfully.`,
             data: populatedPartnerPreference,
         });
     }
