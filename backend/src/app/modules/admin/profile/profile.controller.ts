@@ -5,9 +5,25 @@ import { createProfileSchema, updateProfileSchema } from "../../profile-details/
 import { generateMatrimonyId } from "../../profile-details/profile.controllers";
 
 export const addProfile = async (req: Request, res: Response) => {
+
     try {
+
+        let profileBody;
+
+        try {
+            profileBody =
+                typeof req.body.data === "string"
+                    ? JSON.parse(req.body.data)
+                    : req.body.data;
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid JSON data.",
+            });
+        }
+
         const validation = createProfileSchema.safeParse({
-            body: req.body
+            body: profileBody,
         });
 
         if (!validation.success) {
