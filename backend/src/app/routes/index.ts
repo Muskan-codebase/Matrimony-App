@@ -35,6 +35,7 @@ import { contactUsRouter } from '../modules/admin/contact-us/contactUs.routes';
 import { pressRouter } from '../modules/admin/press/press.routes';
 import { privacyPolicyRouter } from '../modules/admin/privacy-policy/privacyPolicy.routes';
 import { inAppNotificationsRouter } from '../modules/profile-details/in-app-notifications/inAppNotification.routes';
+import { adminProfileRouter } from '../modules/admin/profile/profile.routes';
 
 const router = Router();
 
@@ -182,6 +183,10 @@ const moduleRoutes = [
   {
     path: "/app-notification",
     route: inAppNotificationsRouter
+  },
+  {
+    path: "/admin/profile",
+    route: adminProfileRouter
   }
 ];
 
