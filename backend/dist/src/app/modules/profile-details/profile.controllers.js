@@ -490,6 +490,7 @@ const updateProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 updateQuery.$push = {
                     photos: {
                         $each: imageUrls,
+                        $position: 0,
                     },
                 };
             }
@@ -574,6 +575,7 @@ const uploadProfilePhotos = (req, res) => __awaiter(void 0, void 0, void 0, func
             $push: {
                 photos: {
                     $each: imageUrls,
+                    $position: 0,
                 },
             },
         }, {
