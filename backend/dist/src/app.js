@@ -12,8 +12,10 @@ const swagger_1 = require("./app/config/swagger");
 require("./app/config/firebase");
 const path_1 = __importDefault(require("path"));
 const compression_1 = __importDefault(require("compression"));
+const health_route_1 = require("./app/modules/health/health.route");
 const app = (0, express_1.default)();
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
+app.use("/v1/api/health", health_route_1.healthRouter);
 // CORS configuration for specific domains
 const corsOptions = {
     origin: function (origin, callback) {
