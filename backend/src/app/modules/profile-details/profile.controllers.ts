@@ -659,18 +659,27 @@ export const updateProfile = async (
 
                 const value = validatedData.body[key];
 
-                if (value !== undefined && value !== null) {
+                if (value !== undefined && value !== null && key !== "photos") {
                     updateData[key] = value;
                 }
 
             });
 
-        // Photos
+        const updateQuery: any = {
+            $set: updateData,
+        };
+
         if (req.files) {
             const files = req.files as Express.Multer.File[];
 
             if (files.length > 0) {
-                updateData.photos = files.map((file) => file.path);
+                const imageUrls = files.map((file) => file.path);
+
+                updateQuery.$push = {
+                    photos: {
+                        $each: imageUrls,
+                    },
+                };
             }
         }
 
@@ -679,9 +688,7 @@ export const updateProfile = async (
                 userId: req.user.id,
                 isDeleted: false,
             },
-            {
-                $set: updateData,
-            },
+            updateQuery,
             {
                 new: true,
                 runValidators: true,
