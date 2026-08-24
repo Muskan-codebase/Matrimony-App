@@ -50,13 +50,17 @@ const optionalStringArray = () =>
 const optionalObjectIdArray = () =>
     z.preprocess(
         (value) => {
-            if (value === null || value === undefined) return [];
+            if (value === null || value === undefined) return undefined;
+
             if (Array.isArray(value)) {
-                return value.filter((v) => v !== "" && v !== null && v !== undefined);
+                return value.filter(
+                    (v) => v !== "" && v !== null && v !== undefined
+                );
             }
+
             return value;
         },
-        z.array(objectId).default([])
+        z.array(objectId).optional()
     );
 
 export const createPartnerPreferenceSchema = z.object({
