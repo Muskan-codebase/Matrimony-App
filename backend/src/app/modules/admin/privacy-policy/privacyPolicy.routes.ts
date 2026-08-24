@@ -8,7 +8,7 @@ import { authenticate } from "../../../middlewares/authMiddleware";
 const router = Router();
 /**
  * @swagger
- * /v1/api/privacy-policy:
+ * /v1/api/admin/privacy-policy:
  *   post:
  *     summary: Create or Update Privacy Policy
  *     tags: [Privacy Policy (Admin)]
@@ -68,7 +68,7 @@ const router = Router();
 router.post("/", authenticate, createOrUpdatePrivacyPolicy);
 /**
  * @swagger
- * /v1/api/privacy-policy:
+ * /v1/api/admin/privacy-policy:
  *   get:
  *     summary: Get Privacy Policy
  *     tags: [Privacy Policy (Admin)]
