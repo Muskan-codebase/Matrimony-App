@@ -678,6 +678,7 @@ export const updateProfile = async (
                 updateQuery.$push = {
                     photos: {
                         $each: imageUrls,
+                        $position: 0,
                     },
                 };
             }
@@ -793,6 +794,7 @@ export const uploadProfilePhotos = async (req: Request, res: Response) => {
                 $push: {
                     photos: {
                         $each: imageUrls,
+                        $position: 0,
                     },
                 },
             },
