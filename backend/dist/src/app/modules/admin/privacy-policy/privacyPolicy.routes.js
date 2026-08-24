@@ -7,7 +7,7 @@ const authMiddleware_1 = require("../../../middlewares/authMiddleware");
 const router = (0, express_1.Router)();
 /**
  * @swagger
- * /v1/api/privacy-policy:
+ * /v1/api/admin/privacy-policy:
  *   post:
  *     summary: Create or Update Privacy Policy
  *     tags: [Privacy Policy (Admin)]
@@ -67,7 +67,7 @@ const router = (0, express_1.Router)();
 router.post("/", authMiddleware_1.authenticate, privacyPolicy_controllers_1.createOrUpdatePrivacyPolicy);
 /**
  * @swagger
- * /v1/api/privacy-policy:
+ * /v1/api/admin/privacy-policy:
  *   get:
  *     summary: Get Privacy Policy
  *     tags: [Privacy Policy (Admin)]
