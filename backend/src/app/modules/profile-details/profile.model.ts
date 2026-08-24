@@ -8,7 +8,7 @@ const profileSchema = new Schema<IProfile>(
             type: Schema.Types.ObjectId,
             ref: "Auth",
             required: true,
-            unique: true,
+            unique: false,
         },
 
         matrimonyId: {
