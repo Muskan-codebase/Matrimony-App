@@ -29,12 +29,12 @@ const optionalStringArray = () => zod_1.z.preprocess((value) => (value === null 
 // out "" / null / undefined entries within the array itself.
 const optionalObjectIdArray = () => zod_1.z.preprocess((value) => {
     if (value === null || value === undefined)
-        return [];
+        return undefined;
     if (Array.isArray(value)) {
         return value.filter((v) => v !== "" && v !== null && v !== undefined);
     }
     return value;
-}, zod_1.z.array(objectId).default([]));
+}, zod_1.z.array(objectId).optional());
 exports.createPartnerPreferenceSchema = zod_1.z.object({
     body: zod_1.z.object({
         createdBy: nullToUndefined(zod_1.z.string().optional()),
