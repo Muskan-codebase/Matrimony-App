@@ -302,4 +302,101 @@ router.post("/", authMiddleware_1.authenticate, partnerPreference_controller_1.s
  *         description: Internal server error.
  */
 router.get("/", authMiddleware_1.authenticate, partnerPreference_controller_1.getPartnerPreference);
+/**
+ * @swagger
+ * /v1/api/partner-preference/reset/{section}:
+ *   patch:
+ *     summary: Reset a partner preference section
+ *     description: |
+ *       Resets a specific partner preference section to its default/empty values.
+ *       The basicDetails section cannot be reset using this API.
+ *
+ *       Supported sections:
+ *       - educationDetails
+ *       - familyDetails
+ *       - religionAndEthnicity
+ *       - lifestyleAndAppearance
+ *       - aboutMyPartner
+ *
+ *     tags:
+ *       - Profile - Partner Preference
+ *
+ *     security:
+ *       - bearerAuth: []
+ *
+ *     parameters:
+ *       - in: path
+ *         name: section
+ *         required: true
+ *         description: The partner preference section to reset.
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - educationDetails
+ *             - familyDetails
+ *             - religionAndEthnicity
+ *             - lifestyleAndAppearance
+ *             - aboutMyPartner
+ *
+ *     responses:
+ *       200:
+ *         description: Partner preference section reset successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: educationDetails reset successfully.
+ *                 data:
+ *                   type: object
+ *                   description: Updated partner preference with populated references.
+ *
+ *       400:
+ *         description: Invalid or non-resettable section.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Invalid or non-resettable section.
+ *
+ *       404:
+ *         description: Profile or partner preferences not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Partner preferences not found.
+ *
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+router.patch("/reset/:section", authMiddleware_1.authenticate, partnerPreference_controller_1.resetPartnerPreferenceSection);
 exports.partnerPreferenceRouter = router;

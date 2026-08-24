@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPartnerPreference = exports.savePartnerPreference = void 0;
+exports.resetPartnerPreferenceSection = exports.getPartnerPreference = exports.savePartnerPreference = void 0;
 const partnerPreference_model_1 = require("./partnerPreference.model");
 const profile_model_1 = require("../profile.model");
 const partnerPreference_validation_1 = require("./partnerPreference.validation");
@@ -168,3 +168,105 @@ const getPartnerPreference = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getPartnerPreference = getPartnerPreference;
+// Reset values for each section
+const resetSectionValues = {
+    educationDetails: {
+        "educationDetails.doesntMatter": false,
+        "educationDetails.highestDegrees": [],
+        "educationDetails.wellKnownColleges": "",
+        "educationDetails.occupation.doesntMatter": false,
+        "educationDetails.occupation.preferences": [],
+        "educationDetails.annualIncome": null,
+    },
+    familyDetails: {
+        "familyDetails.familyBasedOutOfCountry.country": "",
+    },
+    religionAndEthnicity: {
+        "religionAndEthnicity.religion.preference": null,
+        "religionAndEthnicity.caste.preferences": [],
+        "religionAndEthnicity.subCaste.preferences": [],
+        "religionAndEthnicity.motherTongue.preference": null,
+        "religionAndEthnicity.manglikStatus.preferences": [],
+    },
+    lifestyleAndAppearance: {
+        "lifestyleAndAppearance.dietaryHabits.preferences": [],
+        "lifestyleAndAppearance.smokingHabits.preferences": [],
+        "lifestyleAndAppearance.drinkingHabits.preferences": [],
+        "lifestyleAndAppearance.disability.preferences": [],
+    },
+    aboutMyPartner: {
+        "aboutMyPartner.description": "",
+    },
+};
+const resetPartnerPreferenceSection = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { section } = req.params;
+        // Basic details should NEVER be reset
+        const allowedSections = Object.keys(resetSectionValues);
+        if (!allowedSections.includes(section)) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid or non-resettable section.",
+            });
+            return;
+        }
+        // Find logged-in user's profile
+        const profile = yield profile_model_1.Profile.findOne({
+            userId: req.user.id,
+            isDeleted: false,
+        });
+        if (!profile) {
+            res.status(404).json({
+                success: false,
+                message: "Profile not found.",
+            });
+            return;
+        }
+        // Find partner preference
+        const partnerPreference = yield partnerPreference_model_1.PartnerPreference.findOne({
+            profileId: profile._id,
+            isDeleted: false,
+        });
+        if (!partnerPreference) {
+            res.status(404).json({
+                success: false,
+                message: "Partner preferences not found.",
+            });
+            return;
+        }
+        // Get reset values for requested section
+        const resetValues = resetSectionValues[section];
+        // Reset only that section
+        const updatedPartnerPreference = yield partnerPreference_model_1.PartnerPreference.findOneAndUpdate({
+            profileId: profile._id,
+            isDeleted: false,
+        }, {
+            $set: resetValues,
+        }, {
+            new: true,
+            runValidators: true,
+        });
+        if (!updatedPartnerPreference) {
+            res.status(404).json({
+                success: false,
+                message: "Partner preferences not found.",
+            });
+            return;
+        }
+        // Populate response
+        const populatedPartnerPreference = yield populatePartnerPreference(partnerPreference_model_1.PartnerPreference.findById(updatedPartnerPreference._id));
+        res.status(200).json({
+            success: true,
+            message: `${section} reset successfully.`,
+            data: populatedPartnerPreference,
+        });
+    }
+    catch (error) {
+        console.error("Reset Partner Preference Section Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+        });
+    }
+});
+exports.resetPartnerPreferenceSection = resetPartnerPreferenceSection;
