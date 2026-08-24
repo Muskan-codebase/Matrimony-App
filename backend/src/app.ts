@@ -7,10 +7,13 @@ import { setupSwagger } from './app/config/swagger';
 import "./app/config/firebase";
 import path from "path";
 import compression from "compression";
+import { healthRouter } from './app/modules/health/health.route';
 
 const app: Application = express();
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+app.use("/v1/api/health", healthRouter);
 
 // CORS configuration for specific domains
 const corsOptions: CorsOptions = {
