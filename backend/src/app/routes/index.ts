@@ -36,6 +36,7 @@ import { pressRouter } from '../modules/admin/press/press.routes';
 import { privacyPolicyRouter } from '../modules/admin/privacy-policy/privacyPolicy.routes';
 import { inAppNotificationsRouter } from '../modules/profile-details/in-app-notifications/inAppNotification.routes';
 import { adminProfileRouter } from '../modules/admin/profile/profile.routes';
+import { testEmailRouter } from '../services/email.route';
 
 const router = Router();
 
@@ -187,6 +188,10 @@ const moduleRoutes = [
   {
     path: "/admin/profile",
     route: adminProfileRouter
+  },
+  {
+    path: "/test",
+    route: testEmailRouter
   }
 ];
 
