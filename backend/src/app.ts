@@ -8,6 +8,9 @@ import "./app/config/firebase";
 import path from "path";
 import compression from "compression";
 import { healthRouter } from './app/modules/health/health.route';
+import { startMembershipExpiryJob } from './app/job/membershipExpiryJob';
+
+startMembershipExpiryJob();
 
 const app: Application = express();
 
