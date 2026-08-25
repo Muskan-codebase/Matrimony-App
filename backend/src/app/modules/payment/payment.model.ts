@@ -56,7 +56,7 @@ const paymentSchema = new Schema<IPayment>(
 
         paidAt: {
             type: Date,
-        }
+        },
 
     },
     {
