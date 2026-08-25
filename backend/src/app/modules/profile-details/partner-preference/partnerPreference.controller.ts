@@ -297,9 +297,6 @@ export const resetPartnerPreferenceSection = async (
             return;
         }
 
-        // Get reset values for requested section
-        const resetValues = resetSectionValues[section];
-
         // Reset only that section
         const updatedPartnerPreference =
             await PartnerPreference.findOneAndUpdate(
@@ -308,11 +305,12 @@ export const resetPartnerPreferenceSection = async (
                     isDeleted: false,
                 },
                 {
-                    $set: resetValues,
+                    $unset: {
+                        [section]: "",
+                    },
                 },
                 {
                     new: true,
-                    runValidators: true,
                 }
             );
 
