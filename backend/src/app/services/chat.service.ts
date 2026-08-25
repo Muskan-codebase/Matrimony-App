@@ -7,6 +7,8 @@ import { InterestStatus } from "../enums/interest-status.enum";
 import { Profile } from "../modules/profile-details/profile.model";
 import { ChatAttachment } from "../modules/profile-details/chat/chat.interface"; // or wherever you created it
 import Auth from "../modules/auth/auth.model";
+import { sendEmail } from "./email.service";
+import { AccountSettings } from "../modules/account-settings/accountSettings.model";
 
 const db = getFirestore();
 
@@ -196,19 +198,19 @@ export const sendMessage = async (
     /**
      * Restrict messages while interest is pending
      */
-    // if (interest.status === InterestStatus.PENDING) {
+    if (interest.status === InterestStatus.PENDING) {
 
-    //     const messageCounts = roomData.messageCounts || {};
+        const messageCounts = roomData.messageCounts || {};
 
-    //     const senderMessageCount =
-    //         messageCounts[senderProfileId] || 0;
+        const senderMessageCount =
+            messageCounts[senderProfileId] || 0;
 
-    //     if (senderMessageCount >= MESSAGE_LIMIT) {
-    //         throw new Error(
-    //             "You have reached the maximum of 4 messages. Wait until the interest request is accepted."
-    //         );
-    //     }
-    // }
+        if (senderMessageCount >= MESSAGE_LIMIT) {
+            throw new Error(
+                "You have reached the maximum of 4 messages. Wait until the interest request is accepted."
+            );
+        }
+    }
 
     /**
      * Create message
@@ -235,6 +237,95 @@ export const sendMessage = async (
     };
 
     await messageRef.set(message);
+
+    /**
+ * Contact Alert Email
+ *
+ * Send email when:
+ * - Interest is not accepted
+ * - Receiver has contactAlertMails enabled
+ */
+    if (interest.status !== InterestStatus.ACCEPTED) {
+
+        const receiverProfile = await Profile.findById(
+            receiverProfileId
+        )
+            .select("userId basicDetails.firstName")
+            .lean();
+
+        if (receiverProfile) {
+
+            const [receiverAuth, accountSettings] =
+                await Promise.all([
+
+                    Auth.findById(receiverProfile.userId)
+                        .select("email")
+                        .lean(),
+
+                    AccountSettings.findOne({
+                        userId: receiverProfile.userId,
+                        isDeleted: false,
+                    })
+                        .select(
+                            "notificationSettings.emailNotifications.contactAlertMails"
+                        )
+                        .lean(),
+                ]);
+
+            const contactAlertEnabled =
+                accountSettings
+                    ?.notificationSettings
+                    ?.emailNotifications
+                    ?.contactAlertMails !== false;
+
+            if (
+                contactAlertEnabled &&
+                receiverAuth?.email
+            ) {
+
+                const senderName =
+                    `${senderProfile.basicDetails?.firstName || ""} ${senderProfile.basicDetails?.lastName || ""
+                        }`.trim();
+
+                await sendEmail({
+
+                    to: receiverAuth.email,
+
+                    name:
+                        receiverProfile.basicDetails?.firstName ||
+                        "User",
+
+                    subject:
+                        "You Have Received a New Message on SahaJeevan",
+
+                    html: `
+                    <h2>New Message Received</h2>
+
+                    <p>
+                        Hi ${receiverProfile.basicDetails?.firstName ||
+                        "User"
+                        },
+                    </p>
+
+                    <p>
+                        <strong>${senderName}</strong>
+                        has sent you a message on SahaJeevan.
+                    </p>
+
+                    <p>
+                        Log in to your SahaJeevan account
+                        to view and reply to the message.
+                    </p>
+
+                    <p>
+                        Regards,<br>
+                        SahaJeevan Team
+                    </p>
+                `,
+                });
+            }
+        }
+    }
 
     /**
      * Increment sender's message count
