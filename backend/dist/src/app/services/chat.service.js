@@ -21,6 +21,8 @@ const interest_model_1 = require("../modules/profile-details/interest/interest.m
 const interest_status_enum_1 = require("../enums/interest-status.enum");
 const profile_model_1 = require("../modules/profile-details/profile.model");
 const auth_model_1 = __importDefault(require("../modules/auth/auth.model"));
+const email_service_1 = require("./email.service");
+const accountSettings_model_1 = require("../modules/account-settings/accountSettings.model");
 const db = (0, firestore_1.getFirestore)();
 /**
  * Generates a unique room ID for two users.
@@ -97,7 +99,7 @@ exports.createChatRoom = createChatRoom;
  */
 const MESSAGE_LIMIT = 4;
 const sendMessage = (roomId_1, authUserId_1, text_1, ...args_1) => __awaiter(void 0, [roomId_1, authUserId_1, text_1, ...args_1], void 0, function* (roomId, authUserId, text, type = message_type_enum_1.MessageType.TEXT, attachment) {
-    var _a;
+    var _a, _b, _c, _d, _e, _f, _g;
     // Find sender profile
     const senderProfile = yield profile_model_1.Profile.findOne({ userId: authUserId });
     if (!senderProfile) {
@@ -148,16 +150,13 @@ const sendMessage = (roomId_1, authUserId_1, text_1, ...args_1) => __awaiter(voi
     /**
      * Restrict messages while interest is pending
      */
-    // if (interest.status === InterestStatus.PENDING) {
-    //     const messageCounts = roomData.messageCounts || {};
-    //     const senderMessageCount =
-    //         messageCounts[senderProfileId] || 0;
-    //     if (senderMessageCount >= MESSAGE_LIMIT) {
-    //         throw new Error(
-    //             "You have reached the maximum of 4 messages. Wait until the interest request is accepted."
-    //         );
-    //     }
-    // }
+    if (interest.status === interest_status_enum_1.InterestStatus.PENDING) {
+        const messageCounts = roomData.messageCounts || {};
+        const senderMessageCount = messageCounts[senderProfileId] || 0;
+        if (senderMessageCount >= MESSAGE_LIMIT) {
+            throw new Error("You have reached the maximum of 4 messages. Wait until the interest request is accepted.");
+        }
+    }
     /**
      * Create message
      */
@@ -173,6 +172,65 @@ const sendMessage = (roomId_1, authUserId_1, text_1, ...args_1) => __awaiter(voi
         createdAt: firestore_1.FieldValue.serverTimestamp(),
     };
     yield messageRef.set(message);
+    /**
+ * Contact Alert Email
+ *
+ * Send email when:
+ * - Interest is not accepted
+ * - Receiver has contactAlertMails enabled
+ */
+    if (interest.status !== interest_status_enum_1.InterestStatus.ACCEPTED) {
+        const receiverProfile = yield profile_model_1.Profile.findById(receiverProfileId)
+            .select("userId basicDetails.firstName")
+            .lean();
+        if (receiverProfile) {
+            const [receiverAuth, accountSettings] = yield Promise.all([
+                auth_model_1.default.findById(receiverProfile.userId)
+                    .select("email")
+                    .lean(),
+                accountSettings_model_1.AccountSettings.findOne({
+                    userId: receiverProfile.userId,
+                    isDeleted: false,
+                })
+                    .select("notificationSettings.emailNotifications.contactAlertMails")
+                    .lean(),
+            ]);
+            const contactAlertEnabled = ((_b = (_a = accountSettings === null || accountSettings === void 0 ? void 0 : accountSettings.notificationSettings) === null || _a === void 0 ? void 0 : _a.emailNotifications) === null || _b === void 0 ? void 0 : _b.contactAlertMails) !== false;
+            if (contactAlertEnabled &&
+                (receiverAuth === null || receiverAuth === void 0 ? void 0 : receiverAuth.email)) {
+                const senderName = `${((_c = senderProfile.basicDetails) === null || _c === void 0 ? void 0 : _c.firstName) || ""} ${((_d = senderProfile.basicDetails) === null || _d === void 0 ? void 0 : _d.lastName) || ""}`.trim();
+                yield (0, email_service_1.sendEmail)({
+                    to: receiverAuth.email,
+                    name: ((_e = receiverProfile.basicDetails) === null || _e === void 0 ? void 0 : _e.firstName) ||
+                        "User",
+                    subject: "You Have Received a New Message on SahaJeevan",
+                    html: `
+                    <h2>New Message Received</h2>
+
+                    <p>
+                        Hi ${((_f = receiverProfile.basicDetails) === null || _f === void 0 ? void 0 : _f.firstName) ||
+                        "User"},
+                    </p>
+
+                    <p>
+                        <strong>${senderName}</strong>
+                        has sent you a message on SahaJeevan.
+                    </p>
+
+                    <p>
+                        Log in to your SahaJeevan account
+                        to view and reply to the message.
+                    </p>
+
+                    <p>
+                        Regards,<br>
+                        SahaJeevan Team
+                    </p>
+                `,
+                });
+            }
+        }
+    }
     /**
      * Increment sender's message count
      * Only while interest is pending
@@ -204,7 +262,7 @@ const sendMessage = (roomId_1, authUserId_1, text_1, ...args_1) => __awaiter(voi
         case message_type_enum_1.MessageType.DOCUMENT:
             lastMessage = (text === null || text === void 0 ? void 0 : text.trim())
                 ? `📄 ${text}`
-                : `📄 ${(_a = attachment === null || attachment === void 0 ? void 0 : attachment.fileName) !== null && _a !== void 0 ? _a : "Document"}`;
+                : `📄 ${(_g = attachment === null || attachment === void 0 ? void 0 : attachment.fileName) !== null && _g !== void 0 ? _g : "Document"}`;
             break;
         default:
             lastMessage = text;

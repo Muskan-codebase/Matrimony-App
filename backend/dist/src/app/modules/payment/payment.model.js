@@ -39,7 +39,7 @@ const paymentSchema = new mongoose_1.Schema({
     },
     paidAt: {
         type: Date,
-    }
+    },
 }, {
     timestamps: true
 });

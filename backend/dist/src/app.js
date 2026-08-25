@@ -13,6 +13,8 @@ require("./app/config/firebase");
 const path_1 = __importDefault(require("path"));
 const compression_1 = __importDefault(require("compression"));
 const health_route_1 = require("./app/modules/health/health.route");
+const membershipExpiryJob_1 = require("./app/job/membershipExpiryJob");
+(0, membershipExpiryJob_1.startMembershipExpiryJob)();
 const app = (0, express_1.default)();
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 app.use("/v1/api/health", health_route_1.healthRouter);
