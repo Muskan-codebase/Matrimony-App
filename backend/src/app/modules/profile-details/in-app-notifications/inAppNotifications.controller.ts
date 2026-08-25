@@ -5,6 +5,7 @@ import ProfileVisit from "../profile-visits/profileVisits.model";
 import { Interest } from "../interest/interest.model";
 import { AccountSettings } from "../../account-settings/accountSettings.model";
 import { getRecommended } from "../../../services/recommendation.service";
+import { PartnerPreference } from "../partner-preference/partnerPreference.model";
 
 export const getMyNotifications = async (
     req: Request,
@@ -102,6 +103,236 @@ export const getMyNotifications = async (
         })
             .select("_id")
             .lean();
+
+        // =====================================================
+        // 7. Similar Profiles
+        // =====================================================
+
+        const partnerPreference = await PartnerPreference.findOne({
+            profileId: loggedInProfile._id,
+            isDeleted: false,
+        }).lean();
+
+        let similarProfilesCount = 0;
+
+        if (partnerPreference) {
+            const minAge =
+                partnerPreference.basicDetails?.age?.minAge;
+
+            const maxAge =
+                partnerPreference.basicDetails?.age?.maxAge;
+
+            const preferredCountries =
+                partnerPreference.basicDetails?.partnerCountry || [];
+
+            const preferredStates =
+                partnerPreference.basicDetails?.partnerState || [];
+
+            const preferredCities =
+                partnerPreference.basicDetails?.partnerCity || [];
+
+            const preferredMaritalStatuses =
+                partnerPreference.basicDetails?.maritalStatus
+                    ?.preferences || [];
+
+            const preferredDietaryHabits =
+                partnerPreference.lifestyleAndAppearance
+                    ?.dietaryHabits?.preferences || [];
+
+            const preferredSmokingHabits =
+                partnerPreference.lifestyleAndAppearance
+                    ?.smokingHabits?.preferences || [];
+
+            const preferredDrinkingHabits =
+                partnerPreference.lifestyleAndAppearance
+                    ?.drinkingHabits?.preferences || [];
+
+            const candidateProfiles = await Profile.find({
+                isDeleted: false,
+                isBlocked: false,
+                _id: {
+                    $ne: loggedInProfile._id,
+                },
+            })
+                .select(
+                    "userId basicDetails locationDetails lifestyleDetails lifestyle"
+                )
+                .lean();
+
+            const matchingProfiles = candidateProfiles.filter(
+                (candidate) => {
+                    // Age
+                    const candidateAge =
+                        candidate.basicDetails?.age;
+
+                    if (
+                        minAge !== undefined &&
+                        candidateAge !== undefined &&
+                        candidateAge < minAge
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        maxAge !== undefined &&
+                        candidateAge !== undefined &&
+                        candidateAge > maxAge
+                    ) {
+                        return false;
+                    }
+
+                    // Country
+                    if (
+                        preferredCountries.length > 0 &&
+                        !preferredCountries.includes(
+                            candidate.locationDetails?.country || ""
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    // State
+                    if (
+                        preferredStates.length > 0 &&
+                        !preferredStates.includes(
+                            candidate.locationDetails?.state || ""
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    // City
+                    if (
+                        preferredCities.length > 0 &&
+                        !preferredCities.includes(
+                            candidate.locationDetails?.city || ""
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    // Marital Status
+                    if (
+                        preferredMaritalStatuses.length > 0
+                    ) {
+                        const candidateStatus =
+                            candidate.basicDetails
+                                ?.maritalStatus;
+
+                        const statusMap: Record<
+                            string,
+                            string
+                        > = {
+                            Divorced: "Divorce",
+                            Widowed: "Widow",
+                        };
+
+                        const normalizedStatus =
+                            statusMap[candidateStatus || ""] ||
+                            candidateStatus;
+
+                        if (
+                            !preferredMaritalStatuses.includes(
+                                normalizedStatus as any
+                            )
+                        ) {
+                            return false;
+                        }
+                    }
+
+                    // Dietary Habit
+                    if (
+                        preferredDietaryHabits.length > 0 &&
+                        !preferredDietaryHabits.includes(
+                            "Doesn't Matter" as any
+                        )
+                    ) {
+                        const candidateDiet =
+                            candidate.lifestyleDetails
+                                ?.eatingHabit;
+
+                        if (
+                            !preferredDietaryHabits.includes(
+                                candidateDiet as any
+                            )
+                        ) {
+                            return false;
+                        }
+                    }
+
+                    // Smoking Habit
+                    if (
+                        preferredSmokingHabits.length > 0 &&
+                        !preferredSmokingHabits.includes(
+                            "Doesn't Matter" as any
+                        )
+                    ) {
+                        const candidateSmoking =
+                            candidate.lifestyle?.smokingHabit;
+
+                        const smokingMap: Record<
+                            string,
+                            string
+                        > = {
+                            Never: "No",
+                            Occasionally: "Occasionally",
+                            Regularly: "Yes",
+                        };
+
+                        const normalizedSmoking =
+                            smokingMap[
+                            candidateSmoking || ""
+                            ];
+
+                        if (
+                            !preferredSmokingHabits.includes(
+                                normalizedSmoking as any
+                            )
+                        ) {
+                            return false;
+                        }
+                    }
+
+                    // Drinking Habit
+                    if (
+                        preferredDrinkingHabits.length > 0 &&
+                        !preferredDrinkingHabits.includes(
+                            "Doesn't Matter" as any
+                        )
+                    ) {
+                        const candidateDrinking =
+                            candidate.lifestyle?.drinkingHabit;
+
+                        const drinkingMap: Record<
+                            string,
+                            string
+                        > = {
+                            Never: "No",
+                            Occasionally: "Occasionally",
+                            Regularly: "Yes",
+                        };
+
+                        const normalizedDrinking =
+                            drinkingMap[
+                            candidateDrinking || ""
+                            ];
+
+                        if (
+                            !preferredDrinkingHabits.includes(
+                                normalizedDrinking as any
+                            )
+                        ) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            );
+
+            similarProfilesCount =
+                matchingProfiles.length;
+        }
 
         // Combine all notifications
         const notifications: any[] = [
@@ -215,6 +446,25 @@ export const getMyNotifications = async (
                 message: "you have pending interest requests",
                 data: {
                     count: pendingInterests.length,
+                },
+                createdAt: new Date(),
+            });
+        }
+
+        // =====================================================
+        // Similar Profiles - In-App Notification
+        // =====================================================
+        if (
+            similarProfilesCount > 0 &&
+            accountSettings?.notificationSettings
+                ?.appNotifications?.similarProfiles === false
+        ) {
+            notifications.push({
+                type: "similar_profiles",
+                message:
+                    "found profiles matching your preferences",
+                data: {
+                    count: similarProfilesCount,
                 },
                 createdAt: new Date(),
             });
