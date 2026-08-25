@@ -244,17 +244,16 @@ const resetPartnerPreferenceSection = (req, res) => __awaiter(void 0, void 0, vo
             });
             return;
         }
-        // Get reset values for requested section
-        const resetValues = resetSectionValues[section];
         // Reset only that section
         const updatedPartnerPreference = yield partnerPreference_model_1.PartnerPreference.findOneAndUpdate({
             profileId: profile._id,
             isDeleted: false,
         }, {
-            $set: resetValues,
+            $unset: {
+                [section]: "",
+            },
         }, {
             new: true,
-            runValidators: true,
         });
         if (!updatedPartnerPreference) {
             res.status(404).json({
