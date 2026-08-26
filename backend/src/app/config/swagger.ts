@@ -30,7 +30,7 @@ const options: swaggerJSDoc.Options = {
         url: "http://31.97.207.6:4444",
         description: "Staging Server",
       },
-       {
+      {
         url: "https://matrimony-app-qma8.onrender.com",
         description: "Production Server",
       },
@@ -299,6 +299,7 @@ const options: swaggerJSDoc.Options = {
     "./src/app/modules/**/*.routes.ts",
     "./src/app/modules/**/*.model.ts",
     "./src/app/routes/index.ts",
+    "./src/**/*.ts"
   ],
 };
 
