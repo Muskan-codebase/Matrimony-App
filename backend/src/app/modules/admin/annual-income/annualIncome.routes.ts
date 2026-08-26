@@ -63,7 +63,7 @@ router.post("/", authenticate, createAnnualIncome);
  *       200:
  *         description: List of all annual income options.
  */
-router.get("/", authenticate, getAnnualIncomes);
+router.get("/", getAnnualIncomes);
 /**
  * @swagger
  * /v1/api/admin/annual-income/{id}:
@@ -85,7 +85,7 @@ router.get("/", authenticate, getAnnualIncomes);
  *       404:
  *         description: Annual income not found.
  */
-router.get("/:id", authenticate, getAnnualIncomeById);
+router.get("/:id", getAnnualIncomeById);
 /**
  * @swagger
  * /v1/api/admin/annual-income/{id}:
