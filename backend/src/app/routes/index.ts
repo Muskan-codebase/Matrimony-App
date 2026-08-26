@@ -37,6 +37,7 @@ import { privacyPolicyRouter } from '../modules/admin/privacy-policy/privacyPoli
 import { inAppNotificationsRouter } from '../modules/profile-details/in-app-notifications/inAppNotification.routes';
 import { adminProfileRouter } from '../modules/admin/profile/profile.routes';
 import { testEmailRouter } from '../services/email.route';
+import { photoRequestRouter } from '../modules/profile-details/photo-request/photoRequest.route';
 
 const router = Router();
 
@@ -192,6 +193,9 @@ const moduleRoutes = [
   {
     path: "/test",
     route: testEmailRouter
+  },
+  { path: "/profile",
+    route: photoRequestRouter
   }
 ];
 
