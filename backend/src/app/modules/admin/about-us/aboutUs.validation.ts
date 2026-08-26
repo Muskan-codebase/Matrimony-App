@@ -1,85 +1,134 @@
 import { z } from "zod";
 
+// ==========================================
+// CEO SECTION
+// ==========================================
+
 const ceoSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
-    image: z.string().trim().min(1),
-    description: z.string().trim().min(1).max(2000),
-    designation: z.string().trim().min(1).max(100),
+    heading: z.string().trim().optional(),
+    image: z.string().trim().optional(),
+    description: z.string().trim().optional(),
+    designation: z.string().trim().optional(),
 });
+
+// ==========================================
+// MISSION & VISION SECTION
+// ==========================================
 
 const missionVisionSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
+    heading: z.string().trim().optional(),
 
-    missionTitle: z.string().trim().min(1).max(100),
-    missionDescription: z.string().trim().min(1).max(1000),
+    missionTitle: z.string().trim().optional(),
+    missionDescription: z.string().trim().optional(),
 
-    visionTitle: z.string().trim().min(1).max(100),
-    visionDescription: z.string().trim().min(1).max(1000),
+    visionTitle: z.string().trim().optional(),
+    visionDescription: z.string().trim().optional(),
 });
+
+// ==========================================
+// ABOUT SECTION
+// ==========================================
 
 const aboutSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
-    image: z.string().trim().min(1),
-    description: z.string().trim().min(1).max(2000),
+    heading: z.string().trim().optional(),
+    image: z.string().trim().optional(),
+    description: z.string().trim().optional(),
 
-    verifiedProfiles: z.number().min(0),
-    successfulMatches: z.number().min(0),
-    citiesCovered: z.number().min(0),
-    yearsOfTrust: z.number().min(0),
+    verifiedProfiles: z.number().optional(),
+    successfulMatches: z.number().optional(),
+    citiesCovered: z.number().optional(),
+    yearsOfTrust: z.number().optional(),
 });
+
+// ==========================================
+// AWARD
+// ==========================================
 
 const awardSchema = z.object({
-    image: z.string().trim().min(1),
-    title: z.string().trim().min(1).max(150),
-    subtitle: z.string().trim().min(1).max(150),
+    image: z.string().trim().optional(),
+    title: z.string().trim().optional(),
+    subtitle: z.string().trim().optional(),
 });
+
+// ==========================================
+// AWARD WINNER SECTION
+// ==========================================
 
 const awardWinnerSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
-    awards: z.array(awardSchema),
+    heading: z.string().trim().optional(),
+    awards: z.array(awardSchema).optional(),
 });
+
+// ==========================================
+// HOW TO USE STEP
+// ==========================================
 
 const howToUseStepSchema = z.object({
-    title: z.string().trim().min(1).max(150),
-    description: z.string().trim().min(1).max(500),
+    title: z.string().trim().optional(),
+    description: z.string().trim().optional(),
 });
+
+// ==========================================
+// HOW TO USE SECTION
+// ==========================================
 
 const howToUseSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
-    steps: z.array(howToUseStepSchema),
+    heading: z.string().trim().optional(),
+    steps: z.array(howToUseStepSchema).optional(),
 });
+
+// ==========================================
+// MONEY BACK GUARANTEE SECTION
+// ==========================================
 
 const moneyBackGuaranteeSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
-    description: z.string().trim().min(1).max(1000),
-    note: z.string().trim().min(1).max(300),
+    heading: z.string().trim().optional(),
+    description: z.string().trim().optional(),
+    note: z.string().trim().optional(),
 });
+
+// ==========================================
+// SECURITY FEATURE
+// ==========================================
 
 const securityFeatureSchema = z.object({
-    title: z.string().trim().min(1).max(150),
-    description: z.string().trim().min(1).max(500),
+    title: z.string().trim().optional(),
+    description: z.string().trim().optional(),
 });
+
+// ==========================================
+// SECURE SECTION
+// ==========================================
 
 const secureSectionSchema = z.object({
-    heading: z.string().trim().min(1).max(100),
-    features: z.array(securityFeatureSchema),
+    heading: z.string().trim().optional(),
+    features: z.array(securityFeatureSchema).optional(),
 });
+
+// ==========================================
+// CREATE
+// ==========================================
 
 export const createAboutUsValidation = z.object({
-    ceoSection: ceoSectionSchema,
+    ceoSection: ceoSectionSchema.optional(),
 
-    missionVisionSection: missionVisionSectionSchema,
+    missionVisionSection: missionVisionSectionSchema.optional(),
 
-    aboutSection: aboutSectionSchema,
+    aboutSection: aboutSectionSchema.optional(),
 
-    awardWinnerSection: awardWinnerSectionSchema,
+    awardWinnerSection: awardWinnerSectionSchema.optional(),
 
-    howToUseSection: howToUseSectionSchema,
+    howToUseSection: howToUseSectionSchema.optional(),
 
-    moneyBackGuaranteeSection: moneyBackGuaranteeSectionSchema,
+    moneyBackGuaranteeSection:
+        moneyBackGuaranteeSectionSchema.optional(),
 
-    secureSection: secureSectionSchema,
+    secureSection: secureSectionSchema.optional(),
 });
 
+// ==========================================
+// UPDATE
+// ==========================================
+
 export const updateAboutUsValidation =
-    createAboutUsValidation.partial();
+    createAboutUsValidation;
