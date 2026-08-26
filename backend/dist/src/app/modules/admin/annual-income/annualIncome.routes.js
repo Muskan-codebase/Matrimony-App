@@ -58,7 +58,7 @@ router.post("/", authMiddleware_1.authenticate, annualIncome_controllers_1.creat
  *       200:
  *         description: List of all annual income options.
  */
-router.get("/", authMiddleware_1.authenticate, annualIncome_controllers_1.getAnnualIncomes);
+router.get("/", annualIncome_controllers_1.getAnnualIncomes);
 /**
  * @swagger
  * /v1/api/admin/annual-income/{id}:
@@ -80,7 +80,7 @@ router.get("/", authMiddleware_1.authenticate, annualIncome_controllers_1.getAnn
  *       404:
  *         description: Annual income not found.
  */
-router.get("/:id", authMiddleware_1.authenticate, annualIncome_controllers_1.getAnnualIncomeById);
+router.get("/:id", annualIncome_controllers_1.getAnnualIncomeById);
 /**
  * @swagger
  * /v1/api/admin/annual-income/{id}:
