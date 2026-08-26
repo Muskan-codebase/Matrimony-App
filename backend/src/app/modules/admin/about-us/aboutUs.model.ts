@@ -5,29 +5,22 @@ const ceoSectionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         image: {
             type: String,
-            required: true,
             trim: true,
         },
 
         description: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 2000,
         },
 
         designation: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
     },
     {
@@ -39,37 +32,27 @@ const missionVisionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         missionTitle: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         missionDescription: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 1000,
         },
 
         visionTitle: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         visionDescription: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 1000,
         },
     },
     {
@@ -81,45 +64,36 @@ const aboutSectionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         image: {
             type: String,
-            required: true,
             trim: true,
         },
 
         description: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 2000,
         },
 
         verifiedProfiles: {
             type: Number,
-            required: true,
             default: 0,
         },
 
         successfulMatches: {
             type: Number,
-            required: true,
             default: 0,
         },
 
         citiesCovered: {
             type: Number,
-            required: true,
             default: 0,
         },
 
         yearsOfTrust: {
             type: Number,
-            required: true,
             default: 0,
         },
     },
@@ -132,22 +106,17 @@ const awardSchema = new Schema(
     {
         image: {
             type: String,
-            required: true,
             trim: true,
         },
 
         title: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 150,
         },
 
         subtitle: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 150,
         },
     },
     {
@@ -159,9 +128,7 @@ const awardWinnerSectionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         awards: {
@@ -178,16 +145,12 @@ const howToUseStepSchema = new Schema(
     {
         title: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 150,
         },
 
         description: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 500,
         },
     },
     {
@@ -199,9 +162,7 @@ const howToUseSectionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         steps: {
@@ -218,23 +179,17 @@ const moneyBackGuaranteeSectionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 100,
         },
 
         description: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 1000,
         },
 
         note: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 300,
         },
     },
     {
@@ -246,16 +201,12 @@ const securityFeatureSchema = new Schema(
     {
         title: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 150,
         },
 
         description: {
             type: String,
-            required: true,
             trim: true,
-            maxlength: 500,
         },
     },
     {
@@ -267,7 +218,6 @@ const secureSectionSchema = new Schema(
     {
         heading: {
             type: String,
-            required: true,
             trim: true,
             maxlength: 100,
         },
@@ -286,37 +236,30 @@ const aboutUsSchema = new Schema<IAboutUs>(
     {
         ceoSection: {
             type: ceoSectionSchema,
-            required: true,
         },
 
         missionVisionSection: {
             type: missionVisionSchema,
-            required: true,
         },
 
         aboutSection: {
             type: aboutSectionSchema,
-            required: true,
         },
 
         awardWinnerSection: {
             type: awardWinnerSectionSchema,
-            required: true,
         },
 
         howToUseSection: {
             type: howToUseSectionSchema,
-            required: true,
         },
 
         moneyBackGuaranteeSection: {
             type: moneyBackGuaranteeSectionSchema,
-            required: true,
         },
 
         secureSection: {
             type: secureSectionSchema,
-            required: true,
         },
 
         isDeleted: {
