@@ -64,7 +64,7 @@ router.post("/", authenticate, createHeight);
  *       401:
  *         description: Unauthorized.
  */
-router.get("/", authenticate, getHeights);
+router.get("/", getHeights);
 /**
  * @swagger
  * /v1/api/admin/height/{id}:
@@ -89,7 +89,7 @@ router.get("/", authenticate, getHeights);
  *       404:
  *         description: Height not found.
  */
-router.get("/:id", authenticate, getHeightById);
+router.get("/:id", getHeightById);
 /**
  * @swagger
  * /v1/api/admin/height/{id}:
