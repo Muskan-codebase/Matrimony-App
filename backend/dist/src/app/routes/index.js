@@ -39,6 +39,7 @@ const privacyPolicy_routes_1 = require("../modules/admin/privacy-policy/privacyP
 const inAppNotification_routes_1 = require("../modules/profile-details/in-app-notifications/inAppNotification.routes");
 const profile_routes_2 = require("../modules/admin/profile/profile.routes");
 const email_route_1 = require("../services/email.route");
+const photoRequest_route_1 = require("../modules/profile-details/photo-request/photoRequest.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -192,6 +193,9 @@ const moduleRoutes = [
     {
         path: "/test",
         route: email_route_1.testEmailRouter
+    },
+    { path: "/profile",
+        route: photoRequest_route_1.photoRequestRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
