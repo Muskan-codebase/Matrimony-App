@@ -299,6 +299,7 @@ const options = {
         "./src/app/modules/**/*.routes.ts",
         "./src/app/modules/**/*.model.ts",
         "./src/app/routes/index.ts",
+        "./src/**/*.ts"
     ],
 };
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css";
