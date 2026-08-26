@@ -5,7 +5,7 @@ import { authenticate } from "../../../middlewares/authMiddleware";
 const router = Router();
 /**
  * @swagger
- * /profile/photo-request:
+ * /v1/api/profile/photo-request:
  *   post:
  *     summary: Request Photo
  *     description: Sends a photo request email to a user who has not uploaded a photo.
