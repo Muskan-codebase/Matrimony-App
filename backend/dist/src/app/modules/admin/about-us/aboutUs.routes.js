@@ -14,39 +14,104 @@ const router = (0, express_1.Router)();
  */
 /**
  * @swagger
- * /v1/api/about-us:
+ * /v1/api/admin/about-us:
  *   put:
  *     summary: Create or Update About Us
  *     description: Creates the About Us document if it does not exist, otherwise updates the existing document.
  *     tags: [About Us]
  *     security:
  *       - bearerAuth: []
+ *
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required:
- *               - data
  *             properties:
- *               data:
+ *
+ *               ceoHeading:
  *                 type: string
- *                 description: JSON string containing the About Us data.
  *               ceoImage:
  *                 type: string
  *                 format: binary
- *                 description: CEO image
+ *               ceoDescription:
+ *                 type: string
+ *               ceoDesignation:
+ *                 type: string
+ *
+ *               missionVisionHeading:
+ *                 type: string
+ *               missionTitle:
+ *                 type: string
+ *               missionDescription:
+ *                 type: string
+ *               visionTitle:
+ *                 type: string
+ *               visionDescription:
+ *                 type: string
+ *
+ *               aboutHeading:
+ *                 type: string
  *               aboutImage:
  *                 type: string
  *                 format: binary
- *                 description: About Us image
+ *               aboutDescription:
+ *                 type: string
+ *               verifiedProfiles:
+ *                 type: number
+ *               successfulMatches:
+ *                 type: number
+ *               citiesCovered:
+ *                 type: number
+ *               yearsOfTrust:
+ *                 type: number
+ *
+ *               awardWinnerHeading:
+ *                 type: string
  *               awardImages:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
- *                 description: Award winner images (same order as awards array)
+ *               awardTitles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               awardSubtitles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *
+ *               howToUseHeading:
+ *                 type: string
+ *               stepTitles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               stepDescriptions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *
+ *               moneyBackGuaranteeHeading:
+ *                 type: string
+ *               moneyBackGuaranteeDescription:
+ *                 type: string
+ *               moneyBackGuaranteeNote:
+ *                 type: string
+ *
+ *               secureHeading:
+ *                 type: string
+ *               securityFeatureTitles:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               securityFeatureDescriptions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *
  *     responses:
  *       200:
  *         description: About Us saved successfully.
@@ -62,7 +127,7 @@ router.put("/", authMiddleware_1.authenticate, cloudinary_1.upload.fields([
 ]), aboutUs_controllers_1.createOrUpdateAboutUs);
 /**
  * @swagger
- * /v1/api/about-us:
+ * /v1/api/admin/about-us:
  *   get:
  *     summary: Get About Us
  *     description: Returns the About Us CMS content.

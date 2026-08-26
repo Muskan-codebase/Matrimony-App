@@ -380,6 +380,12 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }).select("_id basicDetails.age locationDetails.country");
         console.log("India + Age + Exclusions:", indiaAgeExcludedProfiles.length);
         console.log("===========================");
+        // 5. Only show profiles of the opposite gender
+        filter["basicDetails.gender"] =
+            loggedInProfile.basicDetails.gender === "Male"
+                ? "Female"
+                : "Male";
+        // 6. Fetch
         let profiles = yield profile_model_1.Profile.find(filter);
         // Just Joined fallback
         if (matchPreferences.includes("justJoined") && profiles.length === 0) {
