@@ -60,7 +60,7 @@ router.post("/", authMiddleware_1.authenticate, height_controllers_1.createHeigh
  *       401:
  *         description: Unauthorized.
  */
-router.get("/", authMiddleware_1.authenticate, height_controllers_1.getHeights);
+router.get("/", height_controllers_1.getHeights);
 /**
  * @swagger
  * /v1/api/admin/height/{id}:
@@ -85,7 +85,7 @@ router.get("/", authMiddleware_1.authenticate, height_controllers_1.getHeights);
  *       404:
  *         description: Height not found.
  */
-router.get("/:id", authMiddleware_1.authenticate, height_controllers_1.getHeightById);
+router.get("/:id", height_controllers_1.getHeightById);
 /**
  * @swagger
  * /v1/api/admin/height/{id}:
