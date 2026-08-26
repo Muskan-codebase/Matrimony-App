@@ -526,6 +526,13 @@ export const getProfiles = async (req: Request, res: Response) => {
 
         console.log("===========================");
 
+        // 5. Only show profiles of the opposite gender
+        filter["basicDetails.gender"] =
+            loggedInProfile.basicDetails.gender === "Male"
+                ? "Female"
+                : "Male";
+
+        // 6. Fetch
         let profiles = await Profile.find(filter);
 
         // Just Joined fallback
