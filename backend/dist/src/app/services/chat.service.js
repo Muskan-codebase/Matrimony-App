@@ -23,6 +23,7 @@ const profile_model_1 = require("../modules/profile-details/profile.model");
 const auth_model_1 = __importDefault(require("../modules/auth/auth.model"));
 const email_service_1 = require("./email.service");
 const accountSettings_model_1 = require("../modules/account-settings/accountSettings.model");
+const package_model_1 = __importDefault(require("../modules/package/package.model"));
 const db = (0, firestore_1.getFirestore)();
 /**
  * Generates a unique room ID for two users.
@@ -339,6 +340,15 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
         const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
             .select("mobile countryCode firebaseUid")
             .lean();
+        const formatDate = (date) => {
+            if (!date)
+                return null;
+            const d = date.toDate ? date.toDate() : new Date(date);
+            const day = String(d.getDate()).padStart(2, "0");
+            const month = String(d.getMonth() + 1).padStart(2, "0");
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        };
         return {
             roomId: doc.id,
             participant: {
@@ -365,7 +375,7 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
             lastMessage: room.lastMessage,
             lastMessageType: room.lastMessageType,
             lastMessageSender: room.lastMessageSender,
-            lastMessageAt: room.lastMessageAt,
+            lastMessageAt: formatDate(room.lastMessageAt),
             isActive: room.isActive,
             interestId: room.interestId,
         };
@@ -377,7 +387,7 @@ exports.getChats = getChats;
  * Get all my messages of a chat room
  */
 const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     // Find logged-in user's profile
     const profile = yield profile_model_1.Profile.findOne({
         userId: authUserId,
@@ -416,6 +426,13 @@ const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, fu
     const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
         .select("mobile countryCode firebaseUid")
         .lean();
+    let packageDetails = null;
+    if (((_a = otherProfile.subscription) === null || _a === void 0 ? void 0 : _a.isActive) &&
+        ((_b = otherProfile.subscription) === null || _b === void 0 ? void 0 : _b.packageId)) {
+        packageDetails = yield package_model_1.default.findById(otherProfile.subscription.packageId)
+            .select("title")
+            .lean();
+    }
     // Fetch all messages
     const messagesSnapshot = yield roomRef
         .collection("messages")
@@ -429,13 +446,14 @@ const getMessages = (roomId, authUserId) => __awaiter(void 0, void 0, void 0, fu
         participant: {
             profileId: otherProfile._id,
             firebaseUid: (otherAuth === null || otherAuth === void 0 ? void 0 : otherAuth.firebaseUid) || null,
-            fullName: `${((_a = otherProfile.basicDetails) === null || _a === void 0 ? void 0 : _a.firstName) || ""} ${((_b = otherProfile.basicDetails) === null || _b === void 0 ? void 0 : _b.lastName) || ""}`.trim(),
-            profilePhoto: ((_c = otherProfile.photos) === null || _c === void 0 ? void 0 : _c.length)
+            fullName: `${((_c = otherProfile.basicDetails) === null || _c === void 0 ? void 0 : _c.firstName) || ""} ${((_d = otherProfile.basicDetails) === null || _d === void 0 ? void 0 : _d.lastName) || ""}`.trim(),
+            profilePhoto: ((_e = otherProfile.photos) === null || _e === void 0 ? void 0 : _e.length)
                 ? otherProfile.photos[0]
                 : null,
-            subscription: ((_d = otherProfile.subscription) === null || _d === void 0 ? void 0 : _d.isActive)
+            subscription: ((_f = otherProfile.subscription) === null || _f === void 0 ? void 0 : _f.isActive)
                 ? {
                     isActive: true,
+                    packageName: (packageDetails === null || packageDetails === void 0 ? void 0 : packageDetails.title) || null,
                     packageId: otherProfile.subscription.packageId,
                     expiryDate: otherProfile.subscription.expiryDate
                 }
