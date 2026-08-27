@@ -102,6 +102,7 @@ const verifyPayment = (userId, razorpayOrderId, razorpayPaymentId, razorpaySigna
     profile.subscription = {
         isActive: true,
         packageId: payment.packageId,
+        packageName: packageData.title,
         startDate,
         expiryDate,
     };
