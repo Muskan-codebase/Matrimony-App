@@ -47,8 +47,8 @@ router.post("/send-otp", sendOTP);
  * @swagger
  * /v1/api/auth/verify-otp:
  *   post:
- *     summary: Verify OTP
- *     description: Verifies the OTP and returns an access token and refresh token.
+ *     summary: Verify Firebase Authentication Token
+ *     description: Verifies the Firebase ID token received after OTP authentication, validates the mobile number, checks the user account, and returns application access and refresh tokens.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -59,19 +59,48 @@ router.post("/send-otp", sendOTP);
  *             type: object
  *             required:
  *               - mobile
- *               - otp
+ *               - token
  *             properties:
  *               mobile:
  *                 type: string
- *                 example: "9876543210"
- *               otp:
+ *                 description: Mobile number associated with the Firebase authentication.
+ *                 example: "+919876543210"
+ *               token:
  *                 type: string
- *                 example: "123456"
+ *                 description: Firebase ID token received after successful OTP verification on the Flutter app.
+ *                 example: "eyJhbGciOiJSUzI1NiIsImtpZCI6..."
  *     responses:
  *       200:
- *         description: OTP verified successfully.
+ *         description: Firebase token verified and user logged in successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Logged in successfully."
+ *                 isNewUser:
+ *                   type: boolean
+ *                   example: false
+ *                 accessToken:
+ *                   type: string
+ *                   description: Application access token.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Application refresh token.
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 user:
+ *                   type: object
+ *                   description: Authenticated user's account details.
  *       400:
- *         description: Invalid OTP.
+ *         description: Invalid request or Firebase token verification failed.
+ *       401:
+ *         description: Firebase token does not contain a phone number or the mobile number does not match the Firebase token.
  *       404:
  *         description: User not found.
  */
