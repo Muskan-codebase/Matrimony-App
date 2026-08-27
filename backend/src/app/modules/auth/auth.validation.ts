@@ -14,52 +14,75 @@ const countryCodeSchema = z
     .trim()
     .regex(/^\+\d{1,4}$/, "Invalid country code");
 
-const otpSchema = z
+const firebaseTokenSchema = z
     .string()
     .trim()
-    .regex(/^\d+$/, "OTP must contain only digits")
-    .length(4, "OTP must be exactly 4 digits");
+    .min(1, "Firebase token is required");
 
 /**
  * Send OTP
  */
+
 export const sendOtpValidation = z.object({
+
     countryCode: countryCodeSchema,
+
     mobile: mobileSchema,
+
 });
 
 /**
- * Verify OTP
+ * Verify OTP / Firebase Authentication
  */
+
 export const verifyOtpValidation = z.object({
+
     mobile: mobileSchema,
-    otp: otpSchema,
+
+    token: firebaseTokenSchema,
+
 });
 
 /**
  * Resend OTP
  */
+
 export const resendOtpValidation = z.object({
+
     mobile: mobileSchema,
+
 });
 
 /**
  * Refresh Token
  */
+
 export const refreshTokenValidation = z.object({
-    refreshToken: z.string().trim().min(10, "Invalid refresh token"),
+
+    refreshToken: z
+        .string()
+        .trim()
+        .min(10, "Invalid refresh token"),
+
 });
 
 /**
  * Logout
  */
+
 export const logoutValidation = z.object({
-    refreshToken: z.string().trim().min(10, "Invalid refresh token"),
+
+    refreshToken: z
+        .string()
+        .trim()
+        .min(10, "Invalid refresh token"),
+
 });
 
 /**
  * Type Inference
  */
+
 export type SendOtpInput = z.infer<typeof sendOtpValidation>;
 export type VerifyOtpInput = z.infer<typeof verifyOtpValidation>;
 export type ResendOtpInput = z.infer<typeof resendOtpValidation>;
