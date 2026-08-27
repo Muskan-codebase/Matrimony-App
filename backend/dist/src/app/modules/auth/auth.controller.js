@@ -83,6 +83,21 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const decodedToken = yield (0, auth_1.getAuth)(firebase_1.default).verifyIdToken(token);
         const firebaseUid = decodedToken.uid;
         const firebasePhone = decodedToken.phone_number;
+        if (!firebasePhone) {
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token does not contain a phone number.",
+            });
+        }
+        const normalizedMobile = mobile.startsWith("+")
+            ? mobile
+            : `+91${mobile}`;
+        if (firebasePhone !== normalizedMobile) {
+            return res.status(401).json({
+                success: false,
+                message: "Mobile number does not match Firebase token.",
+            });
+        }
         // --------------------------------------------------
         // VERIFY MOBILE NUMBER
         // --------------------------------------------------
