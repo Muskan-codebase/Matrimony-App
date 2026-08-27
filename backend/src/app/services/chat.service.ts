@@ -9,6 +9,7 @@ import { ChatAttachment } from "../modules/profile-details/chat/chat.interface";
 import Auth from "../modules/auth/auth.model";
 import { sendEmail } from "./email.service";
 import { AccountSettings } from "../modules/account-settings/accountSettings.model";
+import Package from "../modules/package/package.model";
 
 const db = getFirestore();
 
@@ -486,6 +487,18 @@ export const getChats = async (authUserId: string) => {
                 .select("mobile countryCode firebaseUid")
                 .lean();
 
+            const formatDate = (date: any) => {
+                if (!date) return null;
+
+                const d = date.toDate ? date.toDate() : new Date(date);
+
+                const day = String(d.getDate()).padStart(2, "0");
+                const month = String(d.getMonth() + 1).padStart(2, "0");
+                const year = d.getFullYear();
+
+                return `${day}-${month}-${year}`;
+            };
+
             return {
 
                 roomId: doc.id,
@@ -530,7 +543,7 @@ export const getChats = async (authUserId: string) => {
 
                 lastMessageSender: room.lastMessageSender,
 
-                lastMessageAt: room.lastMessageAt,
+                lastMessageAt: formatDate(room.lastMessageAt),
 
                 isActive: room.isActive,
 
@@ -610,6 +623,19 @@ export const getMessages = async (
         .select("mobile countryCode firebaseUid")
         .lean();
 
+    let packageDetails = null;
+
+    if (
+        otherProfile.subscription?.isActive &&
+        otherProfile.subscription?.packageId
+    ) {
+        packageDetails = await Package.findById(
+            otherProfile.subscription.packageId
+        )
+            .select("title")
+            .lean();
+    }
+
     // Fetch all messages
     const messagesSnapshot = await roomRef
         .collection("messages")
@@ -641,6 +667,7 @@ export const getMessages = async (
             subscription: otherProfile.subscription?.isActive
                 ? {
                     isActive: true,
+                    packageName: packageDetails?.title || null,
                     packageId: otherProfile.subscription.packageId,
                     expiryDate: otherProfile.subscription.expiryDate
                 }
