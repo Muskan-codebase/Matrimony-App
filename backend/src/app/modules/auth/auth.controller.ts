@@ -110,6 +110,23 @@ export const verifyOTP = async (req: Request, res: Response) => {
         const firebaseUid = decodedToken.uid;
         const firebasePhone = decodedToken.phone_number;
 
+        if (!firebasePhone) {
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token does not contain a phone number.",
+            });
+        }
+
+        const normalizedMobile = mobile.startsWith("+")
+            ? mobile
+            : `+91${mobile}`;
+
+        if (firebasePhone !== normalizedMobile) {
+            return res.status(401).json({
+                success: false,
+                message: "Mobile number does not match Firebase token.",
+            });
+        }
 
         // --------------------------------------------------
         // VERIFY MOBILE NUMBER
