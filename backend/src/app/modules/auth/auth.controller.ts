@@ -17,6 +17,8 @@ import {
 } from "./auth.constants";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { getAuth } from "firebase-admin/auth";
+import app from "../../config/firebase";
 
 export const sendOTP = async (req: Request, res: Response) => {
 
@@ -90,11 +92,48 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
     try {
 
+        // --------------------------------------------------
+        // VALIDATE REQUEST
+        // --------------------------------------------------
+
         const validatedData = verifyOtpValidation.parse(req.body);
 
-        const { mobile, otp } = validatedData;
+        const { mobile, token } = validatedData;
 
-        // Check whether user exists
+
+        // --------------------------------------------------
+        // VERIFY FIREBASE ID TOKEN
+        // --------------------------------------------------
+
+        const decodedToken = await getAuth(app).verifyIdToken(token);
+
+        const firebaseUid = decodedToken.uid;
+        const firebasePhone = decodedToken.phone_number;
+
+
+        // --------------------------------------------------
+        // VERIFY MOBILE NUMBER
+        // --------------------------------------------------
+
+        if (!firebasePhone) {
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token does not contain a phone number.",
+            });
+        }
+
+        if (firebasePhone !== mobile) {
+            return res.status(401).json({
+                success: false,
+                message: "Mobile number does not match Firebase token.",
+            });
+        }
+
+
+        // --------------------------------------------------
+        // CHECK WHETHER USER EXISTS
+        // --------------------------------------------------
+
         const auth = await Auth.findOne({
             mobile,
             isDeleted: false,
@@ -107,85 +146,62 @@ export const verifyOTP = async (req: Request, res: Response) => {
             });
         }
 
-        // Find latest unused OTP
-        const otpRecord = await Otp.findOne({
-            authId: auth._id,
-            isUsed: false,
-        }).sort({ createdAt: -1 });
-
-        if (!otpRecord) {
-            return res.status(400).json({
-                success: false,
-                message: "OTP not found. Please request a new OTP.",
-            });
-        }
-
-        // Check expiry
-        if (otpRecord.expiresAt < new Date()) {
-
-            otpRecord.isUsed = true;
-            await otpRecord.save();
-
-            return res.status(400).json({
-                success: false,
-                message: "OTP has expired.",
-            });
-        }
-
-        // Invalid OTP
-        if (otpRecord.otp !== otp) {
-
-            otpRecord.attempts += 1;
-
-            // Maximum 5 attempts
-            if (otpRecord.attempts >= 5) {
-                otpRecord.isUsed = true;
-            }
-
-            await otpRecord.save();
-
-            return res.status(400).json({
-                success: false,
-                message: "Invalid OTP.",
-            });
-        }
-
-        // OTP Verified
-        otpRecord.isUsed = true;
-        await otpRecord.save();
 
         // --------------------------------------------------
         // CHECK PROFILE EXISTENCE
         // --------------------------------------------------
 
         const profileExists = await Profile.exists({
-            userId: auth._id
+            userId: auth._id,
         });
 
         // No profile = new user
         const isNewUser = !profileExists;
 
-        // Capture this BEFORE mutating isVerified below —
-        // tells us whether this is a first-time registration or a returning login
-        // const isNewUser = !auth.isVerified;
+
+        // --------------------------------------------------
+        // CHECK FIRST LOGIN
+        // --------------------------------------------------
 
         const isFirstLogin = auth.loginCount === 0;
 
+
+        // --------------------------------------------------
+        // UPDATE AUTH DETAILS
+        // --------------------------------------------------
+
+        auth.firebaseUid = firebaseUid;
         auth.isVerified = true;
         auth.loginCount += 1;
         auth.lastLogin = new Date();
 
-        // Generate Access Token
-        const accessToken = generateAccessToken(auth)
 
-        // Generate Refresh Token
+        // --------------------------------------------------
+        // GENERATE ACCESS TOKEN
+        // --------------------------------------------------
+
+        const accessToken = generateAccessToken(auth);
+
+
+        // --------------------------------------------------
+        // GENERATE REFRESH TOKEN
+        // --------------------------------------------------
+
         const refreshToken = generateRefreshToken(auth);
 
-        //Generate Firebase Token 🔥
-        const firebaseToken = await generateFirebaseToken(auth._id.toString());
+
+        // --------------------------------------------------
+        // HASH & SAVE REFRESH TOKEN
+        // --------------------------------------------------
 
         auth.refreshToken = await bcrypt.hash(refreshToken, 10);
+
         await auth.save();
+
+
+        // --------------------------------------------------
+        // RESPONSE
+        // --------------------------------------------------
 
         return res.status(200).json({
             success: true,
@@ -195,7 +211,6 @@ export const verifyOTP = async (req: Request, res: Response) => {
             isNewUser,
             accessToken,
             refreshToken,
-            firebaseToken, //added Firebase referesh token in response 🔥
             user: auth,
         });
 
