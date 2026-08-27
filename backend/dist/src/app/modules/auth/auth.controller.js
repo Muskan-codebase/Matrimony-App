@@ -19,10 +19,11 @@ const profile_model_1 = require("../profile-details/profile.model");
 const generateOTP_1 = require("../../utils/generateOTP");
 const auth_validation_1 = require("./auth.validation");
 const generateJWT_1 = require("../../utils/generateJWT");
-const firebase_service_1 = require("../../config/firebase.service");
 const auth_constants_1 = require("./auth.constants");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const auth_1 = require("firebase-admin/auth");
+const firebase_1 = __importDefault(require("../../config/firebase"));
 const sendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = auth_validation_1.sendOtpValidation.parse(req.body);
@@ -71,9 +72,35 @@ const sendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.sendOTP = sendOTP;
 const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // --------------------------------------------------
+        // VALIDATE REQUEST
+        // --------------------------------------------------
         const validatedData = auth_validation_1.verifyOtpValidation.parse(req.body);
-        const { mobile, otp } = validatedData;
-        // Check whether user exists
+        const { mobile, token } = validatedData;
+        // --------------------------------------------------
+        // VERIFY FIREBASE ID TOKEN
+        // --------------------------------------------------
+        const decodedToken = yield (0, auth_1.getAuth)(firebase_1.default).verifyIdToken(token);
+        const firebaseUid = decodedToken.uid;
+        const firebasePhone = decodedToken.phone_number;
+        // --------------------------------------------------
+        // VERIFY MOBILE NUMBER
+        // --------------------------------------------------
+        if (!firebasePhone) {
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token does not contain a phone number.",
+            });
+        }
+        if (firebasePhone !== mobile) {
+            return res.status(401).json({
+                success: false,
+                message: "Mobile number does not match Firebase token.",
+            });
+        }
+        // --------------------------------------------------
+        // CHECK WHETHER USER EXISTS
+        // --------------------------------------------------
         const auth = yield auth_model_1.default.findOne({
             mobile,
             isDeleted: false,
@@ -84,65 +111,41 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "User not found.",
             });
         }
-        // Find latest unused OTP
-        const otpRecord = yield otp_model_1.default.findOne({
-            authId: auth._id,
-            isUsed: false,
-        }).sort({ createdAt: -1 });
-        if (!otpRecord) {
-            return res.status(400).json({
-                success: false,
-                message: "OTP not found. Please request a new OTP.",
-            });
-        }
-        // Check expiry
-        if (otpRecord.expiresAt < new Date()) {
-            otpRecord.isUsed = true;
-            yield otpRecord.save();
-            return res.status(400).json({
-                success: false,
-                message: "OTP has expired.",
-            });
-        }
-        // Invalid OTP
-        if (otpRecord.otp !== otp) {
-            otpRecord.attempts += 1;
-            // Maximum 5 attempts
-            if (otpRecord.attempts >= 5) {
-                otpRecord.isUsed = true;
-            }
-            yield otpRecord.save();
-            return res.status(400).json({
-                success: false,
-                message: "Invalid OTP.",
-            });
-        }
-        // OTP Verified
-        otpRecord.isUsed = true;
-        yield otpRecord.save();
         // --------------------------------------------------
         // CHECK PROFILE EXISTENCE
         // --------------------------------------------------
         const profileExists = yield profile_model_1.Profile.exists({
-            userId: auth._id
+            userId: auth._id,
         });
         // No profile = new user
         const isNewUser = !profileExists;
-        // Capture this BEFORE mutating isVerified below —
-        // tells us whether this is a first-time registration or a returning login
-        // const isNewUser = !auth.isVerified;
+        // --------------------------------------------------
+        // CHECK FIRST LOGIN
+        // --------------------------------------------------
         const isFirstLogin = auth.loginCount === 0;
+        // --------------------------------------------------
+        // UPDATE AUTH DETAILS
+        // --------------------------------------------------
+        auth.firebaseUid = firebaseUid;
         auth.isVerified = true;
         auth.loginCount += 1;
         auth.lastLogin = new Date();
-        // Generate Access Token
+        // --------------------------------------------------
+        // GENERATE ACCESS TOKEN
+        // --------------------------------------------------
         const accessToken = (0, generateJWT_1.generateAccessToken)(auth);
-        // Generate Refresh Token
+        // --------------------------------------------------
+        // GENERATE REFRESH TOKEN
+        // --------------------------------------------------
         const refreshToken = (0, generateJWT_1.generateRefreshToken)(auth);
-        //Generate Firebase Token 🔥
-        const firebaseToken = yield (0, firebase_service_1.generateFirebaseToken)(auth._id.toString());
+        // --------------------------------------------------
+        // HASH & SAVE REFRESH TOKEN
+        // --------------------------------------------------
         auth.refreshToken = yield bcrypt_1.default.hash(refreshToken, 10);
         yield auth.save();
+        // --------------------------------------------------
+        // RESPONSE
+        // --------------------------------------------------
         return res.status(200).json({
             success: true,
             message: isFirstLogin
@@ -151,7 +154,6 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             isNewUser,
             accessToken,
             refreshToken,
-            firebaseToken, //added Firebase referesh token in response 🔥
             user: auth,
         });
     }

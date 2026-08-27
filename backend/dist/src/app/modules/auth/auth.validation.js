@@ -13,11 +13,10 @@ const countryCodeSchema = zod_1.z
     .string()
     .trim()
     .regex(/^\+\d{1,4}$/, "Invalid country code");
-const otpSchema = zod_1.z
+const firebaseTokenSchema = zod_1.z
     .string()
     .trim()
-    .regex(/^\d+$/, "OTP must contain only digits")
-    .length(4, "OTP must be exactly 4 digits");
+    .min(1, "Firebase token is required");
 /**
  * Send OTP
  */
@@ -26,11 +25,11 @@ exports.sendOtpValidation = zod_1.z.object({
     mobile: mobileSchema,
 });
 /**
- * Verify OTP
+ * Verify OTP / Firebase Authentication
  */
 exports.verifyOtpValidation = zod_1.z.object({
     mobile: mobileSchema,
-    otp: otpSchema,
+    token: firebaseTokenSchema,
 });
 /**
  * Resend OTP
@@ -42,11 +41,17 @@ exports.resendOtpValidation = zod_1.z.object({
  * Refresh Token
  */
 exports.refreshTokenValidation = zod_1.z.object({
-    refreshToken: zod_1.z.string().trim().min(10, "Invalid refresh token"),
+    refreshToken: zod_1.z
+        .string()
+        .trim()
+        .min(10, "Invalid refresh token"),
 });
 /**
  * Logout
  */
 exports.logoutValidation = zod_1.z.object({
-    refreshToken: zod_1.z.string().trim().min(10, "Invalid refresh token"),
+    refreshToken: zod_1.z
+        .string()
+        .trim()
+        .min(10, "Invalid refresh token"),
 });
