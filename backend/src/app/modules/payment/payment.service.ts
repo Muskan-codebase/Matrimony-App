@@ -147,6 +147,7 @@ export const verifyPayment = async (
 
         isActive: true,
         packageId: payment.packageId,
+        packageName: packageData.title,
         startDate,
         expiryDate,
     };
