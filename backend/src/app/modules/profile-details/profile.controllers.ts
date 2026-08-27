@@ -533,7 +533,7 @@ export const getProfiles = async (req: Request, res: Response) => {
                 : "Male";
 
         // 6. Fetch
-        let profiles = await Profile.find(filter).populate("subscription.packageId", "packageName");
+        let profiles = await Profile.find(filter).populate("subscription.packageId", "title");
 
         // Just Joined fallback
         if (matchPreferences.includes("justJoined") && profiles.length === 0) {
@@ -622,7 +622,7 @@ export const getMyProfile = async (req: Request, res: Response) => {
         const profile = await Profile.findOne({
             userId: id,
             isDeleted: false,
-        }).populate("subscription.packageId", "packageName");
+        }).populate("subscription.packageId", "title");
 
         if (!profile) {
             return res.status(404).json({
