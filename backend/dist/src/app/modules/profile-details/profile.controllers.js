@@ -386,7 +386,7 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 ? "Female"
                 : "Male";
         // 6. Fetch
-        let profiles = yield profile_model_1.Profile.find(filter).populate("subscription.packageId", "packageName");
+        let profiles = yield profile_model_1.Profile.find(filter).populate("subscription.packageId", "title");
         // Just Joined fallback
         if (matchPreferences.includes("justJoined") && profiles.length === 0) {
             delete filter.createdAt;
@@ -453,7 +453,7 @@ const getMyProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const profile = yield profile_model_1.Profile.findOne({
             userId: id,
             isDeleted: false,
-        }).populate("subscription.packageId", "packageName");
+        }).populate("subscription.packageId", "title");
         if (!profile) {
             return res.status(404).json({
                 success: false,
