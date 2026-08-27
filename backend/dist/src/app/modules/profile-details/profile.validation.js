@@ -237,7 +237,7 @@ exports.createProfileSchema = zod_1.z.object({
         careerDetails: careerDetailsSchema.optional(),
         religionDetails: religionDetailsSchema.optional(),
         locationDetails: locationDetailsSchema.optional(),
-        additionDetails: additionalDetailsSchema.optional(),
+        additionalDetails: additionalDetailsSchema.optional(),
         lifestyleDetails: lifestyleDetailsSchema.optional(),
         family: familySchema.optional(),
         horoscopeDetails: horoscopeDetailsSchema.optional(),
