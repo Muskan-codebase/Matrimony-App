@@ -380,7 +380,7 @@ export const createProfileSchema = z.object({
 
         locationDetails: locationDetailsSchema.optional(),
 
-        additionDetails: additionalDetailsSchema.optional(),
+        additionalDetails: additionalDetailsSchema.optional(),
 
         lifestyleDetails: lifestyleDetailsSchema.optional(),
 
