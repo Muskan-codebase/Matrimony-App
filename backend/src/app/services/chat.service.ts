@@ -487,18 +487,6 @@ export const getChats = async (authUserId: string) => {
                 .select("mobile countryCode firebaseUid")
                 .lean();
 
-            const formatDate = (date: any) => {
-                if (!date) return null;
-
-                const d = date.toDate ? date.toDate() : new Date(date);
-
-                const day = String(d.getDate()).padStart(2, "0");
-                const month = String(d.getMonth() + 1).padStart(2, "0");
-                const year = d.getFullYear();
-
-                return `${day}-${month}-${year}`;
-            };
-
             return {
 
                 roomId: doc.id,
@@ -543,7 +531,8 @@ export const getChats = async (authUserId: string) => {
 
                 lastMessageSender: room.lastMessageSender,
 
-                lastMessageAt: formatDate(room.lastMessageAt),
+                // Flutter formats this like WhatsApp
+                lastMessageAt: room.lastMessageAt,
 
                 isActive: room.isActive,
 
