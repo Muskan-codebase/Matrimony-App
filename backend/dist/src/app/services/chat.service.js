@@ -340,15 +340,6 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
         const otherAuth = yield auth_model_1.default.findById(otherProfile.userId)
             .select("mobile countryCode firebaseUid")
             .lean();
-        const formatDate = (date) => {
-            if (!date)
-                return null;
-            const d = date.toDate ? date.toDate() : new Date(date);
-            const day = String(d.getDate()).padStart(2, "0");
-            const month = String(d.getMonth() + 1).padStart(2, "0");
-            const year = d.getFullYear();
-            return `${day}-${month}-${year}`;
-        };
         return {
             roomId: doc.id,
             participant: {
@@ -375,7 +366,8 @@ const getChats = (authUserId) => __awaiter(void 0, void 0, void 0, function* () 
             lastMessage: room.lastMessage,
             lastMessageType: room.lastMessageType,
             lastMessageSender: room.lastMessageSender,
-            lastMessageAt: formatDate(room.lastMessageAt),
+            // Flutter formats this like WhatsApp
+            lastMessageAt: room.lastMessageAt,
             isActive: room.isActive,
             interestId: room.interestId,
         };
