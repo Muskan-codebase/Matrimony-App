@@ -632,6 +632,10 @@ const profileSchema = new Schema<IProfile>(
                 ref: "Package",
             },
 
+            packageName: {
+                type: String,
+            },
+
             startDate: {
                 type: Date,
             },
