@@ -24,6 +24,17 @@ export const createPackageSchema = z.object({
 
     features: z.array(z.string()),
 
+    interestRequestLimit: z
+        .number()
+        .int()
+        .nonnegative("Interest request limit cannot be negative."),
+
+    // Maximum interest requests allowed per day
+    dailyInterestRequestLimit: z
+        .number()
+        .int()
+        .nonnegative("Daily interest request limit cannot be negative."),
+
     isDeleted: z.boolean().optional(),
 
     displayOrder: z.number().optional(),
