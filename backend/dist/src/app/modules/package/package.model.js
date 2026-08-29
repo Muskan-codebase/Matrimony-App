@@ -65,6 +65,18 @@ const packageSchema = new mongoose_1.Schema({
             type: String,
         },
     ],
+    // Maximum number of interest requests
+    // a user can send with this package.
+    interestRequestLimit: {
+        type: Number,
+        required: true,
+        min: 0,
+    },
+    dailyInterestRequestLimit: {
+        type: Number,
+        required: true,
+        min: 0,
+    },
     isDeleted: {
         type: Boolean,
         default: false,

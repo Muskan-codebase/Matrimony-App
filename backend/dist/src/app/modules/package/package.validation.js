@@ -16,6 +16,15 @@ exports.createPackageSchema = zod_1.z.object({
     discountPercentage: zod_1.z.number().optional(),
     badge: zod_1.z.string().optional(),
     features: zod_1.z.array(zod_1.z.string()),
+    interestRequestLimit: zod_1.z
+        .number()
+        .int()
+        .nonnegative("Interest request limit cannot be negative."),
+    // Maximum interest requests allowed per day
+    dailyInterestRequestLimit: zod_1.z
+        .number()
+        .int()
+        .nonnegative("Daily interest request limit cannot be negative."),
     isDeleted: zod_1.z.boolean().optional(),
     displayOrder: zod_1.z.number().optional(),
 });
