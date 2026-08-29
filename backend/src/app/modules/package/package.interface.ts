@@ -20,6 +20,11 @@ export interface IPackage extends Document {
 
     features: string[];
 
+    interestRequestLimit: number;
+
+    // Maximum interest requests allowed per day
+    dailyInterestRequestLimit: number;
+
     isDeleted: boolean;
 
     displayOrder: number;
