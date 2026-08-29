@@ -7,6 +7,10 @@ import {
     createInterestSchema,
 } from "./interest.validation";
 import { sendNotification } from "../../../services/sendNotification.service";
+import { Payment } from "../../payment/payment.model";
+
+// Free users can send maximum 15 interest requests per day
+const FREE_DAILY_INTEREST_LIMIT = 15;
 
 export const sendInterest = async (
     req: Request,
@@ -52,6 +56,187 @@ export const sendInterest = async (
                 message: "Interest already sent.",
             });
         }
+
+        // --------------------------------------------------
+        // GET LATEST SUCCESSFUL PAYMENT
+        // --------------------------------------------------
+
+        const payment = await Payment.findOne({
+            userId: req.user.id,
+            status: "SUCCESS",
+        })
+            .sort({ paidAt: -1 })
+            .populate("packageId");
+
+        // --------------------------------------------------
+        // CALCULATE TODAY'S START
+        // --------------------------------------------------
+
+        const today = new Date();
+
+        today.setHours(0, 0, 0, 0);
+
+
+        // --------------------------------------------------
+        // NO PACKAGE
+        // --------------------------------------------------
+
+        if (!payment) {
+
+            const todayInterestCount =
+                await Interest.countDocuments({
+                    senderId: senderProfile._id,
+                    isDeleted: false,
+                    createdAt: {
+                        $gte: today,
+                    },
+                });
+
+
+            if (todayInterestCount >= FREE_DAILY_INTEREST_LIMIT) {
+                return res.status(403).json({
+                    success: false,
+                    message:
+                        "You can only send 15 interest requests per day. Please try again tomorrow.",
+                });
+            }
+        }
+
+        // --------------------------------------------------
+        // PACKAGE USER
+        // --------------------------------------------------
+
+        if (payment) {
+
+            if (!payment.paidAt) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Payment date is missing.",
+                });
+            }
+
+
+            const packageData: any = payment.packageId;
+
+
+            if (!packageData) {
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Package associated with your payment was not found.",
+                });
+            }
+
+
+            // --------------------------------------------------
+            // CHECK PACKAGE EXPIRY
+            // --------------------------------------------------
+
+            const expiryDate = new Date(payment.paidAt);
+
+
+            if (packageData.durationType === "DAY") {
+                expiryDate.setDate(
+                    expiryDate.getDate() + packageData.duration
+                );
+            }
+
+
+            if (packageData.durationType === "MONTH") {
+                expiryDate.setMonth(
+                    expiryDate.getMonth() + packageData.duration
+                );
+            }
+
+
+            if (packageData.durationType === "YEAR") {
+                expiryDate.setFullYear(
+                    expiryDate.getFullYear() + packageData.duration
+                );
+            }
+
+
+            // Package expired
+            if (new Date() > expiryDate) {
+
+                // Treat expired package user as a free user
+                const todayInterestCount =
+                    await Interest.countDocuments({
+                        senderId: senderProfile._id,
+                        isDeleted: false,
+                        createdAt: {
+                            $gte: today,
+                        },
+                    });
+
+
+                if (todayInterestCount >= FREE_DAILY_INTEREST_LIMIT) {
+                    return res.status(403).json({
+                        success: false,
+                        message:
+                            "You can only send 15 interest requests per day. Please try again tomorrow.",
+                    });
+                }
+
+            } else {
+
+                // --------------------------------------------------
+                // ACTIVE PACKAGE
+                // --------------------------------------------------
+
+                const packageStartDate = new Date(payment.paidAt);
+
+
+                // Count total interests sent during this package
+                const totalInterestCount =
+                    await Interest.countDocuments({
+                        senderId: senderProfile._id,
+                        isDeleted: false,
+                        createdAt: {
+                            $gte: packageStartDate,
+                        },
+                    });
+
+
+                // Check total package limit
+                if (
+                    totalInterestCount >=
+                    packageData.interestRequestLimit
+                ) {
+                    return res.status(403).json({
+                        success: false,
+                        message: `You have reached your total limit of ${packageData.interestRequestLimit} interest requests for this package.`,
+                    });
+                }
+
+
+                // --------------------------------------------------
+                // COUNT TODAY'S INTEREST REQUESTS
+                // --------------------------------------------------
+
+                const todayInterestCount =
+                    await Interest.countDocuments({
+                        senderId: senderProfile._id,
+                        isDeleted: false,
+                        createdAt: {
+                            $gte: today,
+                        },
+                    });
+
+
+                // Check daily package limit
+                if (
+                    todayInterestCount >=
+                    packageData.dailyInterestRequestLimit
+                ) {
+                    return res.status(403).json({
+                        success: false,
+                        message: `You can only send ${packageData.dailyInterestRequestLimit} interest requests per day with your current package.`,
+                    });
+                }
+            }
+        }
+
 
         // Create interest
         const interest = await Interest.create({
