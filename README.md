@@ -326,67 +326,289 @@ The backend communicates with:
 # 📂 Project Structure
 
 ```text
-src/
-│
-├── config/
-│   ├── database.ts
-│   ├── firebase.ts
-│   └── ...
-│
-├── controllers/
-│   ├── auth/
-│   ├── profile/
-│   ├── interest/
-│   ├── message/
-│   ├── package/
-│   ├── notification/
-│   └── ...
-│
-├── models/
-│   ├── User.ts
-│   ├── Profile.ts
-│   ├── Interest.ts
-│   ├── Message.ts
-│   ├── Package.ts
-│   └── ...
-│
-├── routes/
-│   ├── auth.routes.ts
-│   ├── profile.routes.ts
-│   ├── interest.routes.ts
-│   ├── message.routes.ts
-│   └── ...
-│
-├── middleware/
-│   ├── auth.ts
-│   ├── rateLimiter.ts
-│   ├── validation.ts
-│   └── ...
-│
-├── services/
-│   ├── firebase/
-│   ├── email/
-│   ├── notification/
-│   ├── messaging/
-│   └── ...
-│
-├── validators/
-│   ├── auth/
-│   ├── profile/
-│   ├── package/
-│   └── ...
-│
-├── utils/
-│   ├── token/
-│   ├── matching/
-│   ├── email/
-│   └── ...
-│
-├── tests/
-│   ├── unit/
-│   └── integration/
-│
-└── app.ts
+📦src
+ ┣ 📂app
+ ┃ ┣ 📂config
+ ┃ ┃ ┣ 📂firebase
+ ┃ ┃ ┃ ┗ 📜serviceAccountKey.json
+ ┃ ┃ ┣ 📜cloudinary.ts
+ ┃ ┃ ┣ 📜firebase.service.ts
+ ┃ ┃ ┣ 📜firebase.ts
+ ┃ ┃ ┣ 📜index.ts
+ ┃ ┃ ┣ 📜razorpay.ts
+ ┃ ┃ ┣ 📜swagger.ts
+ ┃ ┃ ┗ 📜zegocloud.ts
+ ┃ ┣ 📂enums
+ ┃ ┃ ┣ 📜interest-status.enum.ts
+ ┃ ┃ ┣ 📜message-status.enum.ts
+ ┃ ┃ ┣ 📜message-type.enum.ts
+ ┃ ┃ ┗ 📜report-reason.enum.ts
+ ┃ ┣ 📂errors
+ ┃ ┃ ┣ 📜appError.ts
+ ┃ ┃ ┣ 📜handleCastError.ts
+ ┃ ┃ ┣ 📜handleDuplicateError.ts
+ ┃ ┃ ┣ 📜handleValidationError.ts
+ ┃ ┃ ┗ 📜handleZodError.ts
+ ┃ ┣ 📂interface
+ ┃ ┃ ┗ 📜error.interface.ts
+ ┃ ┣ 📂job
+ ┃ ┃ ┗ 📜membershipExpiryJob.ts
+ ┃ ┣ 📂middlewares
+ ┃ ┃ ┣ 📜authMiddleware.ts
+ ┃ ┃ ┣ 📜globalErrorHandler.ts
+ ┃ ┃ ┗ 📜notFound.ts
+ ┃ ┣ 📂modules
+ ┃ ┃ ┣ 📂account-settings
+ ┃ ┃ ┃ ┣ 📂notifications
+ ┃ ┃ ┃ ┃ ┗ 📜notifications.controllers.ts
+ ┃ ┃ ┃ ┣ 📜accountSettings.controller.ts
+ ┃ ┃ ┃ ┣ 📜accountSettings.interface.ts
+ ┃ ┃ ┃ ┣ 📜accountSettings.model.ts
+ ┃ ┃ ┃ ┣ 📜accountSettings.routes.ts
+ ┃ ┃ ┃ ┗ 📜accountSettings.validation.ts
+ ┃ ┃ ┣ 📂admin
+ ┃ ┃ ┃ ┣ 📂about-us
+ ┃ ┃ ┃ ┃ ┣ 📜aboutUs.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜aboutUs.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜aboutUs.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜aboutUs.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜aboutUs.validation.ts
+ ┃ ┃ ┃ ┣ 📂admin-auth
+ ┃ ┃ ┃ ┃ ┣ 📜adminAuth.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜adminAuth.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜adminAuth.validation.ts
+ ┃ ┃ ┃ ┣ 📂annual-income
+ ┃ ┃ ┃ ┃ ┣ 📜annualIncome.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜annualIncome.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜annualIncome.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜annualIncome.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜annualIncome.validation.ts
+ ┃ ┃ ┃ ┣ 📂contact-us
+ ┃ ┃ ┃ ┃ ┣ 📜contactUs.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜contactUs.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜contactUs.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜contactUs.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜contactUs.validation.ts
+ ┃ ┃ ┃ ┣ 📂faq
+ ┃ ┃ ┃ ┃ ┣ 📜faq.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜faq.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜faq.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜faq.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜faq.validation.ts
+ ┃ ┃ ┃ ┣ 📂height
+ ┃ ┃ ┃ ┃ ┣ 📜height.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜height.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜height.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜height.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜height.validation.ts
+ ┃ ┃ ┃ ┣ 📂hero-banner
+ ┃ ┃ ┃ ┃ ┣ 📜heroBanner.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜heroBanner.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜heroBanner.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜heroBanner.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜heroBanner.validation.ts
+ ┃ ┃ ┃ ┣ 📂location
+ ┃ ┃ ┃ ┃ ┣ 📜location.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜location.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜location.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜location.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜location.validation.ts
+ ┃ ┃ ┃ ┣ 📂mother-tongue
+ ┃ ┃ ┃ ┃ ┣ 📜motherTongue.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜motherTongue.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜motherTongue.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜motherTongue.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜motherTongue.validation.ts
+ ┃ ┃ ┃ ┣ 📂occupation
+ ┃ ┃ ┃ ┃ ┣ 📜occupation.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜occupation.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜occupation.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜occupation.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜occupation.validation.ts
+ ┃ ┃ ┃ ┣ 📂press
+ ┃ ┃ ┃ ┃ ┣ 📜press.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜press.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜press.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜press.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜press.validation.ts
+ ┃ ┃ ┃ ┣ 📂privacy-policy
+ ┃ ┃ ┃ ┃ ┣ 📜privacyPolicy.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜privacyPolicy.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜privacyPolicy.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜privacyPolicy.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜privacyPolicy.validation.ts
+ ┃ ┃ ┃ ┣ 📂profile
+ ┃ ┃ ┃ ┃ ┣ 📜profile.controller.ts
+ ┃ ┃ ┃ ┃ ┗ 📜profile.routes.ts
+ ┃ ┃ ┃ ┣ 📂qualification
+ ┃ ┃ ┃ ┃ ┣ 📜qualification.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜qualification.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜qualification.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜qualification.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜qualification.validation.ts
+ ┃ ┃ ┃ ┗ 📂religion
+ ┃ ┃ ┃ ┃ ┣ 📂caste
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂sub-caste
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜subCaste.controllers.ts
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜subCaste.interface.ts
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜subCaste.model.ts
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📜subCaste.routes.ts
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜subCaste.validation.ts
+ ┃ ┃ ┃ ┃ ┃ ┣ 📜caste.controllers.ts
+ ┃ ┃ ┃ ┃ ┃ ┣ 📜caste.interface.ts
+ ┃ ┃ ┃ ┃ ┃ ┣ 📜caste.model.ts
+ ┃ ┃ ┃ ┃ ┃ ┣ 📜caste.routes.ts
+ ┃ ┃ ┃ ┃ ┃ ┗ 📜caste.validation.ts
+ ┃ ┃ ┃ ┃ ┣ 📜religion.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜religion.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜religion.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜religion.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜religion.validation.ts
+ ┃ ┃ ┣ 📂auth
+ ┃ ┃ ┃ ┣ 📂otp
+ ┃ ┃ ┃ ┃ ┣ 📜otp.interface.ts
+ ┃ ┃ ┃ ┃ ┗ 📜otp.model.ts
+ ┃ ┃ ┃ ┣ 📜auth.constants.ts
+ ┃ ┃ ┃ ┣ 📜auth.controller.ts
+ ┃ ┃ ┃ ┣ 📜auth.interface.ts
+ ┃ ┃ ┃ ┣ 📜auth.model.ts
+ ┃ ┃ ┃ ┣ 📜auth.routes.ts
+ ┃ ┃ ┃ ┗ 📜auth.validation.ts
+ ┃ ┃ ┣ 📂health
+ ┃ ┃ ┃ ┣ 📜health.controller.ts
+ ┃ ┃ ┃ ┗ 📜health.route.ts
+ ┃ ┃ ┣ 📂onBoarding
+ ┃ ┃ ┃ ┣ 📜onBoarding.controller.ts
+ ┃ ┃ ┃ ┣ 📜onBoarding.interface.ts
+ ┃ ┃ ┃ ┣ 📜onBoarding.model.ts
+ ┃ ┃ ┃ ┣ 📜onBoarding.routes.ts
+ ┃ ┃ ┃ ┗ 📜onBoarding.validation.ts
+ ┃ ┃ ┣ 📂package
+ ┃ ┃ ┃ ┣ 📜package.controllers.ts
+ ┃ ┃ ┃ ┣ 📜package.interface.ts
+ ┃ ┃ ┃ ┣ 📜package.model.ts
+ ┃ ┃ ┃ ┣ 📜package.routes.ts
+ ┃ ┃ ┃ ┗ 📜package.validation.ts
+ ┃ ┃ ┣ 📂payment
+ ┃ ┃ ┃ ┣ 📜payment.controllers.ts
+ ┃ ┃ ┃ ┣ 📜payment.interface.ts
+ ┃ ┃ ┃ ┣ 📜payment.model.ts
+ ┃ ┃ ┃ ┣ 📜payment.routes.ts
+ ┃ ┃ ┃ ┣ 📜payment.service.ts
+ ┃ ┃ ┃ ┗ 📜payment.validation.ts
+ ┃ ┃ ┣ 📂profile-details
+ ┃ ┃ ┃ ┣ 📂block
+ ┃ ┃ ┃ ┃ ┣ 📜block.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜block.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜block.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜block.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜block.validation.ts
+ ┃ ┃ ┃ ┣ 📂call
+ ┃ ┃ ┃ ┃ ┣ 📜call.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜call.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜call.validation.ts
+ ┃ ┃ ┃ ┣ 📂chat
+ ┃ ┃ ┃ ┃ ┣ 📜chat.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜chat.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜chat.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜chat.validation.ts
+ ┃ ┃ ┃ ┣ 📂ignore
+ ┃ ┃ ┃ ┃ ┣ 📜ignore.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜ignore.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜ignore.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜ignore.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜ignore.validation.ts
+ ┃ ┃ ┃ ┣ 📂in-app-notifications
+ ┃ ┃ ┃ ┃ ┣ 📜inAppNotification.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜inAppNotifications.controller.ts
+ ┃ ┃ ┃ ┣ 📂interest
+ ┃ ┃ ┃ ┃ ┣ 📜interest.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜interest.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜interest.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜interest.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜interest.validation.ts
+ ┃ ┃ ┃ ┣ 📂notification
+ ┃ ┃ ┃ ┃ ┣ 📜notification.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜notification.routes.ts
+ ┃ ┃ ┃ ┃ ┣ 📜notification.service.ts
+ ┃ ┃ ┃ ┃ ┗ 📜notification.validation.ts
+ ┃ ┃ ┃ ┣ 📂partner-preference
+ ┃ ┃ ┃ ┃ ┣ 📜partnerPreference.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜partnerPreference.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜partnerPreference.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜partnerPreference.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜partnerPreference.validation.ts
+ ┃ ┃ ┃ ┣ 📂photo-request
+ ┃ ┃ ┃ ┃ ┣ 📜photoRequest.controller.ts
+ ┃ ┃ ┃ ┃ ┗ 📜photoRequest.route.ts
+ ┃ ┃ ┃ ┣ 📂profile-verification
+ ┃ ┃ ┃ ┃ ┣ 📜profileVerification.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜profileVerification.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜profileVerification.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜profileVerification.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜profileVerification.validation.ts
+ ┃ ┃ ┃ ┣ 📂profile-visits
+ ┃ ┃ ┃ ┃ ┣ 📜profileVisits.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜profileVisits.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜profileVisits.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜profileVisits.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜profileVisits.validation.ts
+ ┃ ┃ ┃ ┣ 📂report-profile
+ ┃ ┃ ┃ ┃ ┣ 📜reportProfile.controllers.ts
+ ┃ ┃ ┃ ┃ ┣ 📜reportProfile.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜reportProfile.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜reportProfile.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜reportProfile.validation.ts
+ ┃ ┃ ┃ ┣ 📂shortlist
+ ┃ ┃ ┃ ┃ ┣ 📜shortlist.controller.ts
+ ┃ ┃ ┃ ┃ ┣ 📜shortlist.interface.ts
+ ┃ ┃ ┃ ┃ ┣ 📜shortlist.model.ts
+ ┃ ┃ ┃ ┃ ┣ 📜shortlist.routes.ts
+ ┃ ┃ ┃ ┃ ┗ 📜shortlist.validation.ts
+ ┃ ┃ ┃ ┣ 📜profile.controllers.ts
+ ┃ ┃ ┃ ┣ 📜profile.interface.ts
+ ┃ ┃ ┃ ┣ 📜profile.model.ts
+ ┃ ┃ ┃ ┣ 📜profile.routes.ts
+ ┃ ┃ ┃ ┗ 📜profile.validation.ts
+ ┃ ┃ ┗ 📂success-story
+ ┃ ┃ ┃ ┣ 📜successStory.controller.ts
+ ┃ ┃ ┃ ┣ 📜successStory.interface.ts
+ ┃ ┃ ┃ ┣ 📜successStory.model.ts
+ ┃ ┃ ┃ ┣ 📜successStory.routes.ts
+ ┃ ┃ ┃ ┗ 📜successStory.validation.ts
+ ┃ ┣ 📂routes
+ ┃ ┃ ┗ 📜index.ts
+ ┃ ┣ 📂seeders
+ ┃ ┃ ┣ 📜adminStaffSeeder.ts
+ ┃ ┃ ┗ 📜index.ts
+ ┃ ┣ 📂services
+ ┃ ┃ ┣ 📜call.service.ts
+ ┃ ┃ ┣ 📜chat.service.ts
+ ┃ ┃ ┣ 📜email.controller.ts
+ ┃ ┃ ┣ 📜email.route.ts
+ ┃ ┃ ┣ 📜email.service.ts
+ ┃ ┃ ┣ 📜email.templates.ts
+ ┃ ┃ ┣ 📜recommendation.service.ts
+ ┃ ┃ ┗ 📜sendNotification.service.ts
+ ┃ ┗ 📂utils
+ ┃ ┃ ┣ 📂counter
+ ┃ ┃ ┃ ┣ 📜counter.interface.ts
+ ┃ ┃ ┃ ┣ 📜counter.model.ts
+ ┃ ┃ ┃ ┗ 📜counter.service.ts
+ ┃ ┃ ┣ 📜generateJWT.ts
+ ┃ ┃ ┣ 📜generateOTP.ts
+ ┃ ┃ ┣ 📜payment.util.ts
+ ┃ ┃ ┗ 📜verifyJWT.ts
+ ┣ 📂scripts
+ ┃ ┗ 📜fixCategoryPaths.ts
+ ┣ 📂types
+ ┃ ┗ 📜express.d.ts
+ ┣ 📂uploads
+ ┃ ┣ 📜onboarding 1 1.png
+ ┃ ┣ 📜onboarding 2 1.png
+ ┃ ┗ 📜onboarding 3 1.png
+ ┣ 📜app.ts
+ ┗ 📜server.ts
 ```
 
 > The exact folder structure may vary depending on the final repository organization.
