@@ -611,8 +611,6 @@ The backend communicates with:
  ┗ 📜server.ts
 ```
 
-> The exact folder structure may vary depending on the final repository organization.
-
 ---
 
 # 🔑 Core Backend Modules
