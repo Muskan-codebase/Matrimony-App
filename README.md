@@ -855,7 +855,7 @@ and add the required credentials.
 ## 4. Start the development server
 
 ```bash
-npm run dev
+npm run start
 ```
 
 ## 5. Run tests
