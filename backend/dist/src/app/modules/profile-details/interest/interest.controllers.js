@@ -51,7 +51,8 @@ const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             receiverId: validatedData.body.receiverId,
             isDeleted: false,
         });
-        if (existingInterest) {
+        // If interest was already sent and is still active
+        if (existingInterest && existingInterest.status !== "Withdrawn") {
             return res.status(409).json({
                 success: false,
                 message: "Interest already sent.",
@@ -177,11 +178,22 @@ const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 }
             }
         }
-        // Create interest
-        const interest = yield interest_model_1.Interest.create({
-            senderId: senderProfile._id,
-            receiverId: validatedData.body.receiverId,
-        });
+        // Create new interest or re-send withdrawn interest
+        let interest;
+        if (existingInterest && existingInterest.status === "Withdrawn") {
+            interest = yield interest_model_1.Interest.findByIdAndUpdate(existingInterest._id, {
+                status: "Pending",
+            }, {
+                new: true,
+            });
+        }
+        else {
+            interest = yield interest_model_1.Interest.create({
+                senderId: senderProfile._id,
+                receiverId: validatedData.body.receiverId,
+                status: "Pending",
+            });
+        }
         const receiverProfile = yield profile_model_1.Profile.findById(validatedData.body.receiverId);
         if (!receiverProfile) {
             return res.status(404).json({
@@ -199,7 +211,7 @@ const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             visitedProfileId: validatedData.body.receiverId,
         });
         // Populate sender & receiver
-        const populatedInterest = yield interest_model_1.Interest.findById(interest._id)
+        const populatedInterest = yield interest_model_1.Interest.findById(interest === null || interest === void 0 ? void 0 : interest._id)
             .populate("senderId")
             .populate("receiverId");
         // Send notification
@@ -209,7 +221,7 @@ const sendInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             body: `${senderProfile.basicDetails.firstName} sent you an interest request.`,
             data: {
                 type: "interest",
-                interestId: interest.id.toString(),
+                interestId: interest === null || interest === void 0 ? void 0 : interest.id.toString(),
             },
         });
         return res.status(201).json({
