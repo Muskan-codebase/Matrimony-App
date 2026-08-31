@@ -98,8 +98,28 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
         const validatedData = verifyOtpValidation.parse(req.body);
 
-        const { mobile, token } = validatedData;
+        const { mobile, countryCode, token } = validatedData;
 
+        // --------------------------------------------------
+        // NORMALIZE COUNTRY CODE
+        // --------------------------------------------------
+
+        const normalizedCountryCode = countryCode.startsWith("+")
+            ? countryCode
+            : `+${countryCode}`;
+
+        // --------------------------------------------------
+        // NORMALIZE MOBILE NUMBER
+        // --------------------------------------------------
+
+        const normalizedMobile = mobile.replace(/\D/g, "");
+
+        // --------------------------------------------------
+        // CREATE FULL PHONE NUMBER
+        // --------------------------------------------------
+
+        const fullMobileNumber =
+            `${normalizedCountryCode}${normalizedMobile}`;
 
         // --------------------------------------------------
         // VERIFY FIREBASE ID TOKEN
@@ -121,11 +141,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
             });
         }
 
-        const normalizedMobile = mobile.startsWith("+")
-            ? mobile
-            : `+91${mobile}`;
-
-        if (firebasePhone !== normalizedMobile) {
+        if (firebasePhone !== fullMobileNumber) {
             return res.status(401).json({
                 success: false,
                 message: "Mobile number does not match Firebase token.",
@@ -137,10 +153,10 @@ export const verifyOTP = async (req: Request, res: Response) => {
         // --------------------------------------------------
 
         let auth = await Auth.findOne({
-            mobile,
+            mobile: normalizedMobile,
+            countryCode: normalizedCountryCode,
             isDeleted: false,
         });
-
 
         // --------------------------------------------------
         // CREATE NEW USER IF NOT EXISTS
@@ -149,7 +165,8 @@ export const verifyOTP = async (req: Request, res: Response) => {
         if (!auth) {
 
             auth = await Auth.create({
-                mobile,
+                mobile: normalizedMobile,
+                countryCode: normalizedCountryCode,
                 firebaseUid,
                 isVerified: true,
                 loginCount: 1,
@@ -168,7 +185,6 @@ export const verifyOTP = async (req: Request, res: Response) => {
             auth.lastLogin = new Date();
 
         }
-
 
         // --------------------------------------------------
         // CHECK PROFILE EXISTENCE
