@@ -171,10 +171,24 @@ export const getProfiles = async (req: Request, res: Response) => {
             ...new Set(excludedProfileIds.map((id) => id.toString())),
         ];
 
+        const now = new Date();
+
+        const hiddenUserIds = await AccountSettings.find({
+            "hideProfile.isHidden": true,
+            "hideProfile.hiddenUntil": { $gt: now },
+            isDeleted: false,
+        }).distinct("userId");
+
         const filter: any = {
             isDeleted: false,
             _id: { $nin: uniqueExcludedIds },
+            userId: { $nin: hiddenUserIds },
         };
+
+        // const filter: any = {
+        //     isDeleted: false,
+        //     _id: { $nin: uniqueExcludedIds },
+        // };
 
         // 3. Explicit query filters (multi-select supported on every list-type field)
         const query = normalizeQueryKeys(req.query as Record<string, any>);
