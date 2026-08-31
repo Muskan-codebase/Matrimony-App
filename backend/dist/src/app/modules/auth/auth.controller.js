@@ -104,15 +104,30 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // --------------------------------------------------
         // CHECK WHETHER USER EXISTS
         // --------------------------------------------------
-        const auth = yield auth_model_1.default.findOne({
+        let auth = yield auth_model_1.default.findOne({
             mobile,
             isDeleted: false,
         });
+        // --------------------------------------------------
+        // CREATE NEW USER IF NOT EXISTS
+        // --------------------------------------------------
         if (!auth) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
+            auth = yield auth_model_1.default.create({
+                mobile,
+                firebaseUid,
+                isVerified: true,
+                loginCount: 1,
+                lastLogin: new Date(),
             });
+        }
+        else {
+            // --------------------------------------------------
+            // EXISTING USER
+            // --------------------------------------------------
+            auth.firebaseUid = firebaseUid;
+            auth.isVerified = true;
+            auth.loginCount += 1;
+            auth.lastLogin = new Date();
         }
         // --------------------------------------------------
         // CHECK PROFILE EXISTENCE
@@ -120,19 +135,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const profileExists = yield profile_model_1.Profile.exists({
             userId: auth._id,
         });
-        // No profile = new user
         const isNewUser = !profileExists;
-        // --------------------------------------------------
-        // CHECK FIRST LOGIN
-        // --------------------------------------------------
-        const isFirstLogin = auth.loginCount === 0;
-        // --------------------------------------------------
-        // UPDATE AUTH DETAILS
-        // --------------------------------------------------
-        auth.firebaseUid = firebaseUid;
-        auth.isVerified = true;
-        auth.loginCount += 1;
-        auth.lastLogin = new Date();
         // --------------------------------------------------
         // GENERATE ACCESS TOKEN
         // --------------------------------------------------
@@ -151,7 +154,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // --------------------------------------------------
         return res.status(200).json({
             success: true,
-            message: isFirstLogin
+            message: isNewUser
                 ? "Registered successfully."
                 : "Logged in successfully.",
             isNewUser,
