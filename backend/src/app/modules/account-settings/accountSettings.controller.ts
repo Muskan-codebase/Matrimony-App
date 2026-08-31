@@ -101,10 +101,7 @@ export const updatePrivacySettings = async (
 
 };
 
-export const hideProfile = async (
-    req: Request,
-    res: Response
-): Promise<void> => {
+export const hideProfile = async (req: Request, res: Response): Promise<void> => {
 
     try {
 
@@ -141,14 +138,15 @@ export const hideProfile = async (
         }
 
         settings.hideProfile.isHidden = true;
+        settings.hideProfile.duration = validatedData.duration;
         settings.hideProfile.hiddenUntil = hiddenUntil;
 
         await settings.save();
 
         res.status(200).json({
             success: true,
-            message: "Profile hidden successfully.",
-            data: settings,
+            message: `Profile hidden for ${validatedData.duration}.`,
+            data: settings.hideProfile,
         });
 
     } catch (error: any) {
