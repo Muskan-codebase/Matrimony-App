@@ -38,7 +38,7 @@ export const sendOtpValidation = z.object({
 export const verifyOtpValidation = z.object({
 
     mobile: mobileSchema,
-
+    countryCode: countryCodeSchema,
     token: firebaseTokenSchema,
 
 });
