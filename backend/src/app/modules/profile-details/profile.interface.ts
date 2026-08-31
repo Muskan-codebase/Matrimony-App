@@ -290,7 +290,7 @@ export interface IProfile {
 
         packageId?: Types.ObjectId;
 
-         packageName?: string;
+        packageName?: string;
 
         startDate?: Date;
 
