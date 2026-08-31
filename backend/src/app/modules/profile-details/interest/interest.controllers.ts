@@ -50,7 +50,8 @@ export const sendInterest = async (
             isDeleted: false,
         });
 
-        if (existingInterest) {
+        // If interest was already sent and is still active
+        if (existingInterest && existingInterest.status !== "Withdrawn") {
             return res.status(409).json({
                 success: false,
                 message: "Interest already sent.",
@@ -238,11 +239,29 @@ export const sendInterest = async (
         }
 
 
-        // Create interest
-        const interest = await Interest.create({
-            senderId: senderProfile._id,
-            receiverId: validatedData.body.receiverId,
-        });
+        // Create new interest or re-send withdrawn interest
+        let interest;
+
+        if (existingInterest && existingInterest.status === "Withdrawn") {
+
+            interest = await Interest.findByIdAndUpdate(
+                existingInterest._id,
+                {
+                    status: "Pending",
+                },
+                {
+                    new: true,
+                }
+            );
+
+        } else {
+
+            interest = await Interest.create({
+                senderId: senderProfile._id,
+                receiverId: validatedData.body.receiverId,
+                status: "Pending",
+            });
+        }
 
         const receiverProfile = await Profile.findById(validatedData.body.receiverId);
 
@@ -265,7 +284,7 @@ export const sendInterest = async (
         });
 
         // Populate sender & receiver
-        const populatedInterest = await Interest.findById(interest._id)
+        const populatedInterest = await Interest.findById(interest?._id)
             .populate("senderId")
             .populate("receiverId");
 
@@ -276,7 +295,7 @@ export const sendInterest = async (
             body: `${senderProfile.basicDetails.firstName} sent you an interest request.`,
             data: {
                 type: "interest",
-                interestId: interest.id.toString(),
+                interestId: interest?.id.toString(),
             },
         });
 
