@@ -136,16 +136,37 @@ export const verifyOTP = async (req: Request, res: Response) => {
         // CHECK WHETHER USER EXISTS
         // --------------------------------------------------
 
-        const auth = await Auth.findOne({
+        let auth = await Auth.findOne({
             mobile,
             isDeleted: false,
         });
 
+
+        // --------------------------------------------------
+        // CREATE NEW USER IF NOT EXISTS
+        // --------------------------------------------------
+
         if (!auth) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
+
+            auth = await Auth.create({
+                mobile,
+                firebaseUid,
+                isVerified: true,
+                loginCount: 1,
+                lastLogin: new Date(),
             });
+
+        } else {
+
+            // --------------------------------------------------
+            // EXISTING USER
+            // --------------------------------------------------
+
+            auth.firebaseUid = firebaseUid;
+            auth.isVerified = true;
+            auth.loginCount += 1;
+            auth.lastLogin = new Date();
+
         }
 
 
@@ -157,25 +178,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
             userId: auth._id,
         });
 
-        // No profile = new user
         const isNewUser = !profileExists;
-
-
-        // --------------------------------------------------
-        // CHECK FIRST LOGIN
-        // --------------------------------------------------
-
-        const isFirstLogin = auth.loginCount === 0;
-
-
-        // --------------------------------------------------
-        // UPDATE AUTH DETAILS
-        // --------------------------------------------------
-
-        auth.firebaseUid = firebaseUid;
-        auth.isVerified = true;
-        auth.loginCount += 1;
-        auth.lastLogin = new Date();
 
 
         // --------------------------------------------------
@@ -207,7 +210,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             success: true,
-            message: isFirstLogin
+            message: isNewUser
                 ? "Registered successfully."
                 : "Logged in successfully.",
             isNewUser,
