@@ -29,6 +29,7 @@ exports.sendOtpValidation = zod_1.z.object({
  */
 exports.verifyOtpValidation = zod_1.z.object({
     mobile: mobileSchema,
+    countryCode: countryCodeSchema,
     token: firebaseTokenSchema,
 });
 /**

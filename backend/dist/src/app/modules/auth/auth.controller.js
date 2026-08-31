@@ -76,7 +76,21 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // VALIDATE REQUEST
         // --------------------------------------------------
         const validatedData = auth_validation_1.verifyOtpValidation.parse(req.body);
-        const { mobile, token } = validatedData;
+        const { mobile, countryCode, token } = validatedData;
+        // --------------------------------------------------
+        // NORMALIZE COUNTRY CODE
+        // --------------------------------------------------
+        const normalizedCountryCode = countryCode.startsWith("+")
+            ? countryCode
+            : `+${countryCode}`;
+        // --------------------------------------------------
+        // NORMALIZE MOBILE NUMBER
+        // --------------------------------------------------
+        const normalizedMobile = mobile.replace(/\D/g, "");
+        // --------------------------------------------------
+        // CREATE FULL PHONE NUMBER
+        // --------------------------------------------------
+        const fullMobileNumber = `${normalizedCountryCode}${normalizedMobile}`;
         // --------------------------------------------------
         // VERIFY FIREBASE ID TOKEN
         // --------------------------------------------------
@@ -92,10 +106,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Firebase token does not contain a phone number.",
             });
         }
-        const normalizedMobile = mobile.startsWith("+")
-            ? mobile
-            : `+91${mobile}`;
-        if (firebasePhone !== normalizedMobile) {
+        if (firebasePhone !== fullMobileNumber) {
             return res.status(401).json({
                 success: false,
                 message: "Mobile number does not match Firebase token.",
@@ -105,7 +116,8 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // CHECK WHETHER USER EXISTS
         // --------------------------------------------------
         let auth = yield auth_model_1.default.findOne({
-            mobile,
+            mobile: normalizedMobile,
+            countryCode: normalizedCountryCode,
             isDeleted: false,
         });
         // --------------------------------------------------
@@ -113,7 +125,8 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // --------------------------------------------------
         if (!auth) {
             auth = yield auth_model_1.default.create({
-                mobile,
+                mobile: normalizedMobile,
+                countryCode: normalizedCountryCode,
                 firebaseUid,
                 isVerified: true,
                 loginCount: 1,
