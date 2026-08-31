@@ -106,12 +106,13 @@ const hideProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 break;
         }
         settings.hideProfile.isHidden = true;
+        settings.hideProfile.duration = validatedData.duration;
         settings.hideProfile.hiddenUntil = hiddenUntil;
         yield settings.save();
         res.status(200).json({
             success: true,
-            message: "Profile hidden successfully.",
-            data: settings,
+            message: `Profile hidden for ${validatedData.duration}.`,
+            data: settings.hideProfile,
         });
     }
     catch (error) {

@@ -139,10 +139,21 @@ const getProfiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const uniqueExcludedIds = [
             ...new Set(excludedProfileIds.map((id) => id.toString())),
         ];
+        const now = new Date();
+        const hiddenUserIds = yield accountSettings_model_1.AccountSettings.find({
+            "hideProfile.isHidden": true,
+            "hideProfile.hiddenUntil": { $gt: now },
+            isDeleted: false,
+        }).distinct("userId");
         const filter = {
             isDeleted: false,
             _id: { $nin: uniqueExcludedIds },
+            userId: { $nin: hiddenUserIds },
         };
+        // const filter: any = {
+        //     isDeleted: false,
+        //     _id: { $nin: uniqueExcludedIds },
+        // };
         // 3. Explicit query filters (multi-select supported on every list-type field)
         const query = normalizeQueryKeys(req.query);
         const { matchPreference, gender, minAge, maxAge, maritalStatus, height, minHeight, maxHeight, religion, caste, subCaste, hasDosh, motherTongue, highestQualification, educationType, occupation, minIncome, maxIncome, country, state, city, classType, brothers, marriedBrothers, sisters, marriedSisters, livingWithFamily, familyLocation, eatingHabit, nakshatra, rashi, } = query;
