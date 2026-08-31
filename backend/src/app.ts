@@ -9,7 +9,7 @@ import path from "path";
 import compression from "compression";
 import { healthRouter } from './app/modules/health/health.route';
 import { startMembershipExpiryJob } from './app/job/membershipExpiryJob';
-
+//added start membership expiry job
 startMembershipExpiryJob();
 
 const app: Application = express();
