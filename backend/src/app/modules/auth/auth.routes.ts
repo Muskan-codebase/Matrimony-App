@@ -48,7 +48,7 @@ router.post("/send-otp", sendOTP);
  * /v1/api/auth/verify-otp:
  *   post:
  *     summary: Verify Firebase Authentication Token
- *     description: Verifies the Firebase ID token received after OTP authentication, validates the mobile number, checks the user account, and returns application access and refresh tokens.
+ *     description: Verifies the Firebase ID token received after successful OTP authentication, validates the country code and mobile number, checks the user account, and returns application access and refresh tokens.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -59,12 +59,17 @@ router.post("/send-otp", sendOTP);
  *             type: object
  *             required:
  *               - mobile
+ *               - countryCode
  *               - token
  *             properties:
  *               mobile:
  *                 type: string
- *                 description: Mobile number associated with the Firebase authentication.
- *                 example: "+919876543210"
+ *                 description: 10-digit mobile number associated with the Firebase authentication.
+ *                 example: "9876543210"
+ *               countryCode:
+ *                 type: string
+ *                 description: International country calling code associated with the mobile number.
+ *                 example: "+91"
  *               token:
  *                 type: string
  *                 description: Firebase ID token received after successful OTP verification on the Flutter app.
