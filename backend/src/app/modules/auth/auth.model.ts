@@ -6,10 +6,8 @@ const authSchema = new Schema<IUserAuth>(
 
         mobile: {
             type: String,
-            // required: true,
             unique: true,
-            trim: true,
-            index: true,
+            sparse: true,
         },
 
         email: {
