@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.saveFirebaseUid = exports.getCurrentUser = exports.refreshToken = exports.resendOTP = exports.verifyOTP = exports.sendOTP = void 0;
+exports.saveFirebaseUid = exports.getCurrentUser = exports.refreshToken = exports.resendOTP = exports.googleLogin = exports.verifyOTP = exports.sendOTP = void 0;
 const auth_model_1 = __importDefault(require("./auth.model"));
 const otp_model_1 = __importDefault(require("./otp/otp.model"));
 const profile_model_1 = require("../profile-details/profile.model");
@@ -22,6 +22,7 @@ const generateJWT_1 = require("../../utils/generateJWT");
 const auth_constants_1 = require("./auth.constants");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const auth_validation_2 = require("./auth.validation");
 const auth_1 = require("firebase-admin/auth");
 const firebase_1 = __importDefault(require("../../config/firebase"));
 const sendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -184,6 +185,125 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.verifyOTP = verifyOTP;
+const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        // --------------------------------------------------
+        // VALIDATE REQUEST
+        // --------------------------------------------------
+        const validatedData = auth_validation_2.googleLoginValidation.parse(req.body);
+        const { token } = validatedData;
+        // --------------------------------------------------
+        // VERIFY FIREBASE ID TOKEN
+        // --------------------------------------------------
+        const decodedToken = yield (0, auth_1.getAuth)(firebase_1.default).verifyIdToken(token);
+        const firebaseUid = decodedToken.uid;
+        const firebaseEmail = decodedToken.email;
+        // --------------------------------------------------
+        // VERIFY GOOGLE PROVIDER
+        // --------------------------------------------------
+        const signInProvider = (_a = decodedToken.firebase) === null || _a === void 0 ? void 0 : _a.sign_in_provider;
+        if (signInProvider !== "google.com") {
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token is not from Google authentication.",
+            });
+        }
+        // --------------------------------------------------
+        // VERIFY EMAIL
+        // --------------------------------------------------
+        if (!firebaseEmail) {
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token does not contain an email address.",
+            });
+        }
+        // --------------------------------------------------
+        // NORMALIZE EMAIL
+        // --------------------------------------------------
+        const normalizedEmail = firebaseEmail
+            .trim()
+            .toLowerCase();
+        // --------------------------------------------------
+        // CHECK WHETHER USER EXISTS BY FIREBASE UID
+        // --------------------------------------------------
+        let auth = yield auth_model_1.default.findOne({
+            firebaseUid,
+            isDeleted: false,
+        });
+        // --------------------------------------------------
+        // CHECK WHETHER USER EXISTS BY EMAIL
+        // --------------------------------------------------
+        if (!auth) {
+            auth = yield auth_model_1.default.findOne({
+                email: normalizedEmail,
+                isDeleted: false,
+            });
+        }
+        // --------------------------------------------------
+        // CREATE NEW USER IF NOT EXISTS
+        // --------------------------------------------------
+        if (!auth) {
+            auth = yield auth_model_1.default.create({
+                email: normalizedEmail,
+                firebaseUid,
+                isVerified: true,
+                loginCount: 1,
+                lastLogin: new Date(),
+            });
+        }
+        else {
+            // --------------------------------------------------
+            // EXISTING USER
+            // --------------------------------------------------
+            auth.firebaseUid = firebaseUid;
+            auth.isVerified = true;
+            auth.loginCount += 1;
+            auth.lastLogin = new Date();
+        }
+        // --------------------------------------------------
+        // CHECK PROFILE EXISTENCE
+        // --------------------------------------------------
+        const profileExists = yield profile_model_1.Profile.exists({
+            userId: auth._id,
+        });
+        const isNewUser = !profileExists;
+        // --------------------------------------------------
+        // GENERATE ACCESS TOKEN
+        // --------------------------------------------------
+        const accessToken = (0, generateJWT_1.generateAccessToken)(auth);
+        // --------------------------------------------------
+        // GENERATE REFRESH TOKEN
+        // --------------------------------------------------
+        const refreshToken = (0, generateJWT_1.generateRefreshToken)(auth);
+        // --------------------------------------------------
+        // HASH & SAVE REFRESH TOKEN
+        // --------------------------------------------------
+        auth.refreshToken = yield bcrypt_1.default.hash(refreshToken, 10);
+        yield auth.save();
+        // --------------------------------------------------
+        // RESPONSE
+        // --------------------------------------------------
+        return res.status(200).json({
+            success: true,
+            message: isNewUser
+                ? "Registered successfully."
+                : "Logged in successfully.",
+            isNewUser,
+            accessToken,
+            refreshToken,
+            user: auth,
+        });
+    }
+    catch (error) {
+        console.error("Google login error:", error);
+        return res.status(401).json({
+            success: false,
+            message: error.message,
+        });
+    }
+});
+exports.googleLogin = googleLogin;
 const resendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = auth_validation_1.resendOtpValidation.parse(req.body);

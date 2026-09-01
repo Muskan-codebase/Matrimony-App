@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutValidation = exports.refreshTokenValidation = exports.resendOtpValidation = exports.verifyOtpValidation = exports.sendOtpValidation = void 0;
+exports.googleLoginValidation = exports.logoutValidation = exports.refreshTokenValidation = exports.resendOtpValidation = exports.verifyOtpValidation = exports.sendOtpValidation = void 0;
 const zod_1 = require("zod");
 /**
  * Common Validations
@@ -55,4 +55,10 @@ exports.logoutValidation = zod_1.z.object({
         .string()
         .trim()
         .min(10, "Invalid refresh token"),
+});
+/**
+ * Google Login / Firebase Authentication
+ */
+exports.googleLoginValidation = zod_1.z.object({
+    token: firebaseTokenSchema,
 });

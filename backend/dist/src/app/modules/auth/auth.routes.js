@@ -104,6 +104,106 @@ router.post("/send-otp", auth_controller_1.sendOTP);
  */
 router.post("/verify-otp", auth_controller_1.verifyOTP);
 /**
+  * @swagger
+  * /v1/api/auth/google-login:
+  *   post:
+  *     summary: Login or register using Google
+  *     description: |
+  *       Authenticates a user using a Firebase ID token obtained after
+  *       successful Google Sign-In. The Firebase ID token is verified
+  *       on the server and the user is either logged in or registered.
+  *     tags:
+  *       - Authentication
+  *     requestBody:
+  *       required: true
+  *       content:
+  *         application/json:
+  *           schema:
+  *             type: object
+  *             required:
+  *               - token
+  *             properties:
+  *               token:
+  *                 type: string
+  *                 description: Firebase ID token received after successful Google authentication
+  *                 example: eyJhbGciOiJSUzI1NiIsImtpZCI6IjEyMzQ1Njc4OSJ9...
+  *     responses:
+  *       200:
+  *         description: Google authentication successful
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: true
+  *                 message:
+  *                   type: string
+  *                   example: Logged in successfully.
+  *                 isNewUser:
+  *                   type: boolean
+  *                   example: false
+  *                 accessToken:
+  *                   type: string
+  *                   description: JWT access token
+  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  *                 refreshToken:
+  *                   type: string
+  *                   description: JWT refresh token
+  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  *                 user:
+  *                   type: object
+  *                   description: Authenticated user information
+  *                   example:
+  *                     _id: 66c123456789abcdef123456
+  *                     email: user@gmail.com
+  *                     firebaseUid: abc123xyz456
+  *                     isVerified: true
+  *                     loginCount: 5
+  *                     lastLogin: 2026-09-01T06:30:00.000Z
+  *       400:
+  *         description: Invalid request or authentication error
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Firebase token is required
+  *       401:
+  *         description: Invalid, expired, or non-Google Firebase token
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Firebase token is not from Google authentication.
+  *       500:
+  *         description: Internal server error
+  *         content:
+  *           application/json:
+  *             schema:
+  *               type: object
+  *               properties:
+  *                 success:
+  *                   type: boolean
+  *                   example: false
+  *                 message:
+  *                   type: string
+  *                   example: Something went wrong during Google login
+  */
+router.post("/google-login", auth_controller_1.googleLogin);
+/**
  * @swagger
  * /v1/api/auth/resend-otp:
  *   post:
