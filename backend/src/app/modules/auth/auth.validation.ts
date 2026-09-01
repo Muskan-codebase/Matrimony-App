@@ -80,6 +80,14 @@ export const logoutValidation = z.object({
 });
 
 /**
+ * Google Login / Firebase Authentication
+ */
+
+export const googleLoginValidation = z.object({
+    token: firebaseTokenSchema,
+});
+
+/**
  * Type Inference
  */
 
@@ -88,3 +96,4 @@ export type VerifyOtpInput = z.infer<typeof verifyOtpValidation>;
 export type ResendOtpInput = z.infer<typeof resendOtpValidation>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenValidation>;
 export type LogoutInput = z.infer<typeof logoutValidation>;
+export type GoogleLoginInput = z.infer<typeof googleLoginValidation>;
