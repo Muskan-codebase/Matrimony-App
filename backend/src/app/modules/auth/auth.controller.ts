@@ -21,6 +21,16 @@ import { googleLoginValidation } from "./auth.validation";
 import { getAuth } from "firebase-admin/auth";
 import app from "../../config/firebase";
 
+const auth = getAuth(app);
+
+auth.listUsers(1)
+    .then(() => {
+        console.log("✅ Firebase Admin authentication is working");
+    })
+    .catch((error) => {
+        console.error("❌ Firebase Admin authentication failed:", error);
+    });
+
 export const sendOTP = async (req: Request, res: Response) => {
 
     try {
@@ -261,6 +271,25 @@ export const googleLogin = async (req: Request, res: Response) => {
         // --------------------------------------------------
         // VERIFY FIREBASE ID TOKEN
         // --------------------------------------------------
+
+        console.log("TOKEN RECEIVED:", token);
+
+        const decoded = JSON.parse(
+            Buffer.from(token.split(".")[1], "base64").toString()
+        );
+
+        console.log("TOKEN AUD:", decoded.aud);
+        console.log("TOKEN ISS:", decoded.iss);
+        console.log("TOKEN UID:", decoded.sub);
+
+        const tokenParts = token.split(".");
+
+        const header = JSON.parse(
+            Buffer.from(tokenParts[0], "base64").toString()
+        );
+
+        console.log("TOKEN ALGORITHM:", header.alg);
+        console.log("TOKEN KEY ID:", header.kid);
 
         const decodedToken = await getAuth(app).verifyIdToken(token);
 
