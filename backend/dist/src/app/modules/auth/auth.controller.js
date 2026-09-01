@@ -25,6 +25,14 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const auth_validation_2 = require("./auth.validation");
 const auth_1 = require("firebase-admin/auth");
 const firebase_1 = __importDefault(require("../../config/firebase"));
+const auth = (0, auth_1.getAuth)(firebase_1.default);
+auth.listUsers(1)
+    .then(() => {
+    console.log("✅ Firebase Admin authentication is working");
+})
+    .catch((error) => {
+    console.error("❌ Firebase Admin authentication failed:", error);
+});
 const sendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = auth_validation_1.sendOtpValidation.parse(req.body);
@@ -196,6 +204,15 @@ const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // --------------------------------------------------
         // VERIFY FIREBASE ID TOKEN
         // --------------------------------------------------
+        console.log("TOKEN RECEIVED:", token);
+        const decoded = JSON.parse(Buffer.from(token.split(".")[1], "base64").toString());
+        console.log("TOKEN AUD:", decoded.aud);
+        console.log("TOKEN ISS:", decoded.iss);
+        console.log("TOKEN UID:", decoded.sub);
+        const tokenParts = token.split(".");
+        const header = JSON.parse(Buffer.from(tokenParts[0], "base64").toString());
+        console.log("TOKEN ALGORITHM:", header.alg);
+        console.log("TOKEN KEY ID:", header.kid);
         const decodedToken = yield (0, auth_1.getAuth)(firebase_1.default).verifyIdToken(token);
         const firebaseUid = decodedToken.uid;
         const firebaseEmail = decodedToken.email;

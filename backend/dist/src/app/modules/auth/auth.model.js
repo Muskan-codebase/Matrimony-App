@@ -38,10 +38,8 @@ const auth_interface_1 = require("./auth.interface");
 const authSchema = new mongoose_1.Schema({
     mobile: {
         type: String,
-        // required: true,
         unique: true,
-        trim: true,
-        index: true,
+        sparse: true,
     },
     email: {
         type: String,
