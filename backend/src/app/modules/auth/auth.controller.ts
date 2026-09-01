@@ -17,6 +17,7 @@ import {
 } from "./auth.constants";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { googleLoginValidation } from "./auth.validation";
 import { getAuth } from "firebase-admin/auth";
 import app from "../../config/firebase";
 
@@ -244,6 +245,174 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
     }
 
+};
+
+export const googleLogin = async (req: Request, res: Response) => {
+
+    try {
+
+        // --------------------------------------------------
+        // VALIDATE REQUEST
+        // --------------------------------------------------
+
+        const validatedData = googleLoginValidation.parse(req.body);
+        const { token } = validatedData;
+
+        // --------------------------------------------------
+        // VERIFY FIREBASE ID TOKEN
+        // --------------------------------------------------
+
+        const decodedToken = await getAuth(app).verifyIdToken(token);
+
+        const firebaseUid = decodedToken.uid;
+        const firebaseEmail = decodedToken.email;
+
+
+        // --------------------------------------------------
+        // VERIFY GOOGLE PROVIDER
+        // --------------------------------------------------
+
+        const signInProvider = decodedToken.firebase?.sign_in_provider;
+
+        if (signInProvider !== "google.com") {
+
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token is not from Google authentication.",
+            });
+        }
+
+        // --------------------------------------------------
+        // VERIFY EMAIL
+        // --------------------------------------------------
+
+        if (!firebaseEmail) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Firebase token does not contain an email address.",
+            });
+
+        }
+
+
+        // --------------------------------------------------
+        // NORMALIZE EMAIL
+        // --------------------------------------------------
+
+        const normalizedEmail = firebaseEmail
+            .trim()
+            .toLowerCase();
+
+
+        // --------------------------------------------------
+        // CHECK WHETHER USER EXISTS BY FIREBASE UID
+        // --------------------------------------------------
+
+        let auth = await Auth.findOne({
+            firebaseUid,
+            isDeleted: false,
+        });
+
+
+        // --------------------------------------------------
+        // CHECK WHETHER USER EXISTS BY EMAIL
+        // --------------------------------------------------
+
+        if (!auth) {
+            auth = await Auth.findOne({
+                email: normalizedEmail,
+                isDeleted: false,
+            });
+        }
+
+
+        // --------------------------------------------------
+        // CREATE NEW USER IF NOT EXISTS
+        // --------------------------------------------------
+
+        if (!auth) {
+
+            auth = await Auth.create({
+                email: normalizedEmail,
+                firebaseUid,
+                isVerified: true,
+                loginCount: 1,
+                lastLogin: new Date(),
+            });
+
+        } else {
+
+            // --------------------------------------------------
+            // EXISTING USER
+            // --------------------------------------------------
+
+            auth.firebaseUid = firebaseUid;
+            auth.isVerified = true;
+            auth.loginCount += 1;
+            auth.lastLogin = new Date();
+
+        }
+
+        // --------------------------------------------------
+        // CHECK PROFILE EXISTENCE
+        // --------------------------------------------------
+
+        const profileExists = await Profile.exists({
+            userId: auth._id,
+        });
+
+        const isNewUser = !profileExists;
+
+        // --------------------------------------------------
+        // GENERATE ACCESS TOKEN
+        // --------------------------------------------------
+
+        const accessToken = generateAccessToken(auth);
+
+        // --------------------------------------------------
+        // GENERATE REFRESH TOKEN
+        // --------------------------------------------------
+
+        const refreshToken = generateRefreshToken(auth);
+
+        // --------------------------------------------------
+        // HASH & SAVE REFRESH TOKEN
+        // --------------------------------------------------
+
+        auth.refreshToken = await bcrypt.hash(
+            refreshToken,
+            10
+        );
+
+        await auth.save();
+
+        // --------------------------------------------------
+        // RESPONSE
+        // --------------------------------------------------
+
+        return res.status(200).json({
+            success: true,
+            message: isNewUser
+                ? "Registered successfully."
+                : "Logged in successfully.",
+
+            isNewUser,
+            accessToken,
+            refreshToken,
+            user: auth,
+
+        });
+
+    } catch (error: any) {
+
+        console.error("Google login error:", error);
+
+        return res.status(401).json({
+            success: false,
+            message: error.message,
+        });
+    }
 };
 
 export const resendOTP = async (
