@@ -31,6 +31,12 @@ const paymentSchema = new Schema<IPayment>(
             required: true,
         },
 
+        idempotencyKey: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+        },
 
         razorpayOrderId: {
             type: String,
