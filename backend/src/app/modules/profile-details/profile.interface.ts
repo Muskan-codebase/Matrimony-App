@@ -292,6 +292,8 @@ export interface IProfile {
 
         packageName?: string;
 
+        price: number;
+
         startDate?: Date;
 
         expiryDate?: Date;
