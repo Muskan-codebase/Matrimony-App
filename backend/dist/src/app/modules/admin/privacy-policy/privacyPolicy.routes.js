@@ -15,7 +15,7 @@ const router = (0, express_1.Router)();
  *       - bearerAuth: []
  *     description: >
  *       Creates the Privacy Policy if it does not exist.
- *       If the Privacy Policy already exists, updates the existing content.
+ *       If the Privacy Policy already exists, updates the existing Privacy Policy.
  *     requestBody:
  *       required: true
  *       content:
@@ -23,8 +23,12 @@ const router = (0, express_1.Router)();
  *           schema:
  *             type: object
  *             required:
+ *               - title
  *               - content
  *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Privacy Policy"
  *               content:
  *                 type: string
  *                 example: "At SahaJeevan, we respect your privacy and are committed to protecting your personal information. We collect and use your information to provide secure and reliable matrimonial services."
@@ -48,6 +52,9 @@ const router = (0, express_1.Router)();
  *                     _id:
  *                       type: string
  *                       example: "68a123456789abcdef123456"
+ *                     title:
+ *                       type: string
+ *                       example: "Privacy Policy"
  *                     content:
  *                       type: string
  *                       example: "At SahaJeevan, we respect your privacy and are committed to protecting your personal information."
@@ -71,7 +78,7 @@ router.post("/", authMiddleware_1.authenticate, privacyPolicy_controllers_1.crea
  *   get:
  *     summary: Get Privacy Policy
  *     tags: [Privacy Policy (Admin)]
- *     description: Retrieves the current Privacy Policy content.
+ *     description: Retrieves the current Privacy Policy.
  *     responses:
  *       200:
  *         description: Privacy Policy fetched successfully
@@ -92,6 +99,9 @@ router.post("/", authMiddleware_1.authenticate, privacyPolicy_controllers_1.crea
  *                     _id:
  *                       type: string
  *                       example: "68a123456789abcdef123456"
+ *                     title:
+ *                       type: string
+ *                       example: "Privacy Policy"
  *                     content:
  *                       type: string
  *                       example: "At SahaJeevan, we respect your privacy and are committed to protecting your personal information."
