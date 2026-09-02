@@ -25,7 +25,7 @@ const corsOptions = {
         const allowedOrigins = [
             'https://heaven-holiday2026.vercel.app',
             'https://heaven-holiday2026-pnpk.vercel.app',
-            ''
+            'https://matrimony-website-shubham.vercel.app'
         ];
         if (!origin)
             return callback(null, true);
