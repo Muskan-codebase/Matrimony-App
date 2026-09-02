@@ -23,6 +23,12 @@ const paymentSchema = new mongoose_1.Schema({
         type: Number,
         required: true,
     },
+    idempotencyKey: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true,
+    },
     razorpayOrderId: {
         type: String,
     },

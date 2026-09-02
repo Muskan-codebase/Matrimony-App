@@ -44,8 +44,8 @@ exports.createOrder = createOrder;
 const verifyPaymentController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.id;
-        const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
-        const payment = yield (0, payment_service_1.verifyPayment)(userId, razorpayOrderId, razorpayPaymentId, razorpaySignature);
+        const { razorpayOrderId, razorpayPaymentId, razorpaySignature, idempotencyKey, } = req.body;
+        const payment = yield (0, payment_service_1.verifyPayment)(userId, razorpayOrderId, razorpayPaymentId, razorpaySignature, idempotencyKey);
         res.status(200).json({
             success: true,
             message: "Payment verified successfully",

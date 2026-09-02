@@ -448,6 +448,9 @@ const profileSchema = new mongoose_1.Schema({
         packageName: {
             type: String,
         },
+        price: {
+            type: Number,
+        },
         startDate: {
             type: Date,
         },

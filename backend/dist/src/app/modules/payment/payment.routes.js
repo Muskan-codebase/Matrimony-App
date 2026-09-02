@@ -86,9 +86,10 @@ router.post("/create-order", authMiddleware_1.authenticate, payment_controllers_
  *   post:
  *     summary: Verify Razorpay payment
  *     description:
- *       Verifies the Razorpay payment signature after successful payment.
+ *       Verifies the Razorpay payment signature and securely processes the payment.
+ *       The API uses an idempotency key to prevent duplicate payment processing.
  *       On successful verification, the payment status is updated and the user's
- *       package subscription is activated.
+ *       package subscription is activated or replaced with the newly purchased package.
  *     tags:
  *       - Packages Payment
  *     security:
@@ -103,6 +104,7 @@ router.post("/create-order", authMiddleware_1.authenticate, payment_controllers_
  *               - razorpayOrderId
  *               - razorpayPaymentId
  *               - razorpaySignature
+ *               - idempotencyKey
  *             properties:
  *               razorpayOrderId:
  *                 type: string
@@ -117,7 +119,12 @@ router.post("/create-order", authMiddleware_1.authenticate, payment_controllers_
  *               razorpaySignature:
  *                 type: string
  *                 example: "a8f9d7e6c5b4..."
- *                 description: Razorpay generated payment signature for verification
+ *                 description: Razorpay generated payment signature used for verification
+ *
+ *               idempotencyKey:
+ *                 type: string
+ *                 example: "payment_8f3a7c9d2e1b"
+ *                 description: Unique key for this payment attempt to prevent duplicate payment processing
  *
  *     responses:
  *       200:
@@ -144,10 +151,10 @@ router.post("/create-order", authMiddleware_1.authenticate, payment_controllers_
  *
  *                     subscription:
  *                       type: object
- *                       description: Activated package subscription details
+ *                       description: Activated or updated package subscription
  *
  *       400:
- *         description: Invalid payment signature or payment verification failed
+ *         description: Invalid payment signature, payment order, or payment verification failed
  *
  *       401:
  *         description: Unauthorized user
