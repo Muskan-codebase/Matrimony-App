@@ -59,14 +59,16 @@ export const verifyPaymentController = async (
         const {
             razorpayOrderId,
             razorpayPaymentId,
-            razorpaySignature
+            razorpaySignature,
+            idempotencyKey,
         } = req.body;
 
         const payment = await verifyPayment(
             userId,
             razorpayOrderId,
             razorpayPaymentId,
-            razorpaySignature
+            razorpaySignature,
+            idempotencyKey,
         );
 
         res.status(200).json({
