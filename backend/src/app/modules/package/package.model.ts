@@ -52,10 +52,10 @@ const packageSchema = new Schema<IPackage>(
         },
 
         dailyInterestRequestLimit: {
-    type: Number,
-    required: true,
-    min: 0,
-},
+            type: Number,
+            required: true,
+            min: 0,
+        },
 
         isDeleted: {
             type: Boolean,
