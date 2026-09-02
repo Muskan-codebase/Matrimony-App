@@ -1,6 +1,7 @@
 import { Document } from "mongoose";
 
 export interface IPrivacyPolicy {
+    title: string;
     content: string;
 }
 
