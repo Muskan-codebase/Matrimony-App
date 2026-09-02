@@ -18,6 +18,7 @@ export interface IPayment {
 
 
     amount: number;
+    idempotencyKey: string;
 
 
     razorpayOrderId?: string;
