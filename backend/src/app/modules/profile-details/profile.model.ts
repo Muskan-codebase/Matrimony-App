@@ -636,6 +636,10 @@ const profileSchema = new Schema<IProfile>(
                 type: String,
             },
 
+            price: {
+                type: Number,
+            },
+
             startDate: {
                 type: Date,
             },
