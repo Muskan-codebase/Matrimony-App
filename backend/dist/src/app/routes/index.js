@@ -41,6 +41,7 @@ const profile_routes_2 = require("../modules/admin/profile/profile.routes");
 const email_route_1 = require("../services/email.route");
 const photoRequest_route_1 = require("../modules/profile-details/photo-request/photoRequest.route");
 const termsConditions_routes_1 = require("../modules/admin/terms-conditions/termsConditions.routes");
+const paymentPreview_routes_1 = require("../modules/payment/payment-preview/paymentPreview.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -202,6 +203,10 @@ const moduleRoutes = [
     {
         path: "/admin/terms-conditions",
         route: termsConditions_routes_1.termsConditionsRouter
+    },
+    {
+        path: "/payment",
+        route: paymentPreview_routes_1.paymentPreviewRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
