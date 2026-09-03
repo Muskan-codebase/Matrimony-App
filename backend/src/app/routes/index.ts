@@ -39,6 +39,7 @@ import { adminProfileRouter } from '../modules/admin/profile/profile.routes';
 import { testEmailRouter } from '../services/email.route';
 import { photoRequestRouter } from '../modules/profile-details/photo-request/photoRequest.route';
 import { termsConditionsRouter } from '../modules/admin/terms-conditions/termsConditions.routes';
+import { paymentPreviewRouter } from '../modules/payment/payment-preview/paymentPreview.routes';
 
 const router = Router();
 
@@ -202,6 +203,10 @@ const moduleRoutes = [
   {
     path: "/admin/terms-conditions",
     route: termsConditionsRouter
+  },
+  {
+    path: "/payment",
+    route: paymentPreviewRouter
   }
 ];
 
