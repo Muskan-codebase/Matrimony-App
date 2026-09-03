@@ -43,6 +43,7 @@ const photoRequest_route_1 = require("../modules/profile-details/photo-request/p
 const termsConditions_routes_1 = require("../modules/admin/terms-conditions/termsConditions.routes");
 const paymentPreview_routes_1 = require("../modules/payment/payment-preview/paymentPreview.routes");
 const fraudAlert_routes_1 = require("../modules/admin/fraud-alert/fraudAlert.routes");
+const experience_routes_1 = require("../modules/admin/experience/experience.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -213,6 +214,10 @@ const moduleRoutes = [
         path: "/admin/fraud-alert",
         route: fraudAlert_routes_1.fraudAlertRouter
     },
+    {
+        path: "/admin/experience",
+        route: experience_routes_1.experienceRouter
+    }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;
