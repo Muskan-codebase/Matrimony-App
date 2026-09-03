@@ -37,11 +37,10 @@ const createPaymentOrder = (userId, profileId, packageId) => __awaiter(void 0, v
         throw new Error("Profile not found");
     }
     // ==========================================
-    // 3. Calculate Payable Amount
+    // 3. Calculate Payable Amount (with proration if applicable)
     // ==========================================
     let payableAmount = packageData.price;
     const currentSubscription = profile.subscription;
-    // Check if current subscription exists and is not expired
     if ((currentSubscription === null || currentSubscription === void 0 ? void 0 : currentSubscription.isActive) &&
         currentSubscription.expiryDate) {
         const expiryDate = currentSubscription.expiryDate;
@@ -52,9 +51,7 @@ const createPaymentOrder = (userId, profileId, packageId) => __awaiter(void 0, v
                 const remainingMilliseconds = expiryDate.getTime() - now.getTime();
                 const remainingDays = Math.max(0, Math.ceil(remainingMilliseconds /
                     (1000 * 60 * 60 * 24)));
-                // ==========================================
-                // Calculate Current Package Daily Value
-                // ==========================================
+                // Calculate current package's daily value
                 let totalDays = 0;
                 switch (currentPackage.durationType) {
                     case "DAY":
@@ -70,54 +67,50 @@ const createPaymentOrder = (userId, profileId, packageId) => __awaiter(void 0, v
                 if (totalDays > 0 && remainingDays > 0) {
                     const dailyPrice = currentPackage.price / totalDays;
                     const unusedAmount = dailyPrice * remainingDays;
-                    // ==========================================
-                    // Deduct Unused Amount
-                    // ==========================================
+                    // Deduct unused amount from new package price
                     payableAmount = Math.max(0, packageData.price - unusedAmount);
                 }
             }
         }
-        // ==========================================
-        // 4. Generate Idempotency Key
-        // ==========================================
-        const idempotencyKey = crypto_1.default.randomUUID();
-        // ==========================================
-        // 5. Create Razorpay Order
-        // ==========================================
-        const razorpayOrder = yield razorpay_1.razorpay.orders.create({
-            amount: Math.round(payableAmount * 100),
-            currency: "INR",
-            receipt: `receipt_${Date.now()}`,
-            notes: {
-                packageId: packageData.id,
-                userId: userId.toString(),
-            },
-        });
-        // ==========================================
-        // 6. Save Payment Record
-        // ==========================================
-        const payment = yield payment_model_1.Payment.create({
-            userId,
-            profileId,
-            packageId: packageData._id,
-            // Actual amount user is paying
-            amount: payableAmount,
-            idempotencyKey,
-            razorpayOrderId: razorpayOrder.id,
-            status: payment_interface_1.PaymentStatus.PENDING,
-        });
-        // ==========================================
-        // 7. Return Razorpay Details
-        // ==========================================
-        return {
-            paymentId: payment._id,
-            orderId: razorpayOrder.id,
-            amount: razorpayOrder.amount,
-            currency: razorpayOrder.currency,
-            idempotencyKey,
-        };
     }
-    ;
+    // ==========================================
+    // 4. Generate Idempotency Key
+    // ==========================================
+    const idempotencyKey = crypto_1.default.randomUUID();
+    // ==========================================
+    // 5. Create Razorpay Order
+    // ==========================================
+    const razorpayOrder = yield razorpay_1.razorpay.orders.create({
+        amount: Math.round(payableAmount * 100),
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`,
+        notes: {
+            packageId: packageData.id,
+            userId: userId.toString(),
+        },
+    });
+    // ==========================================
+    // 6. Save Payment Record
+    // ==========================================
+    const payment = yield payment_model_1.Payment.create({
+        userId,
+        profileId,
+        packageId: packageData._id,
+        amount: payableAmount,
+        idempotencyKey,
+        razorpayOrderId: razorpayOrder.id,
+        status: payment_interface_1.PaymentStatus.PENDING,
+    });
+    // ==========================================
+    // 7. Return Razorpay Details
+    // ==========================================
+    return {
+        paymentId: payment._id,
+        orderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        idempotencyKey,
+    };
 });
 exports.createPaymentOrder = createPaymentOrder;
 const verifyPayment = (userId, razorpayOrderId, razorpayPaymentId, razorpaySignature, idempotencyKey) => __awaiter(void 0, void 0, void 0, function* () {
