@@ -35,14 +35,13 @@ export const createPaymentOrder = async (
     }
 
     // ==========================================
-    // 3. Calculate Payable Amount
+    // 3. Calculate Payable Amount (with proration if applicable)
     // ==========================================
 
     let payableAmount = packageData.price;
 
     const currentSubscription = profile.subscription;
 
-    // Check if current subscription exists and is not expired
     if (
         currentSubscription?.isActive &&
         currentSubscription.expiryDate
@@ -68,14 +67,10 @@ export const createPaymentOrder = async (
                     )
                 );
 
-                // ==========================================
-                // Calculate Current Package Daily Value
-                // ==========================================
-
+                // Calculate current package's daily value
                 let totalDays = 0;
 
                 switch (currentPackage.durationType) {
-
                     case "DAY":
                         totalDays = currentPackage.duration;
                         break;
@@ -90,14 +85,10 @@ export const createPaymentOrder = async (
                 }
 
                 if (totalDays > 0 && remainingDays > 0) {
-
                     const dailyPrice = currentPackage.price / totalDays;
                     const unusedAmount = dailyPrice * remainingDays;
 
-                    // ==========================================
-                    // Deduct Unused Amount
-                    // ==========================================
-
+                    // Deduct unused amount from new package price
                     payableAmount = Math.max(
                         0,
                         packageData.price - unusedAmount
@@ -105,57 +96,54 @@ export const createPaymentOrder = async (
                 }
             }
         }
+    }
 
-        // ==========================================
-        // 4. Generate Idempotency Key
-        // ==========================================
+    // ==========================================
+    // 4. Generate Idempotency Key
+    // ==========================================
 
-        const idempotencyKey = crypto.randomUUID();
+    const idempotencyKey = crypto.randomUUID();
 
-        // ==========================================
-        // 5. Create Razorpay Order
-        // ==========================================
+    // ==========================================
+    // 5. Create Razorpay Order
+    // ==========================================
 
-        const razorpayOrder = await razorpay.orders.create({
+    const razorpayOrder = await razorpay.orders.create({
+        amount: Math.round(payableAmount * 100),
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`,
+        notes: {
+            packageId: packageData.id,
+            userId: userId.toString(),
+        },
+    });
 
-            amount: Math.round(payableAmount * 100),
-            currency: "INR",
-            receipt: `receipt_${Date.now()}`,
-            notes: {
-                packageId: packageData.id,
-                userId: userId.toString(),
-            },
-        });
+    // ==========================================
+    // 6. Save Payment Record
+    // ==========================================
 
-        // ==========================================
-        // 6. Save Payment Record
-        // ==========================================
+    const payment = await Payment.create({
+        userId,
+        profileId,
+        packageId: packageData._id,
+        amount: payableAmount,
+        idempotencyKey,
+        razorpayOrderId: razorpayOrder.id,
+        status: PaymentStatus.PENDING,
+    });
 
-        const payment = await Payment.create({
+    // ==========================================
+    // 7. Return Razorpay Details
+    // ==========================================
 
-            userId,
-            profileId,
-            packageId: packageData._id,
-            // Actual amount user is paying
-            amount: payableAmount,
-            idempotencyKey,
-            razorpayOrderId: razorpayOrder.id,
-            status: PaymentStatus.PENDING,
-        });
-
-        // ==========================================
-        // 7. Return Razorpay Details
-        // ==========================================
-
-        return {
-            paymentId: payment._id,
-            orderId: razorpayOrder.id,
-            amount: razorpayOrder.amount,
-            currency: razorpayOrder.currency,
-            idempotencyKey,
-        };
+    return {
+        paymentId: payment._id,
+        orderId: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        idempotencyKey,
     };
-}
+};
 
 export const verifyPayment = async (
     userId: Types.ObjectId,
