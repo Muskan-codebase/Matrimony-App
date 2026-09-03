@@ -212,7 +212,7 @@ const moduleRoutes = [
     {
         path: "/admin/fraud-alert",
         route: fraudAlert_routes_1.fraudAlertRouter
-    }
+    },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;
