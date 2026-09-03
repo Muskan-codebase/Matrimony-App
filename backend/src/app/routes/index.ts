@@ -41,6 +41,7 @@ import { photoRequestRouter } from '../modules/profile-details/photo-request/pho
 import { termsConditionsRouter } from '../modules/admin/terms-conditions/termsConditions.routes';
 import { paymentPreviewRouter } from '../modules/payment/payment-preview/paymentPreview.routes';
 import { fraudAlertRouter } from '../modules/admin/fraud-alert/fraudAlert.routes';
+import { experienceRouter } from '../modules/admin/experience/experience.routes';
 
 const router = Router();
 
@@ -212,6 +213,10 @@ const moduleRoutes = [
   {
     path: "/admin/fraud-alert",
     route: fraudAlertRouter
+  },
+  {
+    path: "/admin/experience",
+    route: experienceRouter
   }
 ];
 
