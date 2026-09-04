@@ -9,6 +9,13 @@ import {
     updateAppNotificationSchema,
     updateEmailNotificationSchema
 } from "./accountSettings.validation";
+import { Interest } from "../profile-details/interest/interest.model";
+import { Block } from "../profile-details/block/block.model";
+import { Shortlist } from "../profile-details/shortlist/shortlist.model";
+import { PartnerPreference } from "../profile-details/partner-preference/partnerPreference.model"
+import { Ignore } from "../profile-details/ignore/ignore.model";
+import { Payment } from "../payment/payment.model";
+import mongoose from "mongoose";
 
 //find or create aka lazy intialization 
 export const getAccountSettings = async (
@@ -333,53 +340,196 @@ export const deleteProfile = async (
     req: Request,
     res: Response
 ): Promise<void> => {
+    const session = await mongoose.startSession();
 
     try {
+        session.startTransaction();
 
-        const auth = await Auth.findById(req.user.id);
+        const userId = new mongoose.Types.ObjectId(req.user.id);
+
+        // --------------------------------------------------
+        // 1. FIND USER AUTH
+        // --------------------------------------------------
+
+        const auth = await Auth.findById(userId).session(session);
 
         if (!auth) {
+            await session.abortTransaction();
+
             res.status(404).json({
                 success: false,
                 message: "User not found.",
             });
+
             return;
         }
 
+        // --------------------------------------------------
+        // 2. FIND PROFILE
+        // --------------------------------------------------
+
         const profile = await Profile.findOne({
-            userId: req.user.id,
-        });
+            userId,
+        }).session(session);
 
-        const settings = await AccountSettings.findOne({
-            userId: req.user.id,
-        });
+        const profileId = profile?._id;
 
-        auth.isDeleted = true;
+        // --------------------------------------------------
+        // 3. DELETE PARTNER PREFERENCE
+        // --------------------------------------------------
 
-        if (profile) {
-            profile.isDeleted = true;
-            await profile.save();
+        if (profileId) {
+            await PartnerPreference.deleteMany(
+                {
+                    profileId,
+                },
+                { session }
+            );
         }
 
-        if (settings) {
-            settings.isDeleted = true;
-            await settings.save();
+        // --------------------------------------------------
+        // 4. DELETE ACCOUNT SETTINGS
+        // --------------------------------------------------
+
+        await AccountSettings.deleteMany(
+            {
+                userId,
+            },
+            { session }
+        );
+
+        // --------------------------------------------------
+        // DELETE PAYMENT RECORDS
+        // --------------------------------------------------
+
+        await Payment.deleteMany(
+            {
+                $or: [
+                    { userId },
+                    ...(profileId ? [{ profileId }] : []),
+                ],
+            },
+            { session }
+        );
+
+        // --------------------------------------------------
+        // 5. DELETE INTERESTS
+        //
+        // The user can appear either as sender or receiver.
+        // --------------------------------------------------
+
+        if (profileId) {
+            await Interest.deleteMany(
+                {
+                    $or: [
+                        { senderProfileId: profileId },
+                        { receiverProfileId: profileId },
+                    ],
+                },
+                { session }
+            );
         }
 
-        await auth.save();
+        // --------------------------------------------------
+        // 6. DELETE IGNORED PROFILES
+        //
+        // User can be the one ignoring OR the one being ignored.
+        // --------------------------------------------------
+
+        if (profileId) {
+            await Ignore.deleteMany(
+                {
+                    $or: [
+                        { profileId },
+                        { ignoredProfileId: profileId },
+                    ],
+                },
+                { session }
+            );
+        }
+
+        // --------------------------------------------------
+        // 7. DELETE BLOCKS
+        //
+        // User can be the blocker OR the blocked user.
+        // --------------------------------------------------
+
+        if (profileId) {
+            await Block.deleteMany(
+                {
+                    $or: [
+                        { profileId },
+                        { blockedProfileId: profileId },
+                    ],
+                },
+                { session }
+            );
+        }
+
+        // --------------------------------------------------
+        // 8. DELETE SHORTLISTS
+        //
+        // User can shortlist someone OR be shortlisted.
+        // --------------------------------------------------
+
+        if (profileId) {
+            await Shortlist.deleteMany(
+                {
+                    $or: [
+                        { profileId },
+                        { shortlistedProfileId: profileId },
+                    ],
+                },
+                { session }
+            );
+        }
+
+        // --------------------------------------------------
+        // 9. DELETE PROFILE
+        // --------------------------------------------------
+
+        if (profileId) {
+            await Profile.deleteOne(
+                {
+                    _id: profileId,
+                },
+                { session }
+            );
+        }
+
+        // --------------------------------------------------
+        // 10. DELETE AUTH
+        // --------------------------------------------------
+
+        await Auth.deleteOne(
+            {
+                _id: userId,
+            },
+            { session }
+        );
+
+        // --------------------------------------------------
+        // 11. COMMIT TRANSACTION
+        // --------------------------------------------------
+
+        await session.commitTransaction();
 
         res.status(200).json({
             success: true,
-            message: "Profile deleted successfully.",
+            message: "Profile and all associated data deleted permanently.",
         });
 
     } catch (error: any) {
+        await session.abortTransaction();
 
-        res.status(400).json({
+        console.error("Delete Profile Error:", error);
+
+        res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Failed to permanently delete profile.",
         });
 
+    } finally {
+        await session.endSession();
     }
-
 };

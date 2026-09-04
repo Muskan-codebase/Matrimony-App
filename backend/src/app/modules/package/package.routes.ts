@@ -36,6 +36,8 @@ const router = express.Router();
  *               - durationType
  *               - price
  *               - features
+ *               - interestRequestLimit
+ *               - dailyInterestRequestLimit
  *             properties:
  *               title:
  *                 type: string
@@ -62,7 +64,6 @@ const router = express.Router();
  *               badge:
  *                 type: string
  *                 example: Popular
- *             
  *               features:
  *                 type: array
  *                 items:
@@ -71,6 +72,14 @@ const router = express.Router();
  *                   - Valid for 3 months
  *                   - View 50 phone numbers
  *                   - Unlimited messages
+ *               interestRequestLimit:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 50
+ *               dailyInterestRequestLimit:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 8
  *               displayOrder:
  *                 type: number
  *                 example: 1
@@ -140,30 +149,51 @@ router.get("/:id", getPackageById);
  *             properties:
  *               title:
  *                 type: string
+ *                 example: Gold
  *               description:
  *                 type: string
+ *                 example: Gold membership package
  *               duration:
  *                 type: number
+ *                 example: 3
  *               durationType:
  *                 type: string
  *                 enum: [DAY, MONTH, YEAR]
+ *                 example: MONTH
  *               price:
  *                 type: number
+ *                 example: 5500
  *               originalPrice:
  *                 type: number
+ *                 example: 7500
  *               discountPercentage:
  *                 type: number
+ *                 example: 27
  *               badge:
  *                 type: string
- *          
+ *                 example: Popular
  *               features:
  *                 type: array
  *                 items:
  *                   type: string
- *               isActive:
+ *                 example:
+ *                   - Valid for 3 months
+ *                   - View 50 phone numbers
+ *                   - Unlimited messages
+ *               interestRequestLimit:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 50
+ *               dailyInterestRequestLimit:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 8
+ *               isDeleted:
  *                 type: boolean
+ *                 example: false
  *               displayOrder:
  *                 type: number
+ *                 example: 1
  *     responses:
  *       200:
  *         description: Package updated successfully.

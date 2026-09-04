@@ -194,7 +194,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.verifyOTP = verifyOTP;
 const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c, _d, _e;
     try {
         // --------------------------------------------------
         // VALIDATE REQUEST
@@ -313,10 +313,29 @@ const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        console.error("Google login error:", error);
-        return res.status(401).json({
-            success: false,
+        console.error("Google login error:", {
             message: error.message,
+            code: error.code, // e.g. "auth/argument-error", "auth/id-token-expired"
+            errorInfo: error.errorInfo,
+            stack: error.stack,
+        });
+        // Don't lump validation errors in with auth errors
+        if (error.name === "ZodError") {
+            return res.status(400).json({
+                success: false,
+                message: (_d = (_c = (_b = error.errors) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.message) !== null && _d !== void 0 ? _d : "Invalid request.",
+            });
+        }
+        if ((_e = error.code) === null || _e === void 0 ? void 0 : _e.startsWith("auth/")) {
+            return res.status(401).json({
+                success: false,
+                message: "Google authentication failed. Please try again.",
+                code: error.code,
+            });
+        }
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong. Please try again later.",
         });
     }
 });

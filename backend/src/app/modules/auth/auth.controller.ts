@@ -435,11 +435,32 @@ export const googleLogin = async (req: Request, res: Response) => {
 
     } catch (error: any) {
 
-        console.error("Google login error:", error);
-
-        return res.status(401).json({
-            success: false,
+        console.error("Google login error:", {
             message: error.message,
+            code: error.code,          // e.g. "auth/argument-error", "auth/id-token-expired"
+            errorInfo: error.errorInfo,
+            stack: error.stack,
+        });
+
+        // Don't lump validation errors in with auth errors
+        if (error.name === "ZodError") {
+            return res.status(400).json({
+                success: false,
+                message: error.errors?.[0]?.message ?? "Invalid request.",
+            });
+        }
+
+        if (error.code?.startsWith("auth/")) {
+            return res.status(401).json({
+                success: false,
+                message: "Google authentication failed. Please try again.",
+                code: error.code,
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

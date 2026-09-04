@@ -17,6 +17,13 @@ const accountSettings_model_1 = require("./accountSettings.model");
 const profile_model_1 = require("../profile-details/profile.model");
 const auth_model_1 = __importDefault(require("../auth/auth.model"));
 const accountSettings_validation_1 = require("./accountSettings.validation");
+const interest_model_1 = require("../profile-details/interest/interest.model");
+const block_model_1 = require("../profile-details/block/block.model");
+const shortlist_model_1 = require("../profile-details/shortlist/shortlist.model");
+const partnerPreference_model_1 = require("../profile-details/partner-preference/partnerPreference.model");
+const ignore_model_1 = require("../profile-details/ignore/ignore.model");
+const payment_model_1 = require("../payment/payment.model");
+const mongoose_1 = __importDefault(require("mongoose"));
 //find or create aka lazy intialization 
 const getAccountSettings = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -244,41 +251,137 @@ const updateEmailNotifications = (req, res) => __awaiter(void 0, void 0, void 0,
 });
 exports.updateEmailNotifications = updateEmailNotifications;
 const deleteProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const session = yield mongoose_1.default.startSession();
     try {
-        const auth = yield auth_model_1.default.findById(req.user.id);
+        session.startTransaction();
+        const userId = new mongoose_1.default.Types.ObjectId(req.user.id);
+        // --------------------------------------------------
+        // 1. FIND USER AUTH
+        // --------------------------------------------------
+        const auth = yield auth_model_1.default.findById(userId).session(session);
         if (!auth) {
+            yield session.abortTransaction();
             res.status(404).json({
                 success: false,
                 message: "User not found.",
             });
             return;
         }
+        // --------------------------------------------------
+        // 2. FIND PROFILE
+        // --------------------------------------------------
         const profile = yield profile_model_1.Profile.findOne({
-            userId: req.user.id,
-        });
-        const settings = yield accountSettings_model_1.AccountSettings.findOne({
-            userId: req.user.id,
-        });
-        auth.isDeleted = true;
-        if (profile) {
-            profile.isDeleted = true;
-            yield profile.save();
+            userId,
+        }).session(session);
+        const profileId = profile === null || profile === void 0 ? void 0 : profile._id;
+        // --------------------------------------------------
+        // 3. DELETE PARTNER PREFERENCE
+        // --------------------------------------------------
+        if (profileId) {
+            yield partnerPreference_model_1.PartnerPreference.deleteMany({
+                profileId,
+            }, { session });
         }
-        if (settings) {
-            settings.isDeleted = true;
-            yield settings.save();
+        // --------------------------------------------------
+        // 4. DELETE ACCOUNT SETTINGS
+        // --------------------------------------------------
+        yield accountSettings_model_1.AccountSettings.deleteMany({
+            userId,
+        }, { session });
+        // --------------------------------------------------
+        // DELETE PAYMENT RECORDS
+        // --------------------------------------------------
+        yield payment_model_1.Payment.deleteMany({
+            $or: [
+                { userId },
+                ...(profileId ? [{ profileId }] : []),
+            ],
+        }, { session });
+        // --------------------------------------------------
+        // 5. DELETE INTERESTS
+        //
+        // The user can appear either as sender or receiver.
+        // --------------------------------------------------
+        if (profileId) {
+            yield interest_model_1.Interest.deleteMany({
+                $or: [
+                    { senderProfileId: profileId },
+                    { receiverProfileId: profileId },
+                ],
+            }, { session });
         }
-        yield auth.save();
+        // --------------------------------------------------
+        // 6. DELETE IGNORED PROFILES
+        //
+        // User can be the one ignoring OR the one being ignored.
+        // --------------------------------------------------
+        if (profileId) {
+            yield ignore_model_1.Ignore.deleteMany({
+                $or: [
+                    { profileId },
+                    { ignoredProfileId: profileId },
+                ],
+            }, { session });
+        }
+        // --------------------------------------------------
+        // 7. DELETE BLOCKS
+        //
+        // User can be the blocker OR the blocked user.
+        // --------------------------------------------------
+        if (profileId) {
+            yield block_model_1.Block.deleteMany({
+                $or: [
+                    { profileId },
+                    { blockedProfileId: profileId },
+                ],
+            }, { session });
+        }
+        // --------------------------------------------------
+        // 8. DELETE SHORTLISTS
+        //
+        // User can shortlist someone OR be shortlisted.
+        // --------------------------------------------------
+        if (profileId) {
+            yield shortlist_model_1.Shortlist.deleteMany({
+                $or: [
+                    { profileId },
+                    { shortlistedProfileId: profileId },
+                ],
+            }, { session });
+        }
+        // --------------------------------------------------
+        // 9. DELETE PROFILE
+        // --------------------------------------------------
+        if (profileId) {
+            yield profile_model_1.Profile.deleteOne({
+                _id: profileId,
+            }, { session });
+        }
+        // --------------------------------------------------
+        // 10. DELETE AUTH
+        // --------------------------------------------------
+        yield auth_model_1.default.deleteOne({
+            _id: userId,
+        }, { session });
+        // --------------------------------------------------
+        // 11. COMMIT TRANSACTION
+        // --------------------------------------------------
+        yield session.commitTransaction();
         res.status(200).json({
             success: true,
-            message: "Profile deleted successfully.",
+            message: "Profile and all associated data deleted permanently.",
         });
     }
     catch (error) {
-        res.status(400).json({
+        yield session.abortTransaction();
+        console.error("Delete Profile Error:", error);
+        res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Failed to permanently delete profile.",
         });
+    }
+    finally {
+        yield session.endSession();
     }
 });
 exports.deleteProfile = deleteProfile;
