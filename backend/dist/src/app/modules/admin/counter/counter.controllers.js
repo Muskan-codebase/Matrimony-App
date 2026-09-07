@@ -17,7 +17,7 @@ const counter_validation_1 = require("./counter.validation");
 const createOrUpdateCounter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = counter_validation_1.createOrUpdateCounterSchema.parse(req.body);
-        const existingCounter = yield counter_model_1.Counter.findOne();
+        const existingCounter = yield counter_model_1.MatrimonyCounter.findOne();
         if (existingCounter) {
             existingCounter.mobileVerifiedProfiles =
                 validatedData.mobileVerifiedProfiles;
@@ -32,7 +32,7 @@ const createOrUpdateCounter = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 data: existingCounter,
             });
         }
-        const counter = yield counter_model_1.Counter.create(validatedData);
+        const counter = yield counter_model_1.MatrimonyCounter.create(validatedData);
         return res.status(201).json({
             success: true,
             message: "Counter created successfully",
@@ -51,7 +51,7 @@ exports.createOrUpdateCounter = createOrUpdateCounter;
 // Get Counter
 const getCounter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const counter = yield counter_model_1.Counter.findOne().lean();
+        const counter = yield counter_model_1.MatrimonyCounter.findOne().lean();
         if (!counter) {
             return res.status(404).json({
                 success: false,

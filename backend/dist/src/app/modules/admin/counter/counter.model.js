@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Counter = void 0;
+exports.MatrimonyCounter = void 0;
 const mongoose_1 = require("mongoose");
 const counterSchema = new mongoose_1.Schema({
     mobileVerifiedProfiles: {
@@ -21,4 +21,4 @@ const counterSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-exports.Counter = (0, mongoose_1.model)("Counter", counterSchema);
+exports.MatrimonyCounter = (0, mongoose_1.model)("MatrimonyCounter", counterSchema);
