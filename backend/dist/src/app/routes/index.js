@@ -45,6 +45,7 @@ const paymentPreview_routes_1 = require("../modules/payment/payment-preview/paym
 const fraudAlert_routes_1 = require("../modules/admin/fraud-alert/fraudAlert.routes");
 const experience_routes_1 = require("../modules/admin/experience/experience.routes");
 const counter_routes_1 = require("../modules/admin/counter/counter.routes");
+const helpCenter_routes_1 = require("../modules/admin/help-center/helpCenter.routes");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -222,6 +223,10 @@ const moduleRoutes = [
     {
         path: "/admin/counter",
         route: counter_routes_1.counterRouter
+    },
+    {
+        path: "/admin/help-center",
+        route: helpCenter_routes_1.helpCenterRouter
     }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

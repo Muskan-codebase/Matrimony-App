@@ -1,28 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FAQ = void 0;
+exports.HelpCentre = void 0;
 const mongoose_1 = require("mongoose");
-const faqSchema = new mongoose_1.Schema({
-    helpCenterId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: "HelpCentre",
-        required: true,
-    },
-    question: {
+const helpCentreSchema = new mongoose_1.Schema({
+    title: {
         type: String,
         required: true,
         trim: true,
-        maxlength: 200,
     },
-    answer: {
+    description: {
         type: String,
-        required: true,
         trim: true,
-        maxlength: 2000,
+    },
+    icon: {
+        type: String,
+        trim: true,
     },
     displayOrder: {
         type: Number,
-        default: 1,
+        default: 0,
     },
     isActive: {
         type: Boolean,
@@ -34,6 +30,5 @@ const faqSchema = new mongoose_1.Schema({
     },
 }, {
     timestamps: true,
-    versionKey: false,
 });
-exports.FAQ = (0, mongoose_1.model)("FAQ", faqSchema);
+exports.HelpCentre = (0, mongoose_1.model)("HelpCentre", helpCentreSchema);

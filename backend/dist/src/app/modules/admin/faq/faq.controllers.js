@@ -16,10 +16,11 @@ const createFAQ = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const validatedData = faq_validation_1.createFAQSchema.parse(req.body);
         const faq = yield faq_model_1.FAQ.create(validatedData);
+        const populatedFAQ = yield faq_model_1.FAQ.findById(faq._id).populate("helpCenterId", "title");
         res.status(201).json({
             success: true,
             message: "FAQ created successfully.",
-            data: faq,
+            data: populatedFAQ,
         });
     }
     catch (error) {
@@ -44,7 +45,7 @@ const getFAQs = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const faqs = yield faq_model_1.FAQ.find({
             isDeleted: false,
             isActive: true,
-        }).sort({ displayOrder: 1 });
+        }).sort({ displayOrder: 1 }).populate("helpCenterId", "title");
         res.status(200).json({
             success: true,
             data: faqs,
@@ -64,7 +65,7 @@ const getFAQById = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const faq = yield faq_model_1.FAQ.findOne({
             _id: req.params.id,
             isDeleted: false,
-        });
+        }).populate("helpCenterId", "title");
         if (!faq) {
             res.status(404).json({
                 success: false,
@@ -95,7 +96,7 @@ const updateFAQ = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }, validatedData, {
             new: true,
             runValidators: true,
-        });
+        }).populate("helpCenterId", "title");
         if (!faq) {
             res.status(404).json({
                 success: false,
@@ -132,7 +133,7 @@ const deleteFAQ = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             isDeleted: true,
         }, {
             new: true,
-        });
+        }).populate("helpCenterId", "title");
         if (!faq) {
             res.status(404).json({
                 success: false,

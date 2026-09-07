@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateFAQSchema = exports.createFAQSchema = void 0;
 const zod_1 = require("zod");
 exports.createFAQSchema = zod_1.z.object({
+    helpCenterId: zod_1.z
+        .string()
+        .min(1, "Help Center ID is required"),
     question: zod_1.z
         .string()
         .trim()
@@ -23,6 +26,9 @@ exports.createFAQSchema = zod_1.z.object({
         .optional(),
 });
 exports.updateFAQSchema = zod_1.z.object({
+    helpCenterId: zod_1.z
+        .string()
+        .min(1, "Help Center ID is required"),
     question: zod_1.z
         .string()
         .trim()
