@@ -11,14 +11,7 @@ import { authenticate } from "../../../middlewares/authMiddleware";
 const router = Router();
 /**
  * @swagger
- * tags:
- *   name: FAQs
- *   description: FAQ Management APIs
- */
-
-/**
- * @swagger
- * /v1/api/faqs:
+ * /v1/api/admin/faqs:
  *   post:
  *     summary: Create a new FAQ
  *     tags: [FAQs]
@@ -31,9 +24,14 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
+ *               - helpCenterId
  *               - question
  *               - answer
  *             properties:
+ *               helpCenterId:
+ *                 type: string
+ *                 example: "68bb12345678901234567890"
+ *                 description: Help Center ID
  *               question:
  *                 type: string
  *                 example: "How do I create a profile?"
@@ -57,7 +55,7 @@ const router = Router();
 router.post("/", authenticate, createFAQ);
 /**
  * @swagger
- * /v1/api/faqs/{id}:
+ * /v1/api/admin/faqs/{id}:
  *   put:
  *     summary: Update FAQ
  *     tags: [FAQs]
@@ -77,6 +75,10 @@ router.post("/", authenticate, createFAQ);
  *           schema:
  *             type: object
  *             properties:
+ *               helpCenterId:
+ *                 type: string
+ *                 example: "68bb12345678901234567890"
+ *                 description: Help Center ID
  *               question:
  *                 type: string
  *                 example: "How can I edit my profile?"
@@ -92,6 +94,8 @@ router.post("/", authenticate, createFAQ);
  *     responses:
  *       200:
  *         description: FAQ updated successfully.
+ *       400:
+ *         description: Validation error.
  *       404:
  *         description: FAQ not found.
  *       401:
@@ -100,7 +104,7 @@ router.post("/", authenticate, createFAQ);
 router.put("/:id", authenticate, updateFAQ);
 /**
  * @swagger
- * /v1/api/faqs:
+ * /v1/api/admin/faqs:
  *   get:
  *     summary: Get all FAQs
  *     tags: [FAQs]
@@ -111,7 +115,7 @@ router.put("/:id", authenticate, updateFAQ);
 router.get("/", getFAQs);
 /**
  * @swagger
- * /v1/api/faqs/{id}:
+ * /v1/api/admin/faqs/{id}:
  *   get:
  *     summary: Get FAQ by ID
  *     tags: [FAQs]
@@ -131,7 +135,7 @@ router.get("/", getFAQs);
 router.get("/:id", getFAQById);
 /**
  * @swagger
- * /v1/api/faqs/{id}:
+ * /v1/api/admin/faqs/{id}:
  *   patch:
  *     summary: Delete FAQ (Soft Delete)
  *     tags: [FAQs]
