@@ -42,6 +42,7 @@ import { termsConditionsRouter } from '../modules/admin/terms-conditions/termsCo
 import { paymentPreviewRouter } from '../modules/payment/payment-preview/paymentPreview.routes';
 import { fraudAlertRouter } from '../modules/admin/fraud-alert/fraudAlert.routes';
 import { experienceRouter } from '../modules/admin/experience/experience.routes';
+import { counterRouter } from '../modules/admin/counter/counter.routes';
 
 const router = Router();
 
@@ -217,6 +218,10 @@ const moduleRoutes = [
   {
     path: "/admin/experience",
     route: experienceRouter
+  },
+  {
+    path: "/admin/counter",
+    route: counterRouter
   }
 ];
 
