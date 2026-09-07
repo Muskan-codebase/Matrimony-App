@@ -26,4 +26,4 @@ const counterSchema = new Schema<ICounter>(
     }
 );
 
-export const Counter = model<ICounter>("Counter", counterSchema);
+export const MatrimonyCounter = model<ICounter>("MatrimonyCounter", counterSchema);
