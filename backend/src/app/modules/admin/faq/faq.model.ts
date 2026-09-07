@@ -3,6 +3,12 @@ import { IFAQ } from "./faq.interface";
 
 const faqSchema = new Schema<IFAQ>(
     {
+        helpCenterId: {
+            type: Schema.Types.ObjectId,
+            ref: "HelpCentre",
+            required: true,
+        },
+
         question: {
             type: String,
             required: true,
