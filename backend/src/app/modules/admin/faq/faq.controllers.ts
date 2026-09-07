@@ -6,12 +6,17 @@ export const createFAQ = async (req: Request, res: Response): Promise<void> => {
     try {
         const validatedData = createFAQSchema.parse(req.body);
 
-        const faq = await FAQ.create(validatedData);
+        const faq = await FAQ.create(validatedData)
+
+        const populatedFAQ = await FAQ.findById(faq._id).populate(
+            "helpCenterId",
+            "title"
+        );
 
         res.status(201).json({
             success: true,
             message: "FAQ created successfully.",
-            data: faq,
+            data: populatedFAQ,
         });
     } catch (error: any) {
         if (error.name === "ZodError") {
@@ -36,7 +41,7 @@ export const getFAQs = async (req: Request, res: Response): Promise<void> => {
         const faqs = await FAQ.find({
             isDeleted: false,
             isActive: true,
-        }).sort({ displayOrder: 1 });
+        }).sort({ displayOrder: 1 }).populate("helpCenterId", "title");
 
         res.status(200).json({
             success: true,
@@ -56,7 +61,7 @@ export const getFAQById = async (req: Request, res: Response): Promise<void> => 
         const faq = await FAQ.findOne({
             _id: req.params.id,
             isDeleted: false,
-        });
+        }).populate("helpCenterId", "title");
 
         if (!faq) {
             res.status(404).json({
@@ -93,7 +98,7 @@ export const updateFAQ = async (req: Request, res: Response): Promise<void> => {
                 new: true,
                 runValidators: true,
             }
-        );
+        ).populate("helpCenterId", "title");
 
         if (!faq) {
             res.status(404).json({
@@ -136,7 +141,7 @@ export const deleteFAQ = async (req: Request, res: Response): Promise<void> => {
             {
                 new: true,
             }
-        );
+        ).populate("helpCenterId", "title");
 
         if (!faq) {
             res.status(404).json({
