@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 export const createFAQSchema = z.object({
+    helpCenterId: z
+        .string()
+        .min(1, "Help Center ID is required"),
+
     question: z
         .string()
         .trim()
@@ -25,6 +29,10 @@ export const createFAQSchema = z.object({
 });
 
 export const updateFAQSchema = z.object({
+    helpCenterId: z
+        .string()
+        .min(1, "Help Center ID is required"),
+
     question: z
         .string()
         .trim()
