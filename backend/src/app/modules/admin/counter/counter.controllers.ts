@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Counter } from "./counter.model";
+import { MatrimonyCounter } from "./counter.model";
 import { createOrUpdateCounterSchema } from "./counter.validation";
 
 // Create Counter if it doesn't exist
@@ -8,7 +8,7 @@ export const createOrUpdateCounter = async (req: Request, res: Response) => {
     try {
         const validatedData = createOrUpdateCounterSchema.parse(req.body);
 
-        const existingCounter = await Counter.findOne();
+        const existingCounter = await MatrimonyCounter.findOne();
 
         if (existingCounter) {
             existingCounter.mobileVerifiedProfiles =
@@ -29,7 +29,7 @@ export const createOrUpdateCounter = async (req: Request, res: Response) => {
             });
         }
 
-        const counter = await Counter.create(validatedData);
+        const counter = await MatrimonyCounter.create(validatedData);
 
         return res.status(201).json({
             success: true,
@@ -49,7 +49,7 @@ export const createOrUpdateCounter = async (req: Request, res: Response) => {
 // Get Counter
 export const getCounter = async (req: Request, res: Response) => {
     try {
-        const counter = await Counter.findOne().lean();
+        const counter = await MatrimonyCounter.findOne().lean();
 
         if (!counter) {
             return res.status(404).json({
