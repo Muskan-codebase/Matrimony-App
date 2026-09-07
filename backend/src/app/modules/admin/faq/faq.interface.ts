@@ -1,6 +1,7 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface IFAQ extends Document {
+    helpCenterId: Types.ObjectId;
     question: string;
     answer: string;
     displayOrder: number;
