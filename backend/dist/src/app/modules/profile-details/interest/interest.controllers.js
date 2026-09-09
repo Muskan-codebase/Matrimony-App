@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.withdrawInterest = exports.rejectInterest = exports.acceptInterest = exports.getReceivedInterests = exports.getSentInterests = exports.sendInterest = void 0;
+exports.rejectedInterest = exports.withdrawInterest = exports.rejectInterest = exports.acceptInterest = exports.getReceivedInterests = exports.getSentInterests = exports.sendInterest = void 0;
 const interest_model_1 = require("./interest.model");
 const profile_model_1 = require("../profile.model");
 const shortlist_model_1 = require("../shortlist/shortlist.model");
@@ -453,3 +453,37 @@ const withdrawInterest = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.withdrawInterest = withdrawInterest;
+const rejectedInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const receiverProfile = yield profile_model_1.Profile.findOne({
+            userId: req.user.id,
+            isDeleted: false,
+        });
+        if (!receiverProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Profile not found.",
+            });
+        }
+        const rejectedInterests = yield interest_model_1.Interest.find({
+            receiverId: receiverProfile._id,
+            status: "Rejected",
+            isDeleted: false,
+        })
+            .populate("senderId")
+            .populate("receiverId");
+        return res.status(200).json({
+            success: true,
+            message: "Rejected Interests fetched successfully",
+            count: rejectedInterests.length,
+            data: rejectedInterests,
+        });
+    }
+    catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+});
+exports.rejectedInterest = rejectedInterest;

@@ -68,6 +68,21 @@ router.get("/sent", authMiddleware_1.authenticate, interest_controllers_1.getSen
 router.get("/received", authMiddleware_1.authenticate, interest_controllers_1.getReceivedInterests);
 /**
  * @swagger
+ * /v1/api/interest/rejected:
+ *   get:
+ *     summary: Get all rejected interests
+ *     tags: [Profile - Interest]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Rejected interests retrieved successfully.
+ *       404:
+ *         description: Profile not found.
+ */
+router.get("/rejected", authMiddleware_1.authenticate, interest_controllers_1.rejectedInterest);
+/**
+ * @swagger
  * /v1/api/interest/{id}/accept:
  *   patch:
  *     summary: Accept a received interest

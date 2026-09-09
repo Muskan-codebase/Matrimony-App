@@ -164,7 +164,7 @@ const updateHelpCentre = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.updateHelpCentre = updateHelpCentre;
-// DELETE
+// DELETE Help Center by Id
 const deleteHelpCentre = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;

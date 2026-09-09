@@ -162,7 +162,6 @@ const secureSectionSchema = new mongoose_1.Schema({
     heading: {
         type: String,
         trim: true,
-        maxlength: 100,
     },
     features: {
         type: [securityFeatureSchema],
