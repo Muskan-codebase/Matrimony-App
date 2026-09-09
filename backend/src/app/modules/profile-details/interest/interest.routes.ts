@@ -6,6 +6,7 @@ import {
     acceptInterest,
     rejectInterest,
     withdrawInterest,
+    rejectedInterest
 } from "./interest.controllers";
 
 import { authenticate } from "../../../middlewares/authMiddleware";
@@ -73,6 +74,21 @@ router.get("/sent", authenticate, getSentInterests);
  *         description: Received interests retrieved successfully.
  */
 router.get("/received", authenticate, getReceivedInterests);
+/**
+ * @swagger
+ * /v1/api/interest/rejected:
+ *   get:
+ *     summary: Get all rejected interests
+ *     tags: [Profile - Interest]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Rejected interests retrieved successfully.
+ *       404:
+ *         description: Profile not found.
+ */
+router.get("/rejected", authenticate, rejectedInterest);
 /**
  * @swagger
  * /v1/api/interest/{id}/accept:
