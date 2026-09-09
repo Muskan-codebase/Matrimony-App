@@ -40,7 +40,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
             userId: req.user.id,
             isDeleted: false,
         });
-        const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName";
+        const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName photos";
         // 1. Interests received by logged-in user
         const receivedInterests = yield interest_model_1.Interest.find({
             receiverId: loggedInProfile._id,
@@ -88,7 +88,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 $ne: loggedInProfile._id,
             },
         })
-            .select("_id userId matrimonyId basicDetails.firstName basicDetails.lastName photo")
+            .select("_id userId matrimonyId basicDetails.firstName basicDetails.lastName photos")
             .lean();
         // 6. Pending interests
         const pendingInterests = yield interest_model_1.Interest.find({
@@ -211,7 +211,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
         // Combine all notifications
         const notifications = [
             ...receivedInterests.map((interest) => {
-                var _a, _b, _c, _d, _e, _f;
+                var _a, _b, _c, _d, _e, _f, _g;
                 return ({
                     type: "interest_received",
                     message: "sent you an interest request",
@@ -220,12 +220,13 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         matrimonyId: (_b = interest.senderId) === null || _b === void 0 ? void 0 : _b.matrimonyId,
                         firstName: (_d = (_c = interest.senderId) === null || _c === void 0 ? void 0 : _c.basicDetails) === null || _d === void 0 ? void 0 : _d.firstName,
                         lastName: (_f = (_e = interest.senderId) === null || _e === void 0 ? void 0 : _e.basicDetails) === null || _f === void 0 ? void 0 : _f.lastName,
+                        photos: ((_g = interest.senderId) === null || _g === void 0 ? void 0 : _g.photos) || [],
                     },
                     createdAt: interest.createdAt,
                 });
             }),
             ...shortlistedBy.map((shortlist) => {
-                var _a, _b, _c, _d, _e, _f;
+                var _a, _b, _c, _d, _e, _f, _g;
                 return ({
                     type: "profile_shortlisted",
                     message: "shortlisted your profile",
@@ -234,6 +235,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         matrimonyId: (_b = shortlist.userId) === null || _b === void 0 ? void 0 : _b.matrimonyId,
                         firstName: (_d = (_c = shortlist.userId) === null || _c === void 0 ? void 0 : _c.basicDetails) === null || _d === void 0 ? void 0 : _d.firstName,
                         lastName: (_f = (_e = shortlist.userId) === null || _e === void 0 ? void 0 : _e.basicDetails) === null || _f === void 0 ? void 0 : _f.lastName,
+                        photos: ((_g = shortlist.senderId) === null || _g === void 0 ? void 0 : _g.photos) || [],
                     },
                     createdAt: shortlist.createdAt,
                 });
@@ -257,7 +259,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (profileVisitors.length > 0 &&
             ((_s = (_r = accountSettings === null || accountSettings === void 0 ? void 0 : accountSettings.notificationSettings) === null || _r === void 0 ? void 0 : _r.appNotifications) === null || _s === void 0 ? void 0 : _s.profileVisitors) === false) {
             notifications.push(...profileVisitors.map((visitor) => {
-                var _a, _b, _c, _d, _e, _f;
+                var _a, _b, _c, _d, _e, _f, _g;
                 return ({
                     type: "profile_visited",
                     message: "visited your profile",
@@ -266,6 +268,7 @@ const getMyNotifications = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         matrimonyId: (_b = visitor.viewerProfileId) === null || _b === void 0 ? void 0 : _b.matrimonyId,
                         firstName: (_d = (_c = visitor.viewerProfileId) === null || _c === void 0 ? void 0 : _c.basicDetails) === null || _d === void 0 ? void 0 : _d.firstName,
                         lastName: (_f = (_e = visitor.viewerProfileId) === null || _e === void 0 ? void 0 : _e.basicDetails) === null || _f === void 0 ? void 0 : _f.lastName,
+                        photos: ((_g = visitor.senderId) === null || _g === void 0 ? void 0 : _g.photos) || [],
                     },
                     createdAt: visitor.createdAt,
                 });
