@@ -609,3 +609,40 @@ export const withdrawInterest = async (
     }
 
 };
+
+export const rejectedInterest = async (req: Request, res: Response) => {
+    try {
+        const receiverProfile = await Profile.findOne({
+            userId: req.user.id,
+            isDeleted: false,
+        });
+
+        if (!receiverProfile) {
+            return res.status(404).json({
+                success: false,
+                message: "Profile not found.",
+            });
+        }
+
+        const rejectedInterests = await Interest.find({
+            receiverId: receiverProfile._id,
+            status: "Rejected",
+            isDeleted: false,
+        })
+            .populate("senderId")
+            .populate("receiverId");
+
+        return res.status(200).json({
+            success: true,
+            message: "Rejected Interests fetched successfully",
+            count: rejectedInterests.length,
+            data: rejectedInterests,
+        });
+
+    } catch (error: any) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
