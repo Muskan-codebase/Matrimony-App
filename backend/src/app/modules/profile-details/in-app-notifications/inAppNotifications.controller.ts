@@ -32,7 +32,7 @@ export const getMyNotifications = async (
             isDeleted: false,
         });
 
-        const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName";
+        const profileFields = "photo matrimonyId basicDetails.firstName basicDetails.lastName photos";
 
         // 1. Interests received by logged-in user
         const receivedInterests = await Interest.find({
@@ -91,7 +91,7 @@ export const getMyNotifications = async (
             },
         })
             .select(
-                "_id userId matrimonyId basicDetails.firstName basicDetails.lastName photo"
+                "_id userId matrimonyId basicDetails.firstName basicDetails.lastName photos"
             )
             .lean();
 
@@ -344,6 +344,7 @@ export const getMyNotifications = async (
                     matrimonyId: interest.senderId?.matrimonyId,
                     firstName: interest.senderId?.basicDetails?.firstName,
                     lastName: interest.senderId?.basicDetails?.lastName,
+                    photos: interest.senderId?.photos || [],
                 },
                 createdAt: interest.createdAt,
             })),
@@ -356,6 +357,7 @@ export const getMyNotifications = async (
                     matrimonyId: shortlist.userId?.matrimonyId,
                     firstName: shortlist.userId?.basicDetails?.firstName,
                     lastName: shortlist.userId?.basicDetails?.lastName,
+                    photos: shortlist.senderId?.photos || [],
                 },
                 createdAt: shortlist.createdAt,
             })),
@@ -394,6 +396,7 @@ export const getMyNotifications = async (
                             visitor.viewerProfileId?.basicDetails?.firstName,
                         lastName:
                             visitor.viewerProfileId?.basicDetails?.lastName,
+                        photos: visitor.senderId?.photos || [],
                     },
                     createdAt: visitor.createdAt,
                 }))
