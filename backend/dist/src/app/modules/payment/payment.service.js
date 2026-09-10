@@ -133,7 +133,7 @@ const verifyPayment = (userId, razorpayOrderId, razorpayPaymentId, razorpaySigna
             // ==========================================
             const payment = yield payment_model_1.Payment.findOne({
                 userId,
-                idempotencyKey,
+                razorpayOrderId,
             }).session(session);
             if (!payment) {
                 throw new Error("Payment record not found");
