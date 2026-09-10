@@ -187,7 +187,7 @@ export const verifyPayment = async (
 
             const payment = await Payment.findOne({
                 userId,
-                idempotencyKey,
+                razorpayOrderId,
             }).session(session);
 
 
