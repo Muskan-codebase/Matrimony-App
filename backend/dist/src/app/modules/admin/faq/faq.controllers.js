@@ -1,0 +1,201 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteFAQ = exports.updateFAQ = exports.getFAQById = exports.getFAQs = exports.createFAQ = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
+const faq_model_1 = require("./faq.model");
+const helpCenter_model_1 = require("../help-center/helpCenter.model");
+const faq_validation_1 = require("./faq.validation");
+const createFAQ = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validatedData = faq_validation_1.createFAQSchema.parse(req.body);
+        if (!mongoose_1.default.Types.ObjectId.isValid(validatedData.helpCenterId)) {
+            res.status(400).json({
+                success: false,
+                message: 'Invalid Help Center ID.',
+            });
+            return;
+        }
+        const category = yield helpCenter_model_1.HelpCentre.findOne({
+            _id: validatedData.helpCenterId,
+            isDeleted: false,
+        });
+        if (!category) {
+            res.status(400).json({
+                success: false,
+                message: 'Help Center category not found.',
+            });
+            return;
+        }
+        const faq = yield faq_model_1.FAQ.create(validatedData);
+        const populatedFAQ = yield faq_model_1.FAQ.findById(faq._id).populate('helpCenterId', 'title');
+        res.status(201).json({
+            success: true,
+            message: 'FAQ created successfully.',
+            data: populatedFAQ,
+        });
+    }
+    catch (error) {
+        if (error.name === 'ZodError') {
+            res.status(400).json({
+                success: false,
+                message: 'Validation failed.',
+                errors: error.errors,
+            });
+            return;
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error,
+        });
+    }
+});
+exports.createFAQ = createFAQ;
+const getFAQs = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const faqs = yield faq_model_1.FAQ.find({
+            isDeleted: false,
+        })
+            .sort({ displayOrder: 1 })
+            .populate('helpCenterId', 'title');
+        res.status(200).json({
+            success: true,
+            data: faqs,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error,
+        });
+    }
+});
+exports.getFAQs = getFAQs;
+const getFAQById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const faq = yield faq_model_1.FAQ.findOne({
+            _id: req.params.id,
+            isDeleted: false,
+        }).populate('helpCenterId', 'title');
+        if (!faq) {
+            res.status(404).json({
+                success: false,
+                message: 'FAQ not found.',
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: faq,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error,
+        });
+    }
+});
+exports.getFAQById = getFAQById;
+const updateFAQ = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const validatedData = faq_validation_1.updateFAQSchema.parse(req.body);
+        if (validatedData.helpCenterId) {
+            if (!mongoose_1.default.Types.ObjectId.isValid(validatedData.helpCenterId)) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Invalid Help Center ID.',
+                });
+                return;
+            }
+            const category = yield helpCenter_model_1.HelpCentre.findOne({
+                _id: validatedData.helpCenterId,
+                isDeleted: false,
+            });
+            if (!category) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Help Center category not found.',
+                });
+                return;
+            }
+        }
+        const faq = yield faq_model_1.FAQ.findOneAndUpdate({
+            _id: req.params.id,
+            isDeleted: false,
+        }, validatedData, {
+            new: true,
+            runValidators: true,
+        }).populate('helpCenterId', 'title');
+        if (!faq) {
+            res.status(404).json({
+                success: false,
+                message: 'FAQ not found.',
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            message: 'FAQ updated successfully.',
+            data: faq,
+        });
+    }
+    catch (error) {
+        if (error.name === 'ZodError') {
+            res.status(400).json({
+                success: false,
+                message: 'Validation failed.',
+                errors: error.errors,
+            });
+            return;
+        }
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error,
+        });
+    }
+});
+exports.updateFAQ = updateFAQ;
+const deleteFAQ = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const faq = yield faq_model_1.FAQ.findByIdAndUpdate(req.params.id, {
+            isDeleted: true,
+        }, {
+            new: true,
+        }).populate('helpCenterId', 'title');
+        if (!faq) {
+            res.status(404).json({
+                success: false,
+                message: 'FAQ not found.',
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            message: 'FAQ deleted successfully.',
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+            error,
+        });
+    }
+});
+exports.deleteFAQ = deleteFAQ;

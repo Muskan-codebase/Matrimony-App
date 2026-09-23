@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.onboardingRoutes = void 0;
+const express_1 = require("express");
+const onBoarding_controller_1 = require("./onBoarding.controller");
+const cloudinary_1 = require("../../config/cloudinary");
+const router = (0, express_1.Router)();
+router.get('/', onBoarding_controller_1.getOnboarding);
+router.post('/', cloudinary_1.upload.single('image'), onBoarding_controller_1.addOnboardingItem);
+router.patch('/:itemId', cloudinary_1.upload.single('image'), onBoarding_controller_1.updateOnboardingItem);
+router.delete('/:itemId', onBoarding_controller_1.deleteOnboardingItem);
+exports.onboardingRoutes = router;

@@ -1,0 +1,19 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MATCH_WEIGHTS = void 0;
+exports.MATCH_WEIGHTS = {
+    age: 10,
+    religion: 10,
+    casteSubCaste: 8,
+    location: 8,
+    education: 10,
+    occupation: 10,
+    income: 8,
+    height: 5,
+    maritalStatus: 8,
+    motherTongue: 5,
+    lifestyle: 7,
+    family: 5,
+    horoscope: 4,
+    interests: 2,
+};
